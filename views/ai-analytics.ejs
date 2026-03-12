@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Analytics | Optimus Job Tracker</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        .health-score { font-size: 4rem; font-weight: 700; }
+        .health-excellent { color: #198754; }
+        .health-good { color: #0d6efd; }
+        .health-warning { color: #ffc107; }
+        .health-critical { color: #dc3545; }
+        
+        .priority-critical { border-left: 4px solid #dc3545; }
+        .priority-high { border-left: 4px solid #fd7e14; }
+        .priority-medium { border-left: 4px solid #ffc107; }
+        .priority-low { border-left: 4px solid #0d6efd; }
+        
+        .metric-card { transition: transform 0.2s; }
+        .metric-card:hover { transform: translateY(-3px); }
+        
+        .ai-offline { opacity: 0.7; }
+        .real-data-badge { position: absolute; top: 10px; right: 10px; }
+    </style>
+</head>
+<body class="bg-light">
+    
+    <nav class="navbar navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/applications/dashboard">
+                <i class="bi bi-briefcase-fill"></i> Optimus Analytics
+            </a>
+            <div class="d-flex gap-2">
+                <a href="/applications/dashboard" class="btn btn-outline-light btn-sm">Dashboard</a>
+                <a href="/auth/logout" class="btn btn-outline-danger btn-sm">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-4">
+        
+        <!-- Connection Status -->
+        <% if (!aiConnected) { %>
+        <div class="alert alert-warning d-flex align-items-center mb-4">
+            <i class="bi bi-wifi-off me-2"></i>
+            <div>
+                <strong>AI Engine Offline</strong> - Showing real-time analytics from your <%= applications.length %> applications. 
+                <a href="#" onclick="location.reload()" class="alert-link">Retry connection</a> or 
+                <a href="http://localhost:8000" target="_blank" class="alert-link">start Python service</a>.
+            </div>
+        </div>
+        <% } else { %>
+        <div class="alert alert-success d-flex align-items-center mb-4">
+            <i class="bi bi-cpu me-2"></i>
+            <div><strong>AI Engine Active</strong> - Machine learning models analyzing your data</div>
+        </div>
+        <% } %>
+
+        <% if (!hasData) { %>
+        <!-- No Data State -->
+        <div class="card text-center py-5">
+            <div class="card-body">
+                <i class="bi bi-inbox display-1 text-muted"></i>
+                <h3 class="mt-3">No Applications Yet</h3>
+                <p class="text-muted">Track your first application to see AI-powered analytics</p>
+                <a href="/applications/add" class="btn btn-primary btn-lg">+ Track First Application</a>
+            </div>
+        </div>
+        <% } else { %>
+
+        <!-- Executive Summary -->
+        <div class="card mb-4 border-0 shadow <%= !aiConnected ? 'ai-offline' : '' %>" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+            <div class="card-body p-4 position-relative">
+                <% if (!aiConnected) { %>
+                <span class="badge bg-warning text-dark real-data-badge">LIVE DATA</span>
+                <% } %>
+                
+                <div class="row align-items-center">
+                    <div class="col-md-3 text-center border-end border-white border-opacity-25">
+                        <div class="text-white-50 small text-uppercase mb-2">Pipeline Health</div>
+                        <% const score = analysis.executive_summary?.pipeline_health_score || 0; %>
+                        <% const healthClass = score >= 75 ? 'health-excellent' : score >= 50 ? 'health-good' : score >= 30 ? 'health-warning' : 'health-critical'; %>
+                        <div class="health-score <%= healthClass %>"><%= Math.round(score) %></div>
+                        <div class="small">/ 100</div>
+                    </div>
+                    <div class="col-md-9 ps-md-4">
+                        <h4 class="mb-3">
+                            <i class="bi <%= aiConnected ? 'bi-robot' : 'bi-graph-up' %>"></i> 
+                            <%= aiConnected ? 'AI Executive Summary' : 'Analytics Dashboard' %>
+                        </h4>
+                        <p class="mb-3 lead"><%= analysis.executive_summary?.ai_diagnosis || "Analysis based on your application data" %></p>
+                        
+                        <div class="row g-3 text-center">
+                            <div class="col-6 col-md-3">
+                                <div class="text-white-50 small">Total Applications</div>
+                                <div class="h3 mb-0"><%= analysis.executive_summary?.total_applications || basicStats.total %></div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="text-white-50 small">Interview Rate</div>
+                                <div class="h3 mb-0"><%= analysis.executive_summary?.interview_rate || basicStats.interviewRate %>%</div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="text-white-50 small">Active Pipeline</div>
+                                <div class="h3 mb-0"><%= analysis.executive_summary?.active_applications || basicStats.active %></div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <div class="text-white-50 small">Offers</div>
+                                <div class="h3 mb-0"><%= analysis.executive_summary?.offers_received || basicStats.offers %></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Conversion Funnel -->
+        <% if (analysis.executive_summary?.conversion_funnel || basicStats.total > 0) { %>
+        <% const funnel = analysis.executive_summary?.conversion_funnel || {
+            applied_to_screen: Math.round((basicStats.interviews + basicStats.offers) / basicStats.total * 100),
+            screen_to_interview: 100,
+            interview_to_offer: Math.round(basicStats.offers / Math.max(basicStats.interviews, 1) * 100)
+        }; %>
+        <div class="row mb-4">
+            <div class="col-12">
+                <h5 class="fw-bold mb-3">Conversion Funnel</h5>
+                <div class="d-flex align-items-center gap-3">
+                    <div class="flex-grow-1">
+                        <div class="d-flex justify-content-between small mb-1">
+                            <span>Applied → Response</span>
+                            <span class="fw-bold"><%= funnel.applied_to_screen %>%</span>
+                        </div>
+                        <div class="progress" style="height: 10px;">
+                            <div class="progress-bar bg-primary" style="width: <%= funnel.applied_to_screen %>%"></div>
+                        </div>
+                    </div>
+                    <i class="bi bi-arrow-right text-muted fs-4"></i>
+                    <div class="flex-grow-1">
+                        <div class="d-flex justify-content-between small mb-1">
+                            <span>Response → Interview</span>
+                            <span class="fw-bold"><%= funnel.screen_to_interview %>%</span>
+                        </div>
+                        <div class="progress" style="height: 10px;">
+                            <div class="progress-bar bg-info" style="width: <%= funnel.screen_to_interview %>%"></div>
+                        </div>
+                    </div>
+                    <i class="bi bi-arrow-right text-muted fs-4"></i>
+                    <div class="flex-grow-1">
+                        <div class="d-flex justify-content-between small mb-1">
+                            <span>Interview → Offer</span>
+                            <span class="fw-bold"><%= funnel.interview_to_offer %>%</span>
+                        </div>
+                        <div class="progress" style="height: 10px;">
+                            <div class="progress-bar bg-success" style="width: <%= funnel.interview_to_offer %>%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <% } %>
+
+        <div class="row g-4">
+            <!-- Channel Performance -->
+            <div class="col-md-6">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-white fw-bold d-flex justify-content-between">
+                        <span><i class="bi bi-graph-up"></i> Channel Performance</span>
+                        <% if (!aiConnected) { %><span class="badge bg-secondary">Statistical</span><% } %>
+                    </div>
+                    <div class="card-body">
+                        <% const channels = analysis.channel_performance || basicStats.byMethod; %>
+                        <% if (channels && channels.length > 0) { %>
+                            <% channels.forEach(channel => { %>
+                            <div class="mb-3 p-3 bg-light rounded border-start border-4 border-<%= channel.success_rate > 30 ? 'success' : channel.success_rate > 10 ? 'warning' : 'secondary' %>">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <strong><%= channel.channel %></strong>
+                                    <span class="badge bg-<%= channel.success_rate > 30 ? 'success' : channel.success_rate > 10 ? 'warning' : 'secondary' %>">
+                                        <%= channel.success_rate %>% success
+                                    </span>
+                                </div>
+                                <div class="small text-muted">
+                                    <%= channel.applications || channel.total %> apps • <%= channel.positive_outcomes || channel.positive %> positive
+                                    <% if (channel.avg_time_to_response) { %> • <%= channel.avg_time_to_response %>d response<% } %>
+                                </div>
+                                <% if (channel.recommendation) { %>
+                                <div class="small mt-1 text-primary">
+                                    <i class="bi bi-lightbulb"></i> <%= channel.recommendation %>
+                                </div>
+                                <% } %>
+                            </div>
+                            <% }) %>
+                        <% } else { %>
+                            <p class="text-muted">No channel data available</p>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status Distribution -->
+            <div class="col-md-6">
+                <div class="card shadow-sm h-100">
+                    <div class="card-header bg-white fw-bold">
+                        <i class="bi bi-pie-chart"></i> Status Distribution
+                    </div>
+                    <div class="card-body">
+                        <% const statuses = basicStats.byStatus; %>
+                        <% Object.entries(statuses).forEach(([status, count]) => { %>
+                        <div class="d-flex justify-content-between align-items-center mb-2 p-2 bg-light rounded">
+                            <span class="text-capitalize"><%= status.replace(/-/g, ' ') %></span>
+                            <div class="d-flex align-items-center gap-2">
+                                <div class="progress flex-grow-1" style="width: 100px; height: 8px;">
+                                    <div class="progress-bar bg-<%= 
+                                        status === 'offer received' ? 'success' : 
+                                        status === 'rejected' ? 'danger' : 
+                                        status === 'ghosted' ? 'dark' : 
+                                        status === 'interview' ? 'info' : 'primary' 
+                                    %>" style="width: <%= (count / basicStats.total * 100) %>%"></div>
+                                </div>
+                                <span class="badge bg-secondary"><%= count %></span>
+                            </div>
+                        </div>
+                        <% }) %>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Recommendations -->
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white fw-bold">
+                        <i class="bi bi-stars"></i> 
+                        <%= aiConnected ? 'AI-Generated Action Plan' : 'Recommended Actions' %>
+                    </div>
+                    <div class="card-body">
+                        <% const recs = analysis.actionable_recommendations || []; %>
+                        <% if (recs.length > 0) { %>
+                            <div class="row g-3">
+                                <% recs.forEach(rec => { %>
+                                <div class="col-md-6">
+                                    <div class="card priority-<%= rec.priority.toLowerCase() %> h-100">
+                                        <div class="card-body">
+                                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                                <span class="badge bg-<%= 
+                                                    rec.priority === 'CRITICAL' ? 'danger' : 
+                                                    rec.priority === 'HIGH' ? 'warning text-dark' : 
+                                                    'secondary' 
+                                                %>"><%= rec.priority %></span>
+                                                <small class="text-muted"><%= rec.category %></small>
+                                            </div>
+                                            <h6 class="card-title"><%= rec.issue %></h6>
+                                            <p class="card-text small"><%= rec.action %></p>
+                                            <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
+                                                <small class="text-success"><i class="bi bi-graph-up"></i> <%= rec.expected_impact %></small>
+                                                <small class="text-muted"><%= rec.timeframe %></small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <% }) %>
+                            </div>
+                        <% } else { %>
+                            <div class="text-center py-4 text-muted">
+                                <i class="bi bi-check-circle display-4 text-success"></i>
+                                <p class="mt-2">No critical issues detected. Your strategy is solid!</p>
+                            </div>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Applications Table -->
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-white fw-bold">
+                        <i class="bi bi-clock-history"></i> Recent Applications
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Company</th>
+                                        <th>Role</th>
+                                        <th>Method</th>
+                                        <th>Status</th>
+                                        <th>Applied</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% applications.slice(0, 5).forEach(app => { %>
+                                    <tr>
+                                        <td><strong><%= app.company_name %></strong></td>
+                                        <td><%= app.job_title %></td>
+                                        <td><span class="badge bg-light text-dark"><%= app.app_method %></span></td>
+                                        <td>
+                                            <span class="badge bg-<%= 
+                                                app.status === 'offer received' ? 'success' : 
+                                                app.status === 'rejected' ? 'danger' : 
+                                                app.status === 'ghosted' ? 'dark' : 
+                                                app.status === 'interview' ? 'info' : 
+                                                'secondary' 
+                                            %>"><%= app.status %></span>
+                                        </td>
+                                        <td><%= new Date(app.date_applied).toLocaleDateString() %></td>
+                                    </tr>
+                                    <% }) %>
+                                </tbody>
+                            </table>
+                        </div>
+                        <% if (applications.length > 5) { %>
+                        <div class="card-footer text-center">
+                            <a href="/applications/dashboard" class="text-decoration-none">View all <%= applications.length %> applications →</a>
+                        </div>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <% } %>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

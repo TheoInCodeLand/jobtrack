@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add Job Application - Optimus Tracker</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        .section-header { background: #f8f9fa; padding: 1rem; margin: 1.5rem -1rem 1rem -1rem; font-weight: 600; color: #495057; }
+        .form-label { font-size: 0.9rem; font-weight: 500; }
+        .required::after { content: " *"; color: #dc3545; }
+        .contact-card { background: #f8f9fa; border-radius: 0.5rem; padding: 1rem; }
+    </style>
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/applications/dashboard"><i class="bi bi-briefcase"></i> Optimus Tracker</a>
+            <div class="d-flex gap-2">
+                <a href="/applications/dashboard" class="btn btn-outline-light btn-sm">Dashboard</a>
+                <a href="/auth/logout" class="btn btn-outline-danger btn-sm">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4 mb-5">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="fw-bold text-primary">Track New Application</h2>
+            <a href="/applications/dashboard" class="btn btn-outline-secondary">← Back</a>
+        </div>
+
+        <form action="/applications/add" method="POST" enctype="multipart/form-data" class="card shadow-sm border-0">
+            <div class="card-body p-4">
+                
+                <!-- SECTION 1: Core Role Info -->
+                <div class="section-header"><i class="bi bi-briefcase-fill"></i> Core Role Information</div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label required">Company Name</label>
+                        <input type="text" name="company_name" class="form-control" required placeholder="e.g., Google">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label required">Job Title</label>
+                        <input type="text" name="job_title" class="form-control" required placeholder="e.g., Graduate Software Engineer">
+                    </div>
+                    
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label required">Job Level</label>
+                        <select name="job_level" class="form-select" required>
+                            <option value="">Select...</option>
+                            <option value="Graduate Program">Graduate Program</option>
+                            <option value="Internship">Internship</option>
+                            <option value="Apprenticeship">Apprenticeship</option>
+                            <option value="Junior">Junior (0-2 years)</option>
+                            <option value="Mid-Level">Mid-Level (3-5 years)</option>
+                            <option value="Senior">Senior (5+ years)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Required Experience (Years)</label>
+                        <input type="number" name="experience_level" class="form-control" value="0" min="0" max="20">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Your Experience (Years)</label>
+                        <input type="number" name="your_experience_years" class="form-control" value="0" min="0" max="20" title="Helps calculate fit score">
+                    </div>
+                </div>
+
+                <!-- SECTION 2: Links & Contacts -->
+                <div class="section-header"><i class="bi bi-link-45deg"></i> Links & Contact Information</div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Company Website</label>
+                        <input type="url" name="company_website" class="form-control" placeholder="https://company.com">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label required">Job Posting URL</label>
+                        <input type="url" name="job_posting_url" class="form-control" required placeholder="Link to the job ad">
+                    </div>
+                </div>
+
+                <div class="contact-card mb-3">
+                    <h6 class="mb-3 text-muted"><i class="bi bi-person-lines-fill"></i> Hiring Contact (if known)</h6>
+                    <div class="row">
+                        <div class="col-md-4 mb-2">
+                            <input type="text" name="hiring_manager_name" class="form-control form-control-sm" placeholder="Hiring Manager Name">
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <input type="email" name="hiring_manager_email" class="form-control form-control-sm" placeholder="HM Email">
+                        </div>
+                        <div class="col-md-4 mb-2">
+                            <input type="url" name="hiring_manager_linkedin" class="form-control form-control-sm" placeholder="HM LinkedIn URL">
+                        </div>
+                    </div>
+                    <div class="row mt-2">
+                        <div class="col-md-6 mb-2">
+                            <input type="text" name="recruiter_name" class="form-control form-control-sm" placeholder="Recruiter Name (if external)">
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <input type="text" name="recruiter_company" class="form-control form-control-sm" placeholder="Recruitment Agency">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION 3: Categorization -->
+                <div class="section-header"><i class="bi bi-tags"></i> Categorization & Requirements</div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Job Domain(s)</label>
+                        <input type="text" name="job_domain" class="form-control" placeholder="e.g., Software Development, Data Analytics">
+                        <small class="text-muted">Separate with commas</small>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Required Skills</label>
+                        <input type="text" name="required_skills" class="form-control" placeholder="e.g., Python, React, AWS">
+                        <small class="text-muted">Separate with commas</small>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Industry</label>
+                        <input type="text" name="industry" class="form-control" placeholder="e.g., Fintech">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Work Arrangement</label>
+                        <select name="work_arrangement" class="form-select">
+                            <option value="On-site">On-site</option>
+                            <option value="Hybrid">Hybrid</option>
+                            <option value="Remote">Remote</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Required Education</label>
+                        <select name="education_required" class="form-select">
+                            <option value="Diploma">Diploma</option>
+                            <option value="Bachelors">Bachelors</option>
+                            <option value="Honours">Honours</option>
+                            <option value="Masters">Masters</option>
+                            <option value="PhD">PhD</option>
+                            <option value="Bootcamp/Certification">Bootcamp/Certification</option>
+                            <option value="None specified">None Specified</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- SECTION 4: Application Logistics -->
+                <div class="section-header"><i class="bi bi-calendar-event"></i> Application Logistics</div>
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label required">Date Applied</label>
+                        <input type="date" name="date_applied" class="form-control" required value="<%= new Date().toISOString().split('T')[0] %>">
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Closing Date</label>
+                        <input type="date" name="closing_date" class="form-control">
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Follow-up Date</label>
+                        <input type="date" name="follow_up_date" class="form-control" title="When to next contact them">
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label">Time Spent (mins)</label>
+                        <input type="number" name="time_spent_minutes" class="form-control" value="15" min="0">
+                    </div>
+
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label required">Application Method</label>
+                        <select name="app_method" id="methodSelect" class="form-select" required onchange="toggleOtherMethod()">
+                            <option value="">Select...</option>
+                            <option value="LinkedIn">LinkedIn Easy Apply</option>
+                            <option value="LinkedIn Manual">LinkedIn (Manual)</option>
+                            <option value="Indeed">Indeed</option>
+                            <option value="Company Website">Company Careers Portal</option>
+                            <option value="Email">Direct Email</option>
+                            <option value="Referral">Employee Referral</option>
+                            <option value="Recruiter">External Recruiter</option>
+                            <option value="Career Fair">Career Fair / Event</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3" id="otherMethodDiv" style="display: none;">
+                        <label class="form-label">Specify Method</label>
+                        <input type="text" name="app_method_other" id="otherMethodInput" class="form-control">
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Company Size</label>
+                        <select name="company_size" class="form-select">
+                            <option value="Startup">Startup (&lt;50)</option>
+                            <option value="Small">Small (50-200)</option>
+                            <option value="Medium">Medium (200-1000)</option>
+                            <option value="Enterprise">Enterprise (1000+)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Location</label>
+                        <input type="text" name="location" class="form-control" placeholder="City, Country">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Salary Range</label>
+                        <input type="text" name="salary" class="form-control" placeholder="e.g., R 450,000 - 600,000">
+                    </div>
+                </div>
+
+                <!-- SECTION 5: Application Details -->
+                <div class="section-header"><i class="bi bi-check-square"></i> Application Details</div>
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="referral" value="yes" id="referralCheck">
+                            <label class="form-check-label" for="referralCheck">Employee Referral?</label>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="tailored_resume" value="true" id="tailoredCheck">
+                            <label class="form-check-label" for="tailoredCheck">Tailored Resume?</label>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="assessment_upfront" value="true" id="assessmentCheck" onchange="toggleAssessmentType()">
+                            <label class="form-check-label" for="assessmentCheck">Assessment Required?</label>
+                        </div>
+                    </div>
+                    <div class="col-md-3" id="assessmentTypeDiv" style="display: none;">
+                        <select name="assessment_type" class="form-select form-select-sm">
+                            <option value="">Type...</option>
+                            <option value="Coding Challenge">Coding Challenge</option>
+                            <option value="Psychometric">Psychometric Test</option>
+                            <option value="Video Interview">Video Interview (One-way)</option>
+                            <option value="Case Study">Case Study</option>
+                            <option value="Technical Test">Technical Test</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- SECTION 6: Documents -->
+                <div class="section-header"><i class="bi bi-file-earmark-text"></i> Documents & Notes</div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Resume Used (PDF)</label>
+                        <input type="file" name="resume" class="form-control" accept=".pdf">
+                        <small class="text-muted">Version used for this specific application</small>
+                    </div>
+                    <div class="col-12 mb-3">
+                        <label class="form-label required">Job Description</label>
+                        <textarea name="job_description" class="form-control" rows="6" required placeholder="Paste full job description here..."></textarea>
+                    </div>
+                    <div class="col-12 mb-4">
+                        <label class="form-label">Initial Notes</label>
+                        <textarea name="notes" class="form-control" rows="3" placeholder="Why this role? Any initial thoughts?"></textarea>
+                    </div>
+                </div>
+
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <a href="/applications/dashboard" class="btn btn-outline-secondary btn-lg">Cancel</a>
+                    <button type="submit" class="btn btn-primary btn-lg fw-bold">
+                        <i class="bi bi-save"></i> Save Application
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        function toggleOtherMethod() {
+            const select = document.getElementById('methodSelect');
+            const otherDiv = document.getElementById('otherMethodDiv');
+            otherDiv.style.display = select.value === 'Other' ? 'block' : 'none';
+        }
+        function toggleAssessmentType() {
+            const check = document.getElementById('assessmentCheck');
+            const typeDiv = document.getElementById('assessmentTypeDiv');
+            typeDiv.style.display = check.checked ? 'block' : 'none';
+        }
+    </script>
+</body>
+</html>

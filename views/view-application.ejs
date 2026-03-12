@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title><%= app.job_title %> @ <%= app.company_name %> | Optimus</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        .status-badge-lg { font-size: 1rem; padding: 0.6rem 1.2rem; }
+        .detail-label { font-size: 0.8rem; color: #6c757d; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.25rem; }
+        .detail-value { font-size: 1rem; font-weight: 500; margin-bottom: 1rem; }
+        .timeline { position: relative; padding-left: 2rem; }
+        .timeline::before { content: ''; position: absolute; left: 0.5rem; top: 0; bottom: 0; width: 2px; background: #dee2e6; }
+        .timeline-item { position: relative; margin-bottom: 1.5rem; }
+        .timeline-item::before { content: ''; position: absolute; left: -1.5rem; top: 0.3rem; width: 12px; height: 12px; border-radius: 50%; background: #0d6efd; border: 2px solid white; }
+        .fit-good { color: #198754; }
+        .fit-partial { color: #ffc107; }
+        .fit-low { color: #dc3545; }
+        .ghosted-alert { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+    </style>
+</head>
+<body class="bg-light">
+    
+    <nav class="navbar navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/applications/dashboard">
+                <i class="bi bi-arrow-left"></i> Back to Dashboard
+            </a>
+            <div class="d-flex gap-2">
+                <a href="/applications/add" class="btn btn-success btn-sm">+ New Application</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-4">
+        <!-- Header -->
+        <div class="row align-items-start mb-4">
+            <div class="col-md-8">
+                <div class="d-flex align-items-center gap-2 mb-2">
+                    <h1 class="fw-bold mb-0"><%= app.job_title %></h1>
+                    <span class="badge bg-secondary status-badge-lg"><%= app.status.toUpperCase() %></span>
+                </div>
+                <h3 class="text-secondary mb-3"><%= app.company_name %></h3>
+                
+                <div class="d-flex flex-wrap gap-2 mb-3">
+                    <% if (app.company_website) { %>
+                        <a href="<%= app.company_website %>" target="_blank" class="btn btn-outline-primary btn-sm">
+                            <i class="bi bi-globe"></i> Company Site
+                        </a>
+                    <% } %>
+                    <% if (app.job_posting_url) { %>
+                        <a href="<%= app.job_posting_url %>" target="_blank" class="btn btn-outline-secondary btn-sm">
+                            <i class="bi bi-box-arrow-up-right"></i> Job Posting
+                        </a>
+                    <% } %>
+                    <% if (app.hiring_manager_linkedin) { %>
+                        <a href="<%= app.hiring_manager_linkedin %>" target="_blank" class="btn btn-outline-info btn-sm">
+                            <i class="bi bi-linkedin"></i> HM Profile
+                        </a>
+                    <% } %>
+                </div>
+            </div>
+            
+            <div class="col-md-4 text-md-end">
+                <% if (suggestGhosted) { %>
+                <div class="alert ghosted-alert mb-2">
+                    <i class="bi bi-question-circle-fill"></i> <strong>Consider marking as Ghosted?</strong><br>
+                    <small>No response in <%= daysSinceApplied %> days</small>
+                </div>
+                <% } %>
+                
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body">
+                        <div class="text-center">
+                            <div class="text-muted small mb-1">Experience Fit</div>
+                            <div class="h4 mb-0 <%= experienceFit === 'good' ? 'fit-good' : experienceFit === 'partial' ? 'fit-partial' : 'fit-low' %>">
+                                <%= app.your_experience_years %> / <%= app.experience_level %> yrs
+                                <i class="bi bi-<%= experienceFit === 'good' ? 'check-circle' : experienceFit === 'partial' ? 'exclamation-circle' : 'x-circle' %>"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Left Column: Details -->
+            <div class="col-md-4">
+                <!-- Quick Actions -->
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-white fw-bold">
+                        <i class="bi bi-lightning-charge"></i> Quick Actions
+                    </div>
+                    <div class="card-body">
+                        <form action="/applications/update-status/<%= app.id %>" method="POST" class="mb-3">
+                            <label class="form-label small text-muted">Update Status</label>
+                            <div class="input-group">
+                                <select name="status" class="form-select">
+                                    <option value="applied" <%= app.status === 'applied' ? 'selected' : '' %>>Applied</option>
+                                    <option value="application viewed" <%= app.status === 'application viewed' ? 'selected' : '' %>>Application Viewed</option>
+                                    <option value="shortlisted" <%= app.status === 'shortlisted' ? 'selected' : '' %>>Shortlisted</option>
+                                    <option value="assessment/test stage" <%= app.status === 'assessment/test stage' ? 'selected' : '' %>>Assessment/Test Stage</option>
+                                    <option value="phone screen" <%= app.status === 'phone screen' ? 'selected' : '' %>>Phone Screen</option>
+                                    <option value="interview" <%= app.status === 'interview' ? 'selected' : '' %>>Interview</option>
+                                    <option value="final interview" <%= app.status === 'final interview' ? 'selected' : '' %>>Final Interview</option>
+                                    <option value="offer received" <%= app.status === 'offer received' ? 'selected' : '' %>>Offer Received</option>
+                                    <option value="rejected" <%= app.status === 'rejected' ? 'selected' : '' %>>Rejected</option>
+                                    <option value="withdrawn" <%= app.status === 'withdrawn' ? 'selected' : '' %>>Withdrawn</option>
+                                    <option value="ghosted" <%= app.status === 'ghosted' ? 'selected' : '' %>>Ghosted</option>
+                                </select>
+                                <button type="submit" class="btn btn-primary">Update</button>
+                            </div>
+                        </form>
+                        
+                        <% if (app.resume_path) { %>
+                        <a href="<%= app.resume_path %>" target="_blank" class="btn btn-outline-danger w-100 mb-2">
+                            <i class="bi bi-file-pdf"></i> View Resume Used
+                        </a>
+                        <% } %>
+                    </div>
+                </div>
+
+                <!-- Core Details -->
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title border-bottom pb-2 mb-3 fw-bold">Application Details</h5>
+                        
+                        <div class="detail-label">Applied On</div>
+                        <div class="detail-value"><%= new Date(app.date_applied).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) %></div>
+                        
+                        <% if (app.closing_date) { %>
+                        <div class="detail-label">Application Closes</div>
+                        <div class="detail-value"><%= new Date(app.closing_date).toLocaleDateString() %></div>
+                        <% } %>
+                        
+                        <% if (app.follow_up_date) { %>
+                        <div class="detail-label">Follow-up Date</div>
+                        <div class="detail-value <%= new Date(app.follow_up_date) <= new Date() ? 'text-warning fw-bold' : '' %>">
+                            <%= new Date(app.follow_up_date).toLocaleDateString() %>
+                            <%= new Date(app.follow_up_date) <= new Date() ? ' (Due!)' : '' %>
+                        </div>
+                        <% } %>
+
+                        <div class="detail-label">Method</div>
+                        <div class="detail-value"><%= app.app_method %></div>
+
+                        <div class="detail-label">Location</div>
+                        <div class="detail-value"><%= app.location || 'Not specified' %></div>
+
+                        <div class="detail-label">Salary</div>
+                        <div class="detail-value"><%= app.salary || 'Not disclosed' %></div>
+
+                        <div class="detail-label">Company Size</div>
+                        <div class="detail-value"><%= app.company_size || 'Unknown' %></div>
+
+                        <div class="detail-label">Required Education</div>
+                        <div class="detail-value"><%= app.education_required || 'Not specified' %></div>
+                    </div>
+                </div>
+
+                <!-- Contact Info -->
+                <% if (app.hiring_manager_name || app.hiring_manager_email || app.recruiter_name) { %>
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title border-bottom pb-2 mb-3 fw-bold">Contacts</h5>
+                        
+                        <% if (app.hiring_manager_name) { %>
+                        <div class="detail-label">Hiring Manager</div>
+                        <div class="detail-value"><%= app.hiring_manager_name %></div>
+                        <% } %>
+                        
+                        <% if (app.hiring_manager_email) { %>
+                        <div class="detail-label">HM Email</div>
+                        <div class="detail-value"><a href="mailto:<%= app.hiring_manager_email %>"><%= app.hiring_manager_email %></a></div>
+                        <% } %>
+                        
+                        <% if (app.recruiter_name) { %>
+                        <div class="detail-label">Recruiter</div>
+                        <div class="detail-value"><%= app.recruiter_name %> <%= app.recruiter_company ? `(${app.recruiter_company})` : '' %></div>
+                        <% } %>
+                    </div>
+                </div>
+                <% } %>
+
+                <!-- Analytics -->
+                <div class="card shadow-sm border-0 mb-4 bg-light">
+                    <div class="card-body">
+                        <h5 class="card-title border-bottom pb-2 mb-3 fw-bold">Your Analytics</h5>
+                        
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Time Invested:</span>
+                            <strong><%= app.time_spent_minutes %> mins</strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Tailored Resume:</span>
+                            <strong><%= app.tailored_resume ? 'Yes' : 'No' %></strong>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Referral Used:</span>
+                            <strong><%= app.referral ? 'Yes' : 'No' %></strong>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Assessment:</span>
+                            <strong><%= app.assessment_upfront ? (app.assessment_type || 'Yes') : 'No' %></strong>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Content -->
+            <div class="col-md-8">
+                <!-- Skills & Domain -->
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="fw-bold mb-3">Job Domains</h6>
+                                <% if (app.job_domain && app.job_domain.length > 0) { %>
+                                    <% app.job_domain.forEach(domain => { %>
+                                        <span class="badge bg-primary me-1 mb-1"><%= domain %></span>
+                                    <% }) %>
+                                <% } else { %>
+                                    <span class="text-muted">None specified</span>
+                                <% } %>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="fw-bold mb-3">Required Skills</h6>
+                                <% if (app.required_skills && app.required_skills.length > 0) { %>
+                                    <% app.required_skills.forEach(skill => { %>
+                                        <span class="badge bg-secondary me-1 mb-1"><%= skill %></span>
+                                    <% }) %>
+                                <% } else { %>
+                                    <span class="text-muted">None specified</span>
+                                <% } %>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Job Description -->
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0 fw-bold">Job Description</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="bg-light p-3 rounded" style="white-space: pre-wrap; line-height: 1.7;">
+                            <%= app.job_description || 'No job description saved.' %>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notes & Activity -->
+                <div class="card shadow-sm border-0 mb-4">
+                    <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0 fw-bold">Notes & Activity Log</h5>
+                    </div>
+                    <div class="card-body">
+                        <% if (app.notes) { %>
+                            <div class="timeline mb-4">
+                                <% const notes = app.notes.split('\n').filter(n => n.trim()); %>
+                                <% notes.forEach(note => { 
+                                    const match = note.match(/\[(.*?)\](.*)/);
+                                    if (match) {
+                                %>
+                                    <div class="timeline-item">
+                                        <div class="small text-muted mb-1"><%= match[1] %></div>
+                                        <div><%= match[2] %></div>
+                                    </div>
+                                <% } else { %>
+                                    <div class="timeline-item">
+                                        <div><%= note %></div>
+                                    </div>
+                                <% } }) %>
+                            </div>
+                        <% } else { %>
+                            <p class="text-muted">No notes yet.</p>
+                        <% } %>
+
+                        <form action="/applications/add-note/<%= app.id %>" method="POST" class="mt-3 border-top pt-3">
+                            <label class="form-label fw-bold">Add New Note / Update</label>
+                            <textarea name="note" class="form-control mb-2" rows="3" placeholder="e.g., 'Sent follow-up email', 'Completed technical assessment', 'Interview scheduled for...'" required></textarea>
+                            <button type="submit" class="btn btn-primary btn-sm">
+                                <i class="bi bi-plus-circle"></i> Add Log Entry
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

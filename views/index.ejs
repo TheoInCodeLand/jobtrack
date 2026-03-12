@@ -1,0 +1,1740 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Optimus - The platform for modern teams</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #fafafa;
+            color: #171717;
+            overflow-x: hidden;
+        }
+        
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #fafafa;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #d4d4d4;
+            border-radius: 4px;
+        }
+        
+        /* Text scramble effect */
+        .scramble-text {
+            display: inline-block;
+            position: relative;
+        }
+        
+        /* Canvas container */
+        #hero-canvas {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 60%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0.6;
+        }
+        
+        /* Floating nav */
+        .floating-nav {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            background: rgba(250, 250, 250, 0.8);
+            backdrop-filter: blur(12px);
+            border-radius: 9999px;
+            padding: 8px 24px;
+            border: 1px solid rgba(0,0,0,0.05);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            transition: all 0.3s ease;
+        }
+        
+        .floating-nav.scrolled {
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+        }
+        
+        /* Marquee */
+        .marquee-container {
+            overflow: hidden;
+            white-space: nowrap;
+        }
+        .marquee-content {
+            display: inline-flex;
+            animation: marquee 30s linear infinite;
+        }
+        @keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        
+        /* Feature cards */
+        .feature-card {
+            border-bottom: 1px solid #e5e5e5;
+            transition: all 0.4s ease;
+        }
+        .feature-card:hover {
+            background: #f5f5f5;
+        }
+        
+        /* Code window */
+        .code-window {
+            background: #0a0a0a;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .code-line {
+            counter-increment: line;
+        }
+        .code-line::before {
+            content: counter(line);
+            display: inline-block;
+            width: 2em;
+            margin-right: 1em;
+            color: #525252;
+            text-align: right;
+        }
+        
+        /* Progress bar */
+        .progress-bar {
+            height: 2px;
+            background: #e5e5e5;
+            position: relative;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #171717;
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        /* Pricing toggle */
+        .toggle-switch {
+            width: 48px;
+            height: 24px;
+            background: #e5e5e5;
+            border-radius: 12px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .toggle-switch.active {
+            background: #171717;
+        }
+        .toggle-knob {
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.3s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .toggle-switch.active .toggle-knob {
+            transform: translateX(24px);
+        }
+        
+        /* Testimonial slider */
+        .testimonial-slide {
+            opacity: 0;
+            position: absolute;
+            transition: opacity 0.5s ease;
+        }
+        .testimonial-slide.active {
+            opacity: 1;
+            position: relative;
+        }
+        
+        /* Integration marquee */
+        .integration-row {
+            display: flex;
+            gap: 16px;
+            animation: scroll-left 20s linear infinite;
+        }
+        .integration-row.reverse {
+            animation: scroll-right 25s linear infinite;
+        }
+        @keyframes scroll-left {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+        @keyframes scroll-right {
+            0% { transform: translateX(-50%); }
+            100% { transform: translateX(0); }
+        }
+        
+        /* Grid pattern */
+        .grid-pattern {
+            background-image: radial-gradient(circle, #d4d4d4 1px, transparent 1px);
+            background-size: 24px 24px;
+        }
+        
+        /* Live indicator pulse */
+        .live-dot {
+            animation: pulse 2s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        /* Smooth scroll */
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        /* Section transitions */
+        .section-dark {
+            background: #0a0a0a;
+            color: #fafafa;
+        }
+        
+        /* Custom cursor for interactive elements */
+        .interactive-hover {
+            transition: transform 0.2s ease;
+        }
+        .interactive-hover:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <!-- Floating Navigation -->
+    <nav class="floating-nav" id="navbar">
+        <div class="flex items-center justify-between gap-8">
+            <div class="font-semibold text-lg tracking-tight">Optimus <span class="text-xs align-top opacity-60">TM</span></div>
+            <div class="hidden md:flex items-center gap-8 text-sm text-gray-600">
+                <a href="#features" class="hover:text-black transition-colors">Features</a>
+                <a href="#how-it-works" class="hover:text-black transition-colors">How it works</a>
+                <a href="#developers" class="hover:text-black transition-colors">Developers</a>
+                <a href="#pricing" class="hover:text-black transition-colors">Pricing</a>
+            </div>
+            <div class="flex items-center gap-4">
+                <a href="/auth/login" class="text-sm text-gray-600 hover:text-black transition-colors">Sign in</a>
+                <button class="bg-black text-white px-5 py-2 rounded-full text-sm font-medium hover:bg-gray-800 transition-colors">Start creating</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="relative min-h-screen flex items-center pt-20 overflow-hidden">
+        <canvas id="hero-canvas"></canvas>
+        
+        <div class="relative z-10 w-full px-6 lg:px-16 xl:px-24">
+            <div class="max-w-4xl">
+                <div class="flex items-center gap-3 mb-6 opacity-0" id="hero-label">
+                    <div class="w-8 h-px bg-gray-400"></div>
+                    <span class="text-xs uppercase tracking-widest text-gray-500 font-mono">The platform for modern teams</span>
+                </div>
+                
+                <h1 class="text-6xl md:text-7xl lg:text-8xl font-medium tracking-tight leading-[0.95] mb-8">
+                    <span class="block overflow-hidden">
+                        <span class="block transform translate-y-full" id="hero-line1">The platform</span>
+                    </span>
+                    <span class="block overflow-hidden">
+                        <span class="block transform translate-y-full" id="hero-line2">to <span class="scramble-text text-gray-400" id="scramble-word">create</span></span>
+                    </span>
+                </h1>
+                
+                <p class="text-lg md:text-xl text-gray-600 max-w-xl mb-10 opacity-0" id="hero-desc">
+                    Your toolkit to stop configuring and start innovating. Securely build, deploy, and scale the best experiences.
+                </p>
+                
+                <div class="flex items-center gap-4 opacity-0" id="hero-cta">
+                    <button class="bg-black text-white px-8 py-4 rounded-full font-medium flex items-center gap-2 hover:bg-gray-800 transition-all interactive-hover">
+                        Start free trial
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                            <path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                    <button class="px-8 py-4 rounded-full font-medium border border-gray-300 hover:border-gray-400 transition-colors interactive-hover bg-white/50 backdrop-blur-sm">
+                        Watch demo
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Marquee -->
+    <section class="py-8 border-y border-gray-200 overflow-hidden bg-white/50">
+        <div class="marquee-container">
+            <div class="marquee-content">
+                <div class="flex items-center gap-16 px-8">
+                    <div class="flex items-baseline gap-2">
+                        <span class="text-4xl font-light">300%</span>
+                        <span class="text-sm text-gray-500">throughput increase</span>
+                        <span class="text-xs text-gray-400 ml-2">LINEAR</span>
+                    </div>
+                    <div class="flex items-baseline gap-2">
+                        <span class="text-4xl font-light">6x</span>
+                        <span class="text-sm text-gray-500">faster to ship</span>
+                        <span class="text-xs text-gray-400 ml-2">NOTION</span>
+                    </div>
+                    <div class="flex items-baseline gap-2">
+                        <span class="text-4xl font-light">20 days</span>
+                        <span class="text-sm text-gray-500">saved on builds</span>
+                        <span class="text-xs text-gray-400 ml-2">NETFLIX</span>
+                    </div>
+                    <div class="flex items-baseline gap-2">
+                        <span class="text-4xl font-light">98%</span>
+                        <span class="text-sm text-gray-500">faster deployment</span>
+                        <span class="text-xs text-gray-400 ml-2">STRIPE</span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-16 px-8">
+                    <div class="flex items-baseline gap-2">
+                        <span class="text-4xl font-light">300%</span>
+                        <span class="text-sm text-gray-500">throughput increase</span>
+                        <span class="text-xs text-gray-400 ml-2">LINEAR</span>
+                    </div>
+                    <div class="flex items-baseline gap-2">
+                        <span class="text-4xl font-light">6x</span>
+                        <span class="text-sm text-gray-500">faster to ship</span>
+                        <span class="text-xs text-gray-400 ml-2">NOTION</span>
+                    </div>
+                    <div class="flex items-baseline gap-2">
+                        <span class="text-4xl font-light">20 days</span>
+                        <span class="text-sm text-gray-500">saved on builds</span>
+                        <span class="text-xs text-gray-400 ml-2">NETFLIX</span>
+                    </div>
+                    <div class="flex items-baseline gap-2">
+                        <span class="text-4xl font-light">98%</span>
+                        <span class="text-sm text-gray-500">faster deployment</span>
+                        <span class="text-xs text-gray-400 ml-2">STRIPE</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Capabilities Section -->
+    <section id="features" class="py-24 px-6 lg:px-16 xl:px-24">
+        <div class="max-w-6xl mx-auto">
+            <div class="mb-16">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-8 h-px bg-gray-400"></div>
+                    <span class="text-xs uppercase tracking-widest text-gray-500 font-mono">Capabilities</span>
+                </div>
+                <h2 class="text-4xl md:text-5xl lg:text-6xl font-medium tracking-tight">
+                    Everything you need.<br>
+                    <span class="text-gray-400">Nothing you don't.</span>
+                </h2>
+            </div>
+            
+            <div class="space-y-0">
+                <!-- Feature 1 -->
+                <div class="feature-card py-12 px-6 -mx-6 rounded-lg cursor-pointer group" data-feature="1">
+                    <div class="flex items-start justify-between gap-8">
+                        <div class="flex gap-8 flex-1">
+                            <span class="text-xs text-gray-400 font-mono mt-2">01</span>
+                            <div>
+                                <h3 class="text-2xl md:text-3xl font-medium mb-3 group-hover:translate-x-2 transition-transform">Instant Deployment</h3>
+                                <p class="text-gray-600 max-w-md text-lg">Push to production in seconds. Our edge network ensures your applications load instantly, anywhere in the world.</p>
+                            </div>
+                        </div>
+                        <div class="w-48 h-32 bg-gray-100 rounded-lg border border-gray-200 flex items-center justify-center overflow-hidden relative">
+                            <div class="absolute inset-0 flex flex-col gap-2 p-4 justify-center">
+                                <div class="h-2 bg-gray-300 rounded w-full animate-pulse"></div>
+                                <div class="h-2 bg-gray-300 rounded w-3/4"></div>
+                                <div class="h-2 bg-gray-300 rounded w-5/6"></div>
+                                <div class="h-2 bg-gray-800 rounded w-full mt-2"></div>
+                                <div class="h-2 bg-gray-800 rounded w-4/5"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Feature 2 -->
+                <div class="feature-card py-12 px-6 -mx-6 rounded-lg cursor-pointer group" data-feature="2">
+                    <div class="flex items-start justify-between gap-8">
+                        <div class="flex gap-8 flex-1">
+                            <span class="text-xs text-gray-400 font-mono mt-2">02</span>
+                            <div>
+                                <h3 class="text-2xl md:text-3xl font-medium mb-3 group-hover:translate-x-2 transition-transform">AI-Native Workflows</h3>
+                                <p class="text-gray-600 max-w-md text-lg">Build intelligent applications with built-in AI capabilities. From inference to training, everything scales automatically.</p>
+                            </div>
+                        </div>
+                        <div class="w-48 h-32 bg-gray-100 rounded-lg border border-gray-200 flex items-center justify-center">
+                            <svg width="80" height="80" viewBox="0 0 80 80" fill="none">
+                                <circle cx="40" cy="40" r="8" fill="#171717"/>
+                                <circle cx="40" cy="15" r="4" stroke="#171717" stroke-width="1.5"/>
+                                <circle cx="65" cy="40" r="4" stroke="#171717" stroke-width="1.5"/>
+                                <circle cx="40" cy="65" r="4" stroke="#171717" stroke-width="1.5"/>
+                                <circle cx="15" cy="40" r="4" stroke="#171717" stroke-width="1.5"/>
+                                <circle cx="58" cy="23" r="4" stroke="#171717" stroke-width="1.5"/>
+                                <circle cx="58" cy="57" r="4" stroke="#171717" stroke-width="1.5"/>
+                                <circle cx="22" cy="57" r="4" stroke="#171717" stroke-width="1.5"/>
+                                <circle cx="22" cy="23" r="4" stroke="#171717" stroke-width="1.5"/>
+                                <line x1="40" y1="32" x2="40" y2="19" stroke="#171717" stroke-width="1"/>
+                                <line x1="48" y1="40" x2="61" y2="40" stroke="#171717" stroke-width="1"/>
+                                <line x1="40" y1="48" x2="40" y2="61" stroke="#171717" stroke-width="1"/>
+                                <line x1="32" y1="40" x2="19" y2="40" stroke="#171717" stroke-width="1"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Feature 3 -->
+                <div class="feature-card py-12 px-6 -mx-6 rounded-lg cursor-pointer group" data-feature="3">
+                    <div class="flex items-start justify-between gap-8">
+                        <div class="flex gap-8 flex-1">
+                            <span class="text-xs text-gray-400 font-mono mt-2">03</span>
+                            <div>
+                                <h3 class="text-2xl md:text-3xl font-medium mb-3 group-hover:translate-x-2 transition-transform">Real-time Collaboration</h3>
+                                <p class="text-gray-600 max-w-md text-lg">Work together seamlessly. Live preview, instant feedback, and version control that actually makes sense.</p>
+                            </div>
+                        </div>
+                        <div class="w-48 h-32 bg-gray-100 rounded-lg border border-gray-200 flex items-center justify-center relative">
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-16 border-2 border-gray-800 rounded flex items-center justify-center bg-white">
+                                    <span class="text-xs font-mono">A</span>
+                                </div>
+                                <div class="flex flex-col gap-1">
+                                    <div class="w-8 h-0.5 bg-gray-400 border-dashed"></div>
+                                    <div class="w-2 h-2 bg-gray-800 rounded-full"></div>
+                                </div>
+                                <div class="w-12 h-16 border-2 border-gray-800 rounded flex items-center justify-center bg-white">
+                                    <span class="text-xs font-mono">B</span>
+                                </div>
+                            </div>
+                            <div class="absolute -top-2 left-8 w-4 h-4 border-2 border-gray-800 rounded-full bg-white"></div>
+                            <div class="absolute -bottom-2 right-8 w-4 h-4 border-2 border-gray-800 rounded-full bg-white"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Feature 4 -->
+                <div class="feature-card py-12 px-6 -mx-6 rounded-lg cursor-pointer group border-b-0" data-feature="4">
+                    <div class="flex items-start justify-between gap-8">
+                        <div class="flex gap-8 flex-1">
+                            <span class="text-xs text-gray-400 font-mono mt-2">04</span>
+                            <div>
+                                <h3 class="text-2xl md:text-3xl font-medium mb-3 group-hover:translate-x-2 transition-transform">Enterprise Security</h3>
+                                <p class="text-gray-600 max-w-md text-lg">Bank-grade encryption, SOC 2 compliance, and granular access controls. Your data stays yours.</p>
+                            </div>
+                        </div>
+                        <div class="w-48 h-32 bg-gray-100 rounded-lg border border-gray-200 flex items-center justify-center">
+                            <svg width="64" height="80" viewBox="0 0 64 80" fill="none">
+                                <path d="M32 0L64 20V40C64 62.0914 50.0914 76 32 80C13.9086 76 0 62.0914 0 40V20L32 0Z" fill="#e5e5e5" stroke="#171717" stroke-width="2"/>
+                                <rect x="20" y="32" width="24" height="28" rx="4" fill="#171717"/>
+                                <circle cx="32" cy="46" r="4" fill="white"/>
+                                <path d="M32 46V52" stroke="white" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Process Section (Dark) -->
+    <section id="how-it-works" class="section-dark py-24 px-6 lg:px-16 xl:px-24 relative overflow-hidden">
+        <div class="absolute inset-0 opacity-20">
+            <div class="absolute inset-0" style="background-image: radial-gradient(circle at 2px 2px, rgba(255,255,255,0.15) 1px, transparent 0); background-size: 40px 40px;"></div>
+        </div>
+        
+        <div class="max-w-6xl mx-auto relative z-10">
+            <div class="mb-16">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-8 h-px bg-gray-600"></div>
+                    <span class="text-xs uppercase tracking-widest text-gray-500 font-mono">Process</span>
+                </div>
+                <h2 class="text-4xl md:text-5xl lg:text-6xl font-medium tracking-tight">
+                    Three steps.<br>
+                    <span class="text-gray-600">Infinite possibilities.</span>
+                </h2>
+            </div>
+            
+            <div class="grid lg:grid-cols-2 gap-16 items-start">
+                <div class="space-y-12">
+                    <!-- Step 1 -->
+                    <div class="process-step cursor-pointer" data-step="1">
+                        <div class="flex items-start gap-6">
+                            <span class="text-gray-600 font-mono text-sm mt-1">I</span>
+                            <div class="flex-1">
+                                <h3 class="text-2xl md:text-3xl font-medium mb-3">Connect your tools</h3>
+                                <p class="text-gray-400 max-w-md">Integrate with your existing stack in minutes. We support 200+ data sources out of the box.</p>
+                                <div class="progress-bar mt-6">
+                                    <div class="progress-fill" id="progress-1"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 2 -->
+                    <div class="process-step cursor-pointer" data-step="2">
+                        <div class="flex items-start gap-6">
+                            <span class="text-gray-600 font-mono text-sm mt-1">II</span>
+                            <div class="flex-1">
+                                <h3 class="text-2xl md:text-3xl font-medium mb-3 text-gray-500">Build your workflow</h3>
+                                <p class="text-gray-600 max-w-md">Design powerful automations with our visual builder or write code directly.</p>
+                                <div class="progress-bar mt-6 bg-gray-800">
+                                    <div class="progress-fill" id="progress-2" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Step 3 -->
+                    <div class="process-step cursor-pointer" data-step="3">
+                        <div class="flex items-start gap-6">
+                            <span class="text-gray-600 font-mono text-sm mt-1">III</span>
+                            <div class="flex-1">
+                                <h3 class="text-2xl md:text-3xl font-medium mb-3 text-gray-500">Ship to production</h3>
+                                <p class="text-gray-600 max-w-md">Deploy globally with zero configuration. Your app goes live in under 30 seconds.</p>
+                                <div class="progress-bar mt-6 bg-gray-800">
+                                    <div class="progress-fill" id="progress-3" style="width: 0%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Code Window -->
+                <div class="code-window border border-gray-800">
+                    <div class="flex items-center justify-between px-4 py-3 border-b border-gray-800 bg-gray-900/50">
+                        <div class="flex gap-2">
+                            <div class="w-3 h-3 rounded-full bg-gray-700"></div>
+                            <div class="w-3 h-3 rounded-full bg-gray-700"></div>
+                            <div class="w-3 h-3 rounded-full bg-gray-700"></div>
+                        </div>
+                        <span class="text-xs text-gray-600 font-mono">workflow.ts</span>
+                    </div>
+                    <div class="p-6 font-mono text-sm leading-relaxed text-gray-300 overflow-hidden" id="code-content">
+                        <div class="code-line"><span class="text-purple-400">import</span> { optimus } <span class="text-purple-400">from</span> <span class="text-green-400">'@optimus/core'</span></div>
+                        <div class="code-line"></div>
+                        <div class="code-line"><span class="text-blue-400">optimus</span>.<span class="text-yellow-400">connect</span>({</div>
+                        <div class="code-line">&nbsp;&nbsp;source: <span class="text-green-400">'your-database'</span>,</div>
+                        <div class="code-line">&nbsp;&nbsp;sync: <span class="text-orange-400">true</span></div>
+                        <div class="code-line">})</div>
+                    </div>
+                    <div class="px-4 py-2 border-t border-gray-800 flex items-center gap-2">
+                        <div class="w-2 h-2 rounded-full bg-green-500 live-dot"></div>
+                        <span class="text-xs text-gray-500 font-mono">Ready</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Infrastructure Section -->
+    <section class="py-24 px-6 lg:px-16 xl:px-24 bg-white">
+        <div class="max-w-6xl mx-auto">
+            <div class="grid lg:grid-cols-2 gap-16 items-start">
+                <div>
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-8 h-px bg-gray-400"></div>
+                        <span class="text-xs uppercase tracking-widest text-gray-500 font-mono">Infrastructure</span>
+                    </div>
+                    <h2 class="text-4xl md:text-5xl lg:text-6xl font-medium tracking-tight mb-6">
+                        Global by<br>default.
+                    </h2>
+                    <p class="text-gray-600 text-lg max-w-lg mb-12">
+                        Deploy once, run everywhere. Our edge network spans 17 data centers across 6 continents, delivering sub-50ms latency to 99% of the world.
+                    </p>
+                    
+                    <div class="grid grid-cols-3 gap-8">
+                        <div>
+                            <div class="text-4xl md:text-5xl font-light mb-1">17</div>
+                            <div class="text-sm text-gray-500">Data centers</div>
+                        </div>
+                        <div>
+                            <div class="text-4xl md:text-5xl font-light mb-1">99.99%</div>
+                            <div class="text-sm text-gray-500">Uptime SLA</div>
+                        </div>
+                        <div>
+                            <div class="text-4xl md:text-5xl font-light mb-1">&lt;50ms</div>
+                            <div class="text-sm text-gray-500">Global latency</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-50 rounded-lg border border-gray-200 overflow-hidden">
+                    <div class="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
+                        <span class="text-sm font-mono text-gray-600">Edge Network</span>
+                        <div class="flex items-center gap-2">
+                            <div class="w-2 h-2 rounded-full bg-green-500 live-dot"></div>
+                            <span class="text-xs text-green-600 font-mono">All operational</span>
+                        </div>
+                    </div>
+                    <div class="divide-y divide-gray-200">
+                        <div class="px-4 py-3 flex items-center justify-between hover:bg-gray-100 transition-colors">
+                            <div class="flex items-center gap-3">
+                                <div class="w-2 h-2 rounded-full bg-gray-300"></div>
+                                <div>
+                                    <div class="text-sm font-medium">San Francisco</div>
+                                    <div class="text-xs text-gray-500">US West</div>
+                                </div>
+                            </div>
+                            <span class="text-xs text-gray-500 font-mono">12ms</span>
+                        </div>
+                        <div class="px-4 py-3 flex items-center justify-between hover:bg-gray-100 transition-colors">
+                            <div class="flex items-center gap-3">
+                                <div class="w-2 h-2 rounded-full bg-gray-800"></div>
+                                <div>
+                                    <div class="text-sm font-medium">New York</div>
+                                    <div class="text-xs text-gray-500">US East</div>
+                                </div>
+                            </div>
+                            <span class="text-xs text-gray-500 font-mono">18ms</span>
+                        </div>
+                        <div class="px-4 py-3 flex items-center justify-between hover:bg-gray-100 transition-colors">
+                            <div class="flex items-center gap-3">
+                                <div class="w-2 h-2 rounded-full bg-gray-300"></div>
+                                <div>
+                                    <div class="text-sm font-medium">London</div>
+                                    <div class="text-xs text-gray-500">Europe</div>
+                                </div>
+                            </div>
+                            <span class="text-xs text-gray-500 font-mono">24ms</span>
+                        </div>
+                        <div class="px-4 py-3 flex items-center justify-between hover:bg-gray-100 transition-colors">
+                            <div class="flex items-center gap-3">
+                                <div class="w-2 h-2 rounded-full bg-gray-300"></div>
+                                <div>
+                                    <div class="text-sm font-medium">Tokyo</div>
+                                    <div class="text-xs text-gray-500">Asia Pacific</div>
+                                </div>
+                            </div>
+                            <span class="text-xs text-gray-500 font-mono">32ms</span>
+                        </div>
+                        <div class="px-4 py-3 flex items-center justify-between hover:bg-gray-100 transition-colors">
+                            <div class="flex items-center gap-3">
+                                <div class="w-2 h-2 rounded-full bg-gray-800"></div>
+                                <div>
+                                    <div class="text-sm font-medium">Sydney</div>
+                                    <div class="text-xs text-gray-500">Oceania</div>
+                                </div>
+                            </div>
+                            <span class="text-xs text-gray-500 font-mono">45ms</span>
+                        </div>
+                        <div class="px-4 py-3 flex items-center justify-between hover:bg-gray-100 transition-colors">
+                            <div class="flex items-center gap-3">
+                                <div class="w-2 h-2 rounded-full bg-gray-300"></div>
+                                <div>
+                                    <div class="text-sm font-medium">Sao Paulo</div>
+                                    <div class="text-xs text-gray-500">South America</div>
+                                </div>
+                            </div>
+                            <span class="text-xs text-gray-500 font-mono">38ms</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Live Metrics -->
+    <section class="py-24 px-6 lg:px-16 xl:px-24 border-t border-gray-200">
+        <div class="max-w-6xl mx-auto">
+            <div class="flex items-start justify-between mb-12">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-px bg-gray-400"></div>
+                    <span class="text-xs uppercase tracking-widest text-gray-500 font-mono">Live metrics</span>
+                </div>
+                <div class="flex items-center gap-4 text-sm">
+                    <div class="flex items-center gap-2">
+                        <div class="w-2 h-2 rounded-full bg-green-500 live-dot"></div>
+                        <span class="text-gray-600 font-mono">Live</span>
+                    </div>
+                    <span class="text-gray-400 font-mono" id="live-time">11:08:22 PM</span>
+                </div>
+            </div>
+            
+            <h2 class="text-4xl md:text-5xl font-medium tracking-tight mb-16">Performance you<br>can measure.</h2>
+            
+            <div class="grid grid-cols-2 gap-px bg-gray-200 border border-gray-200 rounded-lg overflow-hidden">
+                <div class="bg-white p-8 md:p-12">
+                    <div class="text-5xl md:text-7xl font-light tracking-tight mb-2" id="metric-requests">2,847,392</div>
+                    <div class="text-gray-500">API requests today</div>
+                </div>
+                <div class="bg-white p-8 md:p-12 border-l border-gray-200">
+                    <div class="text-5xl md:text-7xl font-light tracking-tight mb-2">99.99%</div>
+                    <div class="text-gray-500">Uptime this quarter</div>
+                </div>
+                <div class="bg-white p-8 md:p-12 border-t border-gray-200">
+                    <div class="text-5xl md:text-7xl font-light tracking-tight mb-2">23ms</div>
+                    <div class="text-gray-500">Average response time</div>
+                </div>
+                <div class="bg-white p-8 md:p-12 border-t border-l border-gray-200">
+                    <div class="text-5xl md:text-7xl font-light tracking-tight mb-2">184</div>
+                    <div class="text-gray-500">Countries served</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Integrations -->
+    <section class="py-24 px-6 lg:px-16 xl:px-24 overflow-hidden">
+        <div class="max-w-6xl mx-auto text-center mb-12">
+            <div class="flex items-center justify-center gap-3 mb-4">
+                <div class="w-12 h-px bg-gray-300"></div>
+                <span class="text-xs uppercase tracking-widest text-gray-500 font-mono">Integrations</span>
+                <div class="w-12 h-px bg-gray-300"></div>
+            </div>
+            <h2 class="text-4xl md:text-5xl font-medium tracking-tight mb-4">Works with everything<br>you already use.</h2>
+            <p class="text-gray-600 text-lg">200+ pre-built integrations. Connect your entire stack in minutes.</p>
+        </div>
+        
+        <div class="space-y-4 relative">
+            <div class="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-[#fafafa] to-transparent z-10"></div>
+            <div class="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-[#fafafa] to-transparent z-10"></div>
+            
+            <div class="integration-row">
+                <div class="flex gap-4">
+                    <div class="px-8 py-4 bg-white border border-gray-200 rounded-lg min-w-[140px] text-center hover:border-gray-400 transition-colors cursor-pointer">
+                        <div class="font-medium">Stripe</div>
+                        <div class="text-xs text-gray-500">Payments</div>
+                    </div>
+                    <div class="px-8 py-4 bg-white border border-gray-200 rounded-lg min-w-[140px] text-center hover:border-gray-400 transition-colors cursor-pointer">
+                        <div class="font-medium">PostgreSQL</div>
+                        <div class="text-xs text-gray-500">Database</div>
+                    </div>
+                    <div class="px-8 py-4 bg-white border border-gray-200 rounded-lg min-w-[140px] text-center hover:border-gray-400 transition-colors cursor-pointer">
+                        <div class="font-medium">Redis</div>
+                        <div class="text-xs text-gray-500">Cache</div>
+                    </div>
+                    <div class="px-8 py-4 bg-white border border-gray-200 rounded-lg min-w-[140px] text-center hover:border-gray-400 transition-colors cursor-pointer">
+                        <div class="font-medium">AWS</div>
+                        <div class="text-xs text-gray-500">Cloud</div>
+                    </div>
+                    <div class="px-8 py-4 bg-white border border-gray-200 rounded-lg min-w-[140px] text-center hover:border-gray-400 transition-colors cursor-pointer">
+                        <div class="font-medium">MongoDB</div>
+                        <div class="text-xs text-gray-500">Database</div>
+                    </div>
+                    <div class="px-8 py-4 bg-white border border-gray-200 rounded-lg min-w-[140px] text-center hover:border-gray-400 transition-colors cursor-pointer">
+                        <div class="font-medium">Vercel</div>
+                        <div class="text-xs text-gray-500">Hosting</div>
+                    </div>
+                    <div class="px-8 py-4 bg-white border border-gray-200 rounded-lg min-w-[140px] text-center hover:border-gray-400 transition-colors cursor-pointer">
+                        <div class="font-medium">Figma</div>
+                        <div class="text-xs text-gray-500">Design</div>
+                    </div>
+                    <div class="px-8 py-4 bg-white border border-gray-200 rounded-lg min-w-[140px] text-center hover:border-gray-400 transition-colors cursor-pointer">
+                        <div class="font-medium">Linear</div>
+                        <div class="text-xs text-gray-500">Project Management</div>
+                    </div>
+                </div>
+                <div class="flex gap-4">
+                    <div class="px-8 py-4 bg-white border border-gray-200 rounded-lg min-w-[140px] text-center hover:border-gray-400 transition-colors cursor-pointer">
+                        <div class="font-medium">Stripe</div>
+                        <div class="text-xs text-gray-500">Payments</div>
+                    </div>
+                    <div class="px-8 py-4 bg-white border border-gray-200 rounded-lg min-w-[140px] text-center hover:border-gray-400 transition-colors cursor-pointer">
+                        <div class="font-medium">PostgreSQL</div>
+                        <div class="text-xs text-gray-500">Database</div>
+                    </div>
+                    <div class="px-8 py-4 bg-white border border-gray-200 rounded-lg min-w-[140px] text-center hover:border-gray-400 transition-colors cursor-pointer">
+                        <div class="font-medium">Redis</div>
+                        <div class="text-xs text-gray-500">Cache</div>
+                    </div>
+                    <div class="px-8 py-4 bg-white border border-gray-200 rounded-lg min-w-[140px] text-center hover:border-gray-400 transition-colors cursor-pointer">
+                        <div class="font-medium">AWS</div>
+                        <div class="text-xs text-gray-500">Cloud</div>
+                    </div>
+                    <div class="px-8 py-4 bg-white border border-gray-200 rounded-lg min-w-[140px] text-center hover:border-gray-400 transition-colors cursor-pointer">
+                        <div class="font-medium">MongoDB</div>
+                        <div class="text-xs text-gray-500">Database</div>
+                    </div>
+                    <div class="px-8 py-4 bg-white border border-gray-200 rounded-lg min-w-[140px] text-center hover:border-gray-400 transition-colors cursor-pointer">
+                        <div class="font-medium">Vercel</div>
+                        <div class="text-xs text-gray-500">Hosting</div>
+                    </div>
+                    <div class="px-8 py-4 bg-white border border-gray-200 rounded-lg min-w-[140px] text-center hover:border-gray-400 transition-colors cursor-pointer">
+                        <div class="font-medium">Figma</div>
+                        <div class="text-xs text-gray-500">Design</div>
+                    </div>
+                    <div class="px-8 py-4 bg-white border border-gray-200 rounded-lg min-w-[140px] text-center hover:border-gray-400 transition-colors cursor-pointer">
+                        <div class="font-medium">Linear</div>
+                        <div class="text-xs text-gray-500">Project Management</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="integration-row reverse">
+                <div class="flex gap-4">
+                    <div class="px-8 py-4 bg-white border border-gray-200 rounded-lg min-w-[140px] text-center hover:border-gray-400 transition-colors cursor-pointer">
+                        <div class="font-medium">Notion</div>
+                        <div class="text-xs text-gray-500">Documentation</div>
+                    </div>
+                    <div class="px-8 py-4 bg-white border border-gray-200 rounded-lg min-w-[140px] text-center hover:border-gray-400 transition-colors cursor-pointer">
+                        <div class="font-medium">GitHub</div>
+                        <div class="text-xs text-gray-500">Version Control</div>
+                    </div>
+                    <div class="px-8 py-4 bg-white border border-gray-200 rounded-lg min-w-[140px] text-center hover:border-gray-400 transition-colors cursor-pointer">
+                        <div class="font-medium">Slack</div>
+                        <div class="text-xs text-gray-500">Communication</div>
+                    </div>
+                    <div class="px-8 py-4 bg-white border border-gray-200 rounded-lg min-w-[140px] text-center hover:border-gray-400 transition-colors cursor-pointer">
+                        <div class="font-medium">OpenAI</div>
+                        <div class="text-xs text-gray-500">AI/ML</div>
+                    </div>
+                    <div class="px-8 py-4 bg-white border border-gray-200 rounded-lg min-w-[140px] text-center hover:border-gray-400 transition-colors cursor-pointer">
+                        <div class="font-medium">Figma</div>
+                        <div class="text-xs text-gray-500">Design</div>
+                    </div>
+                    <div class="px-8 py-4 bg-white border border-gray-200 rounded-lg min-w-[140px] text-center hover:border-gray-400 transition-colors cursor-pointer">
+                        <div class="font-medium">Vercel</div>
+                        <div class="text-xs text-gray-500">Hosting</div>
+                    </div>
+                    <div class="px-8 py-4 bg-white border border-gray-200 rounded-lg min-w-[140px] text-center hover:border-gray-400 transition-colors cursor-pointer">
+                        <div class="font-medium">MongoDB</div>
+                        <div class="text-xs text-gray-500">Database</div>
+                    </div>
+                    <div class="px-8 py-4 bg-white border border-gray-200 rounded-lg min-w-[140px] text-center hover:border-gray-400 transition-colors cursor-pointer">
+                        <div class="font-medium">AWS</div>
+                        <div class="text-xs text-gray-500">Cloud</div>
+                    </div>
+                </div>
+                <div class="flex gap-4">
+                    <div class="px-8 py-4 bg-white border border-gray-200 rounded-lg min-w-[140px] text-center hover:border-gray-400 transition-colors cursor-pointer">
+                        <div class="font-medium">Notion</div>
+                        <div class="text-xs text-gray-500">Documentation</div>
+                    </div>
+                    <div class="px-8 py-4 bg-white border border-gray-200 rounded-lg min-w-[140px] text-center hover:border-gray-400 transition-colors cursor-pointer">
+                        <div class="font-medium">GitHub</div>
+                        <div class="text-xs text-gray-500">Version Control</div>
+                    </div>
+                    <div class="px-8 py-4 bg-white border border-gray-200 rounded-lg min-w-[140px] text-center hover:border-gray-400 transition-colors cursor-pointer">
+                        <div class="font-medium">Slack</div>
+                        <div class="text-xs text-gray-500">Communication</div>
+                    </div>
+                    <div class="px-8 py-4 bg-white border border-gray-200 rounded-lg min-w-[140px] text-center hover:border-gray-400 transition-colors cursor-pointer">
+                        <div class="font-medium">OpenAI</div>
+                        <div class="text-xs text-gray-500">AI/ML</div>
+                    </div>
+                    <div class="px-8 py-4 bg-white border border-gray-200 rounded-lg min-w-[140px] text-center hover:border-gray-400 transition-colors cursor-pointer">
+                        <div class="font-medium">Figma</div>
+                        <div class="text-xs text-gray-500">Design</div>
+                    </div>
+                    <div class="px-8 py-4 bg-white border border-gray-200 rounded-lg min-w-[140px] text-center hover:border-gray-400 transition-colors cursor-pointer">
+                        <div class="font-medium">Vercel</div>
+                        <div class="text-xs text-gray-500">Hosting</div>
+                    </div>
+                    <div class="px-8 py-4 bg-white border border-gray-200 rounded-lg min-w-[140px] text-center hover:border-gray-400 transition-colors cursor-pointer">
+                        <div class="font-medium">MongoDB</div>
+                        <div class="text-xs text-gray-500">Database</div>
+                    </div>
+                    <div class="px-8 py-4 bg-white border border-gray-200 rounded-lg min-w-[140px] text-center hover:border-gray-400 transition-colors cursor-pointer">
+                        <div class="font-medium">AWS</div>
+                        <div class="text-xs text-gray-500">Cloud</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Security Section -->
+    <section class="py-24 px-6 lg:px-16 xl:px-24 border-t border-gray-200">
+        <div class="max-w-6xl mx-auto">
+            <div class="grid lg:grid-cols-2 gap-16">
+                <div>
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-8 h-px bg-gray-400"></div>
+                        <span class="text-xs uppercase tracking-widest text-gray-500 font-mono">Security</span>
+                    </div>
+                    <h2 class="text-4xl md:text-5xl lg:text-6xl font-medium tracking-tight mb-6">
+                        Trust is<br>non-negotiable.
+                    </h2>
+                    <p class="text-gray-600 text-lg max-w-lg mb-8">
+                        Enterprise-grade security isn't optional. It's built into every layer of our platform, from infrastructure to application.
+                    </p>
+                    
+                    <div class="flex flex-wrap gap-3">
+                        <span class="px-4 py-2 border border-gray-300 rounded-full text-sm">SOC 2</span>
+                        <span class="px-4 py-2 border border-gray-300 rounded-full text-sm">ISO 27001</span>
+                        <span class="px-4 py-2 border border-gray-300 rounded-full text-sm">HIPAA</span>
+                        <span class="px-4 py-2 border border-gray-300 rounded-full text-sm">GDPR</span>
+                        <span class="px-4 py-2 border border-gray-300 rounded-full text-sm">CCPA</span>
+                    </div>
+                </div>
+                
+                <div class="space-y-4">
+                    <div class="p-6 border border-gray-200 rounded-lg hover:border-gray-400 transition-colors cursor-pointer group">
+                        <div class="flex items-start gap-4">
+                            <div class="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center group-hover:border-gray-800 transition-colors">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-1">SOC 2 Type II</h4>
+                                <p class="text-sm text-gray-600">Independently audited security controls with continuous monitoring.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="p-6 border border-gray-200 rounded-lg hover:border-gray-400 transition-colors cursor-pointer group">
+                        <div class="flex items-start gap-4">
+                            <div class="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center group-hover:border-gray-800 transition-colors">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                                    <path d="M7 11V7a5 5 0 0110 0v4"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-1">End-to-end encryption</h4>
+                                <p class="text-sm text-gray-600">AES-256 encryption for data at rest and TLS 1.3 in transit.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="p-6 border border-gray-200 rounded-lg hover:border-gray-400 transition-colors cursor-pointer group">
+                        <div class="flex items-start gap-4">
+                            <div class="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center group-hover:border-gray-800 transition-colors">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-1">Zero-trust architecture</h4>
+                                <p class="text-sm text-gray-600">Every request is authenticated and authorized. No exceptions.</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="p-6 border border-gray-200 rounded-lg hover:border-gray-400 transition-colors cursor-pointer group">
+                        <div class="flex items-start gap-4">
+                            <div class="w-10 h-10 rounded-full border border-gray-300 flex items-center justify-center group-hover:border-gray-800 transition-colors">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                                    <path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                            </div>
+                            <div>
+                                <h4 class="font-medium mb-1">GDPR & HIPAA</h4>
+                                <p class="text-sm text-gray-600">Full compliance with data protection and healthcare regulations.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Developers Section -->
+    <section id="developers" class="py-24 px-6 lg:px-16 xl:px-24 border-t border-gray-200">
+        <div class="max-w-6xl mx-auto">
+            <div class="grid lg:grid-cols-2 gap-16 items-start">
+                <div>
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-8 h-px bg-gray-400"></div>
+                        <span class="text-xs uppercase tracking-widest text-gray-500 font-mono">For developers</span>
+                    </div>
+                    <h2 class="text-4xl md:text-5xl lg:text-6xl font-medium tracking-tight mb-6">
+                        Built by devs.<br>
+                        <span class="text-gray-400">For devs.</span>
+                    </h2>
+                    <p class="text-gray-600 text-lg max-w-lg mb-12">
+                        A thoughtfully designed SDK that gets out of your way. Ship faster with intuitive APIs and exceptional documentation.
+                    </p>
+                    
+                    <div class="grid grid-cols-2 gap-8">
+                        <div>
+                            <h4 class="font-medium mb-2">TypeScript native</h4>
+                            <p class="text-sm text-gray-600">Full type safety with auto-generated types.</p>
+                        </div>
+                        <div>
+                            <h4 class="font-medium mb-2">Zero config</h4>
+                            <p class="text-sm text-gray-600">Sensible defaults that just work.</p>
+                        </div>
+                        <div>
+                            <h4 class="font-medium mb-2">Edge-ready</h4>
+                            <p class="text-sm text-gray-600">Runs anywhere: Node, Deno, Bun, browsers.</p>
+                        </div>
+                        <div>
+                            <h4 class="font-medium mb-2">12KB gzipped</h4>
+                            <p class="text-sm text-gray-600">Lightweight with zero dependencies.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+                    <div class="flex border-b border-gray-200">
+                        <button class="dev-tab px-6 py-3 text-sm font-medium border-b-2 border-black" data-tab="install">Install</button>
+                        <button class="dev-tab px-6 py-3 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-black transition-colors" data-tab="init">Initialize</button>
+                        <button class="dev-tab px-6 py-3 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-black transition-colors" data-tab="deploy">Deploy</button>
+                        <div class="flex-1"></div>
+                        <button class="px-4 py-3 text-gray-400 hover:text-black transition-colors">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="p-6 font-mono text-sm leading-relaxed bg-gray-50 min-h-[200px]" id="dev-code">
+                        <div class="text-gray-800">npm install @optimus/sdk</div>
+                        <div class="text-gray-500 mt-4"># or</div>
+                        <div class="text-gray-800 mt-4">yarn add @optimus/sdk</div>
+                        <div class="text-gray-800 mt-2">pnpm add @optimus/sdk</div>
+                    </div>
+                    <div class="px-6 py-3 border-t border-gray-200 flex items-center gap-4 text-sm">
+                        <a href="#" class="text-gray-600 hover:text-black transition-colors">Read the docs</a>
+                        <span class="text-gray-300">|</span>
+                        <a href="#" class="text-gray-600 hover:text-black transition-colors">View on GitHub</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="py-24 px-6 lg:px-16 xl:px-24 border-t border-gray-200 overflow-hidden">
+        <div class="max-w-6xl mx-auto">
+            <div class="mb-12">
+                <span class="text-xs uppercase tracking-widest text-gray-500 font-mono">What people say</span>
+            </div>
+            
+            <div class="relative min-h-[300px]" id="testimonial-container">
+                <!-- Testimonial 1 -->
+                <div class="testimonial-slide active" data-index="0">
+                    <div class="grid lg:grid-cols-3 gap-12 items-center">
+                        <div class="lg:col-span-2">
+                            <blockquote class="text-3xl md:text-4xl lg:text-5xl font-medium tracking-tight leading-tight mb-8">
+                                "Optimus transformed our deployment pipeline. What used to take hours now happens in seconds."
+                            </blockquote>
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-lg font-medium">S</div>
+                                <div>
+                                    <div class="font-medium">Sarah Chen</div>
+                                    <div class="text-sm text-gray-500">CTO, Meridian Labs</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="lg:col-span-1">
+                            <div class="border border-gray-200 rounded-lg p-6">
+                                <div class="text-xs uppercase tracking-widest text-gray-500 mb-4">Key Result</div>
+                                <div class="text-3xl font-light">10x faster<br>deployments</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Testimonial 2 -->
+                <div class="testimonial-slide" data-index="1">
+                    <div class="grid lg:grid-cols-3 gap-12 items-center">
+                        <div class="lg:col-span-2">
+                            <blockquote class="text-3xl md:text-4xl lg:text-5xl font-medium tracking-tight leading-tight mb-8">
+                                "The developer experience is unmatched. Our team's productivity has never been higher."
+                            </blockquote>
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-lg font-medium">M</div>
+                                <div>
+                                    <div class="font-medium">Marcus Webb</div>
+                                    <div class="text-sm text-gray-500">Engineering Lead, Flux Systems</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="lg:col-span-1">
+                            <div class="border border-gray-200 rounded-lg p-6">
+                                <div class="text-xs uppercase tracking-widest text-gray-500 mb-4">Key Result</div>
+                                <div class="text-3xl font-light">40% more<br>features shipped</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Testimonial 3 -->
+                <div class="testimonial-slide" data-index="2">
+                    <div class="grid lg:grid-cols-3 gap-12 items-center">
+                        <div class="lg:col-span-2">
+                            <blockquote class="text-3xl md:text-4xl lg:text-5xl font-medium tracking-tight leading-tight mb-8">
+                                "Finally, infrastructure that scales with our ambition. Zero downtime since we switched."
+                            </blockquote>
+                            <div class="flex items-center gap-4">
+                                <div class="w-12 h-12 rounded-full bg-gray-200 flex items-center justify-center text-lg font-medium">E</div>
+                                <div>
+                                    <div class="font-medium">Elena Rodriguez</div>
+                                    <div class="text-sm text-gray-500">VP Engineering, Beacon AI</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="lg:col-span-1">
+                            <div class="border border-gray-200 rounded-lg p-6">
+                                <div class="text-xs uppercase tracking-widest text-gray-500 mb-4">Key Result</div>
+                                <div class="text-3xl font-light">99.99% uptime</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex items-center justify-between mt-12">
+                <div class="flex gap-2" id="testimonial-dots">
+                    <button class="w-8 h-1 bg-black rounded-full transition-all" data-index="0"></button>
+                    <button class="w-8 h-1 bg-gray-300 rounded-full transition-all hover:bg-gray-400" data-index="1"></button>
+                    <button class="w-8 h-1 bg-gray-300 rounded-full transition-all hover:bg-gray-400" data-index="2"></button>
+                </div>
+                <div class="text-xs text-gray-400 font-mono">
+                    <span id="current-slide">01</span> / 04
+                </div>
+            </div>
+            
+            <!-- Logo marquee -->
+            <div class="mt-16 pt-16 border-t border-gray-200">
+                <div class="text-center mb-8">
+                    <span class="text-xs uppercase tracking-widest text-gray-500 font-mono">Trusted by forward-thinking teams</span>
+                </div>
+                <div class="flex justify-center items-center gap-12 opacity-40 grayscale flex-wrap">
+                    <span class="text-lg font-medium">Meridian Labs</span>
+                    <span class="text-lg font-medium">Flux Systems</span>
+                    <span class="text-lg font-medium">Beacon AI</span>
+                    <span class="text-lg font-medium">Prism Analytics</span>
+                    <span class="text-lg font-medium">Nova Tech</span>
+                    <span class="text-lg font-medium">Quantum Corp</span>
+                    <span class="text-lg font-medium">Atlas Digital</span>
+                    <span class="text-lg font-medium">Vertex Labs</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section id="pricing" class="py-24 px-6 lg:px-16 xl:px-24 border-t border-gray-200">
+        <div class="max-w-6xl mx-auto">
+            <div class="mb-12">
+                <div class="flex items-center gap-3 mb-4">
+                    <div class="w-8 h-px bg-gray-400"></div>
+                    <span class="text-xs uppercase tracking-widest text-gray-500 font-mono">Pricing</span>
+                </div>
+                <h2 class="text-4xl md:text-5xl lg:text-6xl font-medium tracking-tight mb-4">
+                    Simple, transparent<br>
+                    <span class="text-transparent" style="-webkit-text-stroke: 1px #171717;">pricing</span>
+                </h2>
+                <p class="text-gray-600 text-lg">Start free and scale as you grow. No hidden fees, no surprises.</p>
+            </div>
+            
+            <div class="flex items-center gap-4 mb-12">
+                <span class="text-sm text-gray-600" id="monthly-label">Monthly</span>
+                <div class="toggle-switch" id="pricing-toggle">
+                    <div class="toggle-knob"></div>
+                </div>
+                <span class="text-sm text-gray-600" id="annual-label">Annual</span>
+                <span class="ml-2 px-2 py-1 bg-black text-white text-xs font-medium">Save 17%</span>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Starter -->
+                <div class="p-8 border border-gray-200 rounded-lg hover:border-gray-400 transition-all">
+                    <div class="text-xs text-gray-400 font-mono mb-4">01</div>
+                    <h3 class="text-2xl font-medium mb-2">Starter</h3>
+                    <p class="text-sm text-gray-500 mb-6">For individuals and small projects</p>
+                    <div class="flex items-baseline gap-1 mb-8">
+                        <span class="text-5xl font-light">$0</span>
+                        <span class="text-gray-500">/month</span>
+                    </div>
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-center gap-3 text-sm text-gray-600">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                            Up to 3 projects
+                        </li>
+                        <li class="flex items-center gap-3 text-sm text-gray-600">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                            1GB storage
+                        </li>
+                        <li class="flex items-center gap-3 text-sm text-gray-600">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                            Community support
+                        </li>
+                        <li class="flex items-center gap-3 text-sm text-gray-600">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                            Basic analytics
+                        </li>
+                        <li class="flex items-center gap-3 text-sm text-gray-600">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                            SSL certificates
+                        </li>
+                    </ul>
+                    <button class="w-full py-3 border border-gray-300 rounded-full font-medium hover:border-black hover:bg-black hover:text-white transition-all">Start free →</button>
+                </div>
+                
+                <!-- Pro -->
+                <div class="p-8 border-2 border-black rounded-lg relative">
+                    <div class="absolute -top-3 left-1/2 transform -translate-x-1/2">
+                        <span class="px-3 py-1 bg-black text-white text-xs font-medium uppercase tracking-wider">Most Popular</span>
+                    </div>
+                    <div class="text-xs text-gray-400 font-mono mb-4">02</div>
+                    <h3 class="text-2xl font-medium mb-2">Pro</h3>
+                    <p class="text-sm text-gray-500 mb-6">For growing teams and businesses</p>
+                    <div class="flex items-baseline gap-1 mb-8">
+                        <span class="text-5xl font-light" id="pro-price">$24</span>
+                        <span class="text-gray-500">/month</span>
+                    </div>
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-center gap-3 text-sm text-gray-600">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                            Unlimited projects
+                        </li>
+                        <li class="flex items-center gap-3 text-sm text-gray-600">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                            100GB storage
+                        </li>
+                        <li class="flex items-center gap-3 text-sm text-gray-600">
+                            <svg width="16" height"16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                            Priority support
+                        </li>
+                        <li class="flex items-center gap-3 text-sm text-gray-600">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                            Advanced analytics
+                        </li>
+                        <li class="flex items-center gap-3 text-sm text-gray-600">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                            Custom domains
+                        </li>
+                        <li class="flex items-center gap-3 text-sm text-gray-600">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                            Team collaboration
+                        </li>
+                        <li class="flex items-center gap-3 text-sm text-gray-600">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                            API access
+                        </li>
+                    </ul>
+                    <button class="w-full py-3 bg-black text-white rounded-full font-medium hover:bg-gray-800 transition-all">Start trial →</button>
+                </div>
+                
+                <!-- Enterprise -->
+                <div class="p-8 border border-gray-200 rounded-lg hover:border-gray-400 transition-all">
+                    <div class="text-xs text-gray-400 font-mono mb-4">03</div>
+                    <h3 class="text-2xl font-medium mb-2">Enterprise</h3>
+                    <p class="text-sm text-gray-500 mb-6">For large-scale operations</p>
+                    <div class="flex items-baseline gap-1 mb-8">
+                        <span class="text-5xl font-light text-blue-600">Custom</span>
+                    </div>
+                    <ul class="space-y-3 mb-8">
+                        <li class="flex items-center gap-3 text-sm text-gray-600">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                            Everything in Pro
+                        </li>
+                        <li class="flex items-center gap-3 text-sm text-gray-600">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                            Unlimited storage
+                        </li>
+                        <li class="flex items-center gap-3 text-sm text-gray-600">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                            24/7 dedicated support
+                        </li>
+                        <li class="flex items-center gap-3 text-sm text-gray-600">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                            SLA guarantee
+                        </li>
+                        <li class="flex items-center gap-3 text-sm text-gray-600">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                            On-premise option
+                        </li>
+                        <li class="flex items-center gap-3 text-sm text-gray-600">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                            Security audit
+                        </li>
+                        <li class="flex items-center gap-3 text-sm text-gray-600">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                            Custom contracts
+                        </li>
+                    </ul>
+                    <button class="w-full py-3 border border-gray-300 rounded-full font-medium hover:border-black hover:bg-black hover:text-white transition-all">Contact sales →</button>
+                </div>
+            </div>
+            
+            <p class="text-center text-sm text-gray-500 mt-8">All plans include automatic updates, HTTPS, and DDoS protection. <a href="#" class="underline hover:text-black">Compare all features</a></p>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-24 px-6 lg:px-16 xl:px-24">
+        <div class="max-w-6xl mx-auto border border-gray-300 rounded-lg p-12 lg:p-16 relative overflow-hidden">
+            <canvas id="cta-canvas" class="absolute inset-0 w-full h-full opacity-30"></canvas>
+            <div class="relative z-10 max-w-xl">
+                <h2 class="text-4xl md:text-5xl lg:text-6xl font-medium tracking-tight mb-6">
+                    Ready to build<br>something great?
+                </h2>
+                <p class="text-gray-600 text-lg mb-8">
+                    Join thousands of teams shipping faster with Optimus. Start free, scale infinitely.
+                </p>
+                <div class="flex items-center gap-4 mb-4">
+                    <button class="bg-black text-white px-8 py-4 rounded-full font-medium flex items-center gap-2 hover:bg-gray-800 transition-all interactive-hover">
+                        Start building free
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                            <path d="M3 8H13M13 8L9 4M13 8L9 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </button>
+                    <button class="px-8 py-4 rounded-full font-medium border border-gray-300 hover:border-gray-400 transition-colors interactive-hover bg-white/80 backdrop-blur-sm">
+                        Talk to sales
+                    </button>
+                </div>
+                <p class="text-sm text-gray-500 font-mono">No credit card required</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-16 px-6 lg:px-16 xl:px-24 border-t border-gray-200 grid-pattern">
+        <div class="max-w-6xl mx-auto">
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-8 mb-12">
+                <div class="col-span-2">
+                    <div class="font-semibold text-lg tracking-tight mb-4">Optimus <span class="text-xs align-top opacity-60">TM</span></div>
+                    <p class="text-gray-600 text-sm max-w-xs mb-6">
+                        The platform for teams who ship. Build, deploy, and scale with unprecedented velocity.
+                    </p>
+                    <div class="flex gap-4">
+                        <a href="#" class="text-gray-600 hover:text-black transition-colors text-sm">Twitter</a>
+                        <a href="#" class="text-gray-600 hover:text-black transition-colors text-sm">GitHub</a>
+                        <a href="#" class="text-gray-600 hover:text-black transition-colors text-sm">LinkedIn</a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 class="font-medium mb-4">Product</h4>
+                    <ul class="space-y-3 text-sm text-gray-600">
+                        <li><a href="#" class="hover:text-black transition-colors">Features</a></li>
+                        <li><a href="#" class="hover:text-black transition-colors">How it works</a></li>
+                        <li><a href="#" class="hover:text-black transition-colors">Pricing</a></li>
+                        <li><a href="#" class="hover:text-black transition-colors">Integrations</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-medium mb-4">Developers</h4>
+                    <ul class="space-y-3 text-sm text-gray-600">
+                        <li><a href="#" class="hover:text-black transition-colors">Documentation</a></li>
+                        <li><a href="#" class="hover:text-black transition-colors">API Reference</a></li>
+                        <li><a href="#" class="hover:text-black transition-colors">SDK</a></li>
+                        <li><a href="#" class="hover:text-black transition-colors">Status</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-medium mb-4">Company</h4>
+                    <ul class="space-y-3 text-sm text-gray-600">
+                        <li><a href="#" class="hover:text-black transition-colors">About</a></li>
+                        <li><a href="#" class="hover:text-black transition-colors">Blog</a></li>
+                        <li><a href="#" class="hover:text-black transition-colors">Careers <span class="ml-1 px-2 py-0.5 bg-black text-white text-xs rounded-full">Hiring</span></a></li>
+                        <li><a href="#" class="hover:text-black transition-colors">Contact</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h4 class="font-medium mb-4">Legal</h4>
+                    <ul class="space-y-3 text-sm text-gray-600">
+                        <li><a href="#" class="hover:text-black transition-colors">Privacy</a></li>
+                        <li><a href="#" class="hover:text-black transition-colors">Terms</a></li>
+                        <li><a href="#" class="hover:text-black transition-colors">Security</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="flex items-center justify-between pt-8 border-t border-gray-200">
+                <p class="text-sm text-gray-500">© 2025 Optimus. All rights reserved.</p>
+                <div class="flex items-center gap-2">
+                    <div class="w-2 h-2 rounded-full bg-green-500 live-dot"></div>
+                    <span class="text-sm text-gray-600">All systems operational</span>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Register GSAP plugins
+        gsap.registerPlugin(ScrollTrigger);
+        
+        // Navigation scroll effect
+        const navbar = document.getElementById('navbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 100) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        }, { passive: true });
+        
+        // Hero animations
+        window.addEventListener('load', () => {
+            const tl = gsap.timeline();
+            
+            tl.to('#hero-line1', {
+                y: 0,
+                duration: 0.8,
+                ease: 'power3.out'
+            })
+            .to('#hero-line2', {
+                y: 0,
+                duration: 0.8,
+                ease: 'power3.out'
+            }, '-=0.6')
+            .to('#hero-label', {
+                opacity: 1,
+                duration: 0.6
+            }, '-=0.4')
+            .to('#hero-desc', {
+                opacity: 1,
+                duration: 0.6
+            }, '-=0.4')
+            .to('#hero-cta', {
+                opacity: 1,
+                duration: 0.6
+            }, '-=0.4');
+            
+            // Scramble text effect
+            const scrambleWords = ['create', 'build', 'scale'];
+            let currentIndex = 0;
+            const scrambleElement = document.getElementById('scramble-word');
+            
+            setInterval(() => {
+                currentIndex = (currentIndex + 1) % scrambleWords.length;
+                gsap.to(scrambleElement, {
+                    opacity: 0,
+                    filter: 'blur(10px)',
+                    duration: 0.2,
+                    onComplete: () => {
+                        scrambleElement.textContent = scrambleWords[currentIndex];
+                        gsap.to(scrambleElement, {
+                            opacity: 1,
+                            filter: 'blur(0px)',
+                            duration: 0.3
+                        });
+                    }
+                });
+            }, 3000);
+        });
+        
+        // Hero Canvas Animation (Particle Network)
+        const heroCanvas = document.getElementById('hero-canvas');
+        const heroCtx = heroCanvas.getContext('2d');
+        let heroParticles = [];
+        
+        function resizeHeroCanvas() {
+            heroCanvas.width = heroCanvas.offsetWidth;
+            heroCanvas.height = heroCanvas.offsetHeight;
+        }
+        resizeHeroCanvas();
+        window.addEventListener('resize', resizeHeroCanvas);
+        
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+            
+            reset() {
+                this.x = Math.random() * heroCanvas.width;
+                this.y = Math.random() * heroCanvas.height;
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = (Math.random() - 0.5) * 0.5;
+                this.size = Math.random() * 2 + 1;
+                this.opacity = Math.random() * 0.5 + 0.2;
+            }
+            
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                
+                if (this.x < 0 || this.x > heroCanvas.width) this.vx *= -1;
+                if (this.y < 0 || this.y > heroCanvas.height) this.vy *= -1;
+            }
+            
+            draw() {
+                heroCtx.fillStyle = `rgba(100, 100, 100, ${this.opacity})`;
+                heroCtx.fillRect(this.x, this.y, this.size, this.size * 3);
+            }
+        }
+        
+        for (let i = 0; i < 80; i++) {
+            heroParticles.push(new Particle());
+        }
+        
+        function animateHero() {
+            heroCtx.clearRect(0, 0, heroCanvas.width, heroCanvas.height);
+            
+            heroParticles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            
+            // Draw connections
+            heroParticles.forEach((p1, i) => {
+                heroParticles.slice(i + 1).forEach(p2 => {
+                    const dx = p1.x - p2.x;
+                    const dy = p1.y - p2.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    
+                    if (dist < 100) {
+                        heroCtx.strokeStyle = `rgba(150, 150, 150, ${0.1 * (1 - dist / 100)})`;
+                        heroCtx.lineWidth = 1;
+                        heroCtx.beginPath();
+                        heroCtx.moveTo(p1.x, p1.y);
+                        heroCtx.lineTo(p2.x, p2.y);
+                        heroCtx.stroke();
+                    }
+                });
+            });
+            
+            requestAnimationFrame(animateHero);
+        }
+        animateHero();
+        
+        // Process section interaction
+        const processSteps = document.querySelectorAll('.process-step');
+        const codeSnippets = {
+            1: `<div class="code-line"><span class="text-purple-400">import</span> { optimus } <span class="text-purple-400">from</span> <span class="text-green-400">'@optimus/core'</span></div>
+<div class="code-line"></div>
+<div class="code-line"><span class="text-blue-400">optimus</span>.<span class="text-yellow-400">connect</span>({</div>
+<div class="code-line">&nbsp;&nbsp;source: <span class="text-green-400">'your-database'</span>,</div>
+<div class="code-line">&nbsp;&nbsp;sync: <span class="text-orange-400">true</span></div>
+<div class="code-line">})</div>`,
+            2: `<div class="code-line"><span class="text-blue-400">optimus</span>.<span class="text-yellow-400">workflow</span>(<span class="text-green-400">'process'</span>, {</div>
+<div class="code-line">&nbsp;&nbsp;trigger: <span class="text-green-400">'event'</span>,</div>
+<div class="code-line">&nbsp;&nbsp;actions: [</div>
+<div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="text-green-400">'validate'</span>,</div>
+<div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="text-green-400">'transform'</span>,</div>
+<div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;<span class="text-green-400">'deliver'</span></div>
+<div class="code-line">&nbsp;&nbsp;]</div>
+<div class="code-line">})</div>`,
+            3: `<div class="code-line"><span class="text-purple-400">const</span> app = <span class="text-purple-400">await</span> <span class="text-blue-400">optimus</span>.<span class="text-yellow-400">deploy</span>({</div>
+<div class="code-line">&nbsp;&nbsp;name: <span class="text-green-400">'my-app'</span>,</div>
+<div class="code-line">&nbsp;&nbsp;region: <span class="text-green-400">'auto'</span>,</div>
+<div class="code-line">&nbsp;&nbsp;scaling: {</div>
+<div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;min: <span class="text-orange-400">1</span>,</div>
+<div class="code-line">&nbsp;&nbsp;&nbsp;&nbsp;max: <span class="text-orange-400">100</span></div>
+<div class="code-line">&nbsp;&nbsp;}</div>
+<div class="code-line">})</div>
+<div class="code-line"></div>
+<div class="code-line">console.<span class="text-yellow-400">log</span>(<span class="text-green-400">'Live at:'</span>, app.url)</div>`
+        };
+        
+        processSteps.forEach(step => {
+            step.addEventListener('click', () => {
+                const stepNum = step.dataset.step;
+                
+                // Update progress bars
+                document.querySelectorAll('.progress-fill').forEach((bar, idx) => {
+                    if (idx < stepNum) {
+                        bar.style.width = '100%';
+                    } else {
+                        bar.style.width = '0%';
+                    }
+                });
+                
+                // Update text colors
+                processSteps.forEach((s, idx) => {
+                    const heading = s.querySelector('h3');
+                    if (idx < stepNum) {
+                        heading.classList.remove('text-gray-500');
+                        heading.classList.add('text-white');
+                    } else {
+                        heading.classList.add('text-gray-500');
+                        heading.classList.remove('text-white');
+                    }
+                });
+                
+                // Update code
+                document.getElementById('code-content').innerHTML = codeSnippets[stepNum];
+            });
+        });
+        
+        // Initialize first step
+        document.getElementById('progress-1').style.width = '100%';
+        
+        // Live metrics update
+        function updateTime() {
+            const now = new Date();
+            const timeStr = now.toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            document.getElementById('live-time').textContent = timeStr;
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
+        
+        // Update request count
+        let requestCount = 2847392;
+        setInterval(() => {
+            requestCount += Math.floor(Math.random() * 50);
+            document.getElementById('metric-requests').textContent = requestCount.toLocaleString();
+        }, 2000);
+        
+        // Developer tabs
+        const devTabs = document.querySelectorAll('.dev-tab');
+        const devCode = document.getElementById('dev-code');
+        
+        const devSnippets = {
+            install: `<div class="text-gray-800">npm install @optimus/sdk</div>
+<div class="text-gray-500 mt-4"># or</div>
+<div class="text-gray-800 mt-4">yarn add @optimus/sdk</div>
+<div class="text-gray-800 mt-2">pnpm add @optimus/sdk</div>`,
+            init: `<div class="text-purple-400">import</div> { Optimus } <div class="text-purple-400">from</div> <div class="text-green-400">'@optimus/sdk'</div>
+<div class="text-gray-500 mt-4"></div>
+<div class="text-purple-400">const</div> optimus = <div class="text-purple-400">new</div> Optimus({</div>
+<div>&nbsp;&nbsp;apiKey: process.env.OPTIMUS_KEY</div>
+<div>})</div>`,
+            deploy: `<div class="text-purple-400">const</div> app = <div class="text-purple-400">await</div> optimus.deploy({</div>
+<div>&nbsp;&nbsp;name: <div class="text-green-400">'my-app'</div>,</div>
+<div>&nbsp;&nbsp;region: <div class="text-green-400">'auto'</div>,</div>
+<div>&nbsp;&nbsp;scaling: {</div>
+<div>&nbsp;&nbsp;&nbsp;&nbsp;min: <div class="text-orange-400">1</div>,</div>
+<div>&nbsp;&nbsp;&nbsp;&nbsp;max: <div class="text-orange-400">100</div></div>
+<div>&nbsp;&nbsp;}</div>
+<div>})</div>
+<div class="text-gray-500 mt-2"></div>
+<div>console.log(<div class="text-green-400">'Live at:'</div>, app.url)</div>`
+        };
+        
+        devTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                devTabs.forEach(t => {
+                    t.classList.remove('border-black', 'text-black');
+                    t.classList.add('border-transparent', 'text-gray-500');
+                });
+                tab.classList.remove('border-transparent', 'text-gray-500');
+                tab.classList.add('border-black', 'text-black');
+                
+                const tabName = tab.dataset.tab;
+                devCode.innerHTML = devSnippets[tabName];
+            });
+        });
+        
+        // Testimonial slider
+        const slides = document.querySelectorAll('.testimonial-slide');
+        const dots = document.querySelectorAll('#testimonial-dots button');
+        const currentSlideEl = document.getElementById('current-slide');
+        let currentSlide = 0;
+        
+        function showSlide(index) {
+            slides.forEach((slide, i) => {
+                slide.classList.remove('active');
+                dots[i].classList.remove('bg-black');
+                dots[i].classList.add('bg-gray-300');
+            });
+            
+            slides[index].classList.add('active');
+            dots[index].classList.remove('bg-gray-300');
+            dots[index].classList.add('bg-black');
+            currentSlideEl.textContent = String(index + 1).padStart(2, '0');
+        }
+        
+        dots.forEach((dot, index) => {
+            dot.addEventListener('click', () => {
+                currentSlide = index;
+                showSlide(currentSlide);
+            });
+        });
+        
+        setInterval(() => {
+            currentSlide = (currentSlide + 1) % slides.length;
+            showSlide(currentSlide);
+        }, 5000);
+        
+        // Pricing toggle
+        const pricingToggle = document.getElementById('pricing-toggle');
+        const proPrice = document.getElementById('pro-price');
+        let isAnnual = false;
+        
+        pricingToggle.addEventListener('click', () => {
+            isAnnual = !isAnnual;
+            pricingToggle.classList.toggle('active');
+            
+            if (isAnnual) {
+                proPrice.textContent = '$29';
+            } else {
+                proPrice.textContent = '$24';
+            }
+        });
+        
+        // CTA Canvas
+        const ctaCanvas = document.getElementById('cta-canvas');
+        const ctaCtx = ctaCanvas.getContext('2d');
+        let ctaParticles = [];
+        
+        function resizeCtaCanvas() {
+            ctaCanvas.width = ctaCanvas.offsetWidth;
+            ctaCanvas.height = ctaCanvas.offsetHeight;
+        }
+        resizeCtaCanvas();
+        window.addEventListener('resize', resizeCtaCanvas);
+        
+        class CtaParticle {
+            constructor() {
+                this.reset();
+            }
+            
+            reset() {
+                this.x = Math.random() * ctaCanvas.width;
+                this.y = Math.random() * ctaCanvas.height;
+                this.vx = (Math.random() - 0.5) * 0.3;
+                this.vy = (Math.random() - 0.5) * 0.3;
+                this.size = Math.random() * 3 + 2;
+            }
+            
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                
+                if (this.x < 0 || this.x > ctaCanvas.width) this.vx *= -1;
+                if (this.y < 0 || this.y > ctaCanvas.height) this.vy *= -1;
+            }
+            
+            draw() {
+                ctaCtx.fillStyle = 'rgba(100, 100, 100, 0.3)';
+                ctaCtx.fillRect(this.x, this.y, this.size, this.size * 4);
+            }
+        }
+        
+        for (let i = 0; i < 60; i++) {
+            ctaParticles.push(new CtaParticle());
+        }
+        
+        function animateCta() {
+            ctaCtx.clearRect(0, 0, ctaCanvas.width, ctaCanvas.height);
+            
+            ctaParticles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            
+            requestAnimationFrame(animateCta);
+        }
+        animateCta();
+        
+        // Scroll animations
+        gsap.utils.toArray('.feature-card').forEach((card, i) => {
+            gsap.from(card, {
+                scrollTrigger: {
+                    trigger: card,
+                    start: 'top 80%',
+                    toggleActions: 'play none none reverse'
+                },
+                y: 30,
+                opacity: 0,
+                duration: 0.6,
+                delay: i * 0.1
+            });
+        });
+        
+        // Parallax effect for hero canvas
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            heroCanvas.style.transform = `translateY(${scrolled * 0.5}px)`;
+        }, { passive: true });
+    </script>
+</body>
+</html>

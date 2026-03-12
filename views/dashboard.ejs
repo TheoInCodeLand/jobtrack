@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard | Optimus Job Tracker</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        .status-badge { font-size: 0.75rem; padding: 0.5em 0.8em; }
+        .status-applied { background-color: #e2e3e5; color: #383d41; }
+        .status-shortlisted { background-color: #cff4fc; color: #055160; }
+        .status-interview { background-color: #fff3cd; color: #856404; }
+        .status-offer { background-color: #d1e7dd; color: #0f5132; }
+        .status-rejected { background-color: #f8d7da; color: #842029; }
+        .status-ghosted { background-color: #343a40; color: #ffffff; }
+        .status-withdrawn { background-color: #f8f9fa; color: #6c757d; border: 1px solid #dee2e6; }
+        
+        .stat-card { transition: transform 0.2s; }
+        .stat-card:hover { transform: translateY(-2px); }
+        
+        .skill-badge { font-size: 0.7rem; margin-right: 3px; margin-bottom: 3px; display: inline-block; }
+        
+        .alert-followup { border-left: 4px solid #ffc107; }
+        
+        @media (max-width: 768px) {
+            .table-responsive-stack tr { display: flex; flex-direction: column; margin-bottom: 1rem; border: 1px solid #dee2e6; }
+            .table-responsive-stack td { display: block; border: none; }
+        }
+    </style>
+</head>
+<body class="bg-light">
+    
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand fw-bold" href="/applications/dashboard">
+                <i class="bi bi-briefcase-fill"></i> Optimus Tracker
+            </a>
+            <div class="d-flex align-items-center gap-3">
+                <a href="/applications/analytics" class="btn btn-outline-info btn-sm">
+                    <i class="bi bi-graph-up"></i> Analytics
+                </a>
+                <span class="text-light d-none d-md-inline">Welcome, <strong><%= user %></strong></span>
+                <a href="/auth/logout" class="btn btn-outline-light btn-sm">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid px-4 py-4">
+        <!-- Stats Row -->
+        <div class="row g-3 mb-4">
+            <div class="col-md-2 col-6">
+                <div class="card stat-card border-0 shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <h3 class="text-primary mb-1"><%= stats.total %></h3>
+                        <small class="text-muted text-uppercase">Total</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2 col-6">
+                <div class="card stat-card border-0 shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <h3 class="text-secondary mb-1"><%= stats.applied %></h3>
+                        <small class="text-muted text-uppercase">Applied</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2 col-6">
+                <div class="card stat-card border-0 shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <h3 class="text-info mb-1"><%= stats.in_progress %></h3>
+                        <small class="text-muted text-uppercase">In Progress</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2 col-6">
+                <div class="card stat-card border-0 shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <h3 class="text-success mb-1"><%= stats.offers %></h3>
+                        <small class="text-muted text-uppercase">Offers</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2 col-6">
+                <div class="card stat-card border-0 shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <h3 class="text-danger mb-1"><%= stats.closed %></h3>
+                        <small class="text-muted text-uppercase">Closed</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-2 col-6">
+                <div class="card stat-card border-0 shadow-sm h-100 <%= stats.needs_followup > 0 ? 'border-warning' : '' %>">
+                    <div class="card-body text-center">
+                        <h3 class="<%= stats.needs_followup > 0 ? 'text-warning' : 'text-muted' %> mb-1">
+                            <%= stats.needs_followup %>
+                        </h3>
+                        <small class="text-muted text-uppercase">Follow-up</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Follow-up Alert -->
+        <% if (stats.needs_followup > 0) { %>
+        <div class="alert alert-followup alert-dismissible fade show mb-4" role="alert">
+            <i class="bi bi-bell-fill"></i> <strong>Action needed:</strong> You have <%= stats.needs_followup %> application(s) requiring follow-up today.
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        <% } %>
+
+        <!-- Controls -->
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+            <h4 class="fw-bold text-primary mb-0">Application Pipeline</h4>
+            <div class="d-flex gap-2 flex-wrap">
+                <form method="GET" action="/applications/dashboard" class="d-flex gap-2">
+                    <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+                        <option value="all" <%= currentFilter === 'all' ? 'selected' : '' %>>All Statuses</option>
+                        <option value="applied" <%= currentFilter === 'applied' ? 'selected' : '' %>>Applied</option>
+                        <option value="shortlisted" <%= currentFilter === 'shortlisted' ? 'selected' : '' %>>Shortlisted</option>
+                        <option value="interview" <%= currentFilter === 'interview' ? 'selected' : '' %>>Interview</option>
+                        <option value="final interview" <%= currentFilter === 'final interview' ? 'selected' : '' %>>Final Interview</option>
+                        <option value="offer received" <%= currentFilter === 'offer received' ? 'selected' : '' %>>Offer Received</option>
+                        <option value="rejected" <%= currentFilter === 'rejected' ? 'selected' : '' %>>Rejected</option>
+                        <option value="ghosted" <%= currentFilter === 'ghosted' ? 'selected' : '' %>>Ghosted</option>
+                    </select>
+                </form>
+                <a href="/applications/add" class="btn btn-success fw-bold shadow-sm">
+                    <i class="bi bi-plus-lg"></i> Track New Job
+                </a>
+            </div>
+        </div>
+
+        <!-- Applications Table -->
+        <div class="card shadow-sm border-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Company & Role</th>
+                            <th>Details</th>
+                            <th>Timeline</th>
+                            <th>Status</th>
+                            <th>Resume</th>
+                            <th>Update</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <% if (apps.length === 0) { %>
+                            <tr>
+                                <td colspan="6" class="text-center py-5 text-muted">
+                                    <i class="bi bi-inbox display-4 d-block mb-3"></i>
+                                    No applications found. <a href="/applications/add">Track your first application</a>
+                                </td>
+                            </tr>
+                        <% } %>
+
+                        <% apps.forEach(app => { 
+                            const daysSince = Math.floor((new Date() - new Date(app.date_applied)) / (1000 * 60 * 60 * 24));
+                            const isOld = daysSince > 30 && app.status === 'applied';
+                        %>
+                        <tr class="<%= isOld ? 'table-warning' : '' %>">
+                            <td>
+                                <div class="d-flex align-items-center gap-2 mb-1">
+                                    <strong class="text-dark"><%= app.company_name %></strong>
+                                    <% if (app.referral) { %><span class="badge bg-warning text-dark" title="Referral"><i class="bi bi-person-check"></i></span><% } %>
+                                    <% if (app.tailored_resume) { %><span class="badge bg-success" title="Tailored Resume"><i class="bi bi-star-fill"></i></span><% } %>
+                                </div>
+                                <a href="/applications/view/<%= app.id %>" class="text-decoration-none fw-bold text-primary">
+                                    <%= app.job_title %>
+                                </a>
+                                <div class="small text-muted">
+                                    <%= app.job_level %> • <%= app.location || 'Location N/A' %>
+                                    <% if (app.work_arrangement) { %> • <%= app.work_arrangement %><% } %>
+                                </div>
+                                <% if (app.job_domain && app.job_domain.length > 0) { %>
+                                    <div class="mt-1">
+                                        <% app.job_domain.slice(0, 2).forEach(domain => { %>
+                                            <span class="badge bg-primary bg-opacity-10 text-primary skill-badge"><%= domain %></span>
+                                        <% }) %>
+                                    </div>
+                                <% } %>
+                            </td>
+
+                            <td>
+                                <small class="d-block text-muted">
+                                    <i class="bi bi-send"></i> <%= app.app_method %>
+                                </small>
+                                <% if (app.assessment_upfront) { %>
+                                    <span class="badge bg-warning text-dark skill-badge">
+                                        <i class="bi bi-clipboard-check"></i> <%= app.assessment_type || 'Assessment' %>
+                                    </span>
+                                <% } %>
+                                <small class="d-block text-muted mt-1">
+                                    <i class="bi bi-clock"></i> <%= app.time_spent_minutes %> mins
+                                </small>
+                            </td>
+
+                            <td>
+                                <small class="d-block">
+                                    <strong>Applied:</strong> <%= new Date(app.date_applied).toLocaleDateString() %>
+                                </small>
+                                <% if (app.closing_date) { %>
+                                    <small class="d-block text-muted">
+                                        Closes: <%= new Date(app.closing_date).toLocaleDateString() %>
+                                    </small>
+                                <% } %>
+                                <% if (app.follow_up_date && new Date(app.follow_up_date) <= new Date() && !['offer received', 'rejected', 'ghosted', 'withdrawn'].includes(app.status)) { %>
+                                    <span class="badge bg-warning text-dark mt-1">Follow-up due</span>
+                                <% } else if (isOld) { %>
+                                    <span class="badge bg-secondary mt-1"><%= daysSince %> days old</span>
+                                <% } %>
+                            </td>
+
+                            <td>
+                                <span class="badge rounded-pill status-<%= app.status.toLowerCase().replace(/ /g, '-') %> status-badge">
+                                    <%= app.status.toUpperCase() %>
+                                </span>
+                            </td>
+
+                            <td>
+                                <% if(app.resume_path) { %>
+                                    <a href="<%= app.resume_path %>" target="_blank" class="btn btn-sm btn-outline-danger">
+                                        <i class="bi bi-file-pdf"></i> PDF
+                                    </a>
+                                <% } else { %>
+                                    <span class="text-muted small">—</span>
+                                <% } %>
+                            </td>
+
+                            <td>
+                                <form action="/applications/update-status/<%= app.id %>" method="POST" class="d-flex gap-1">
+                                    <select name="status" class="form-select form-select-sm" style="width: 130px;">
+                                        <option value="applied" <%= app.status === 'applied' ? 'selected' : '' %>>Applied</option>
+                                        <option value="application viewed" <%= app.status === 'application viewed' ? 'selected' : '' %>>Viewed</option>
+                                        <option value="shortlisted" <%= app.status === 'shortlisted' ? 'selected' : '' %>>Shortlisted</option>
+                                        <option value="assessment/test stage" <%= app.status === 'assessment/test stage' ? 'selected' : '' %>>Assessment</option>
+                                        <option value="phone screen" <%= app.status === 'phone screen' ? 'selected' : '' %>>Phone Screen</option>
+                                        <option value="interview" <%= app.status === 'interview' ? 'selected' : '' %>>Interview</option>
+                                        <option value="final interview" <%= app.status === 'final interview' ? 'selected' : '' %>>Final Interview</option>
+                                        <option value="offer received" <%= app.status === 'offer received' ? 'selected' : '' %>>Offer</option>
+                                        <option value="rejected" <%= app.status === 'rejected' ? 'selected' : '' %>>Rejected</option>
+                                        <option value="withdrawn" <%= app.status === 'withdrawn' ? 'selected' : '' %>>Withdrawn</option>
+                                        <option value="ghosted" <%= app.status === 'ghosted' ? 'selected' : '' %>>Ghosted</option>
+                                    </select>
+                                    <button type="submit" class="btn btn-sm btn-dark" title="Update">
+                                        <i class="bi bi-check-lg"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        <% }) %>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
