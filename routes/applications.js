@@ -616,7 +616,7 @@ router.get('/ai-analytics', async (req, res) => {
         let aiConnected = false;
         
         try {
-            const response = await axios.post('http://localhost:8000/api/analyze', {
+            const response = await axios.post('/analytics/api/analyze', {
                 user_id: req.session.userId,
                 applications: applications
             }, { timeout: 5000 });

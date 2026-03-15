@@ -1,0 +1,44 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "index.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "api/analyze.py",
+      "use": "@vercel/python",
+      "config": {
+        "excludeFiles": "/{.next,.cache,node_modules,public,app}/**"
+      }
+    },
+    {
+      "src": "api/ats_analyzer.py",
+      "use": "@vercel/python",
+      "config": {
+        "excludeFiles": "/{.next,.cache,node_modules,public,app}/**"
+      }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/analytics/api/analyze",
+      "dest": "api/analyze.py"
+    },
+    {
+      "src": "/analytics/api/predict",
+      "dest": "api/analyze.py"
+    },
+    {
+      "src": "/ats/analyze",
+      "dest": "api/ats_analyzer.py"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "index.js"
+    }
+  ],
+  "env": {
+    "PYTHONPATH": "/var/task/api"
+  }
+}

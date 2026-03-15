@@ -1,15 +1,18 @@
-// routes/ats.js - Windows Compatible Version with correct path
+// routes/ats.js - Updated for Vercel deployment
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
 const path = require('path');
-const { spawn } = require('child_process');
+const axios = require('axios');
 const fs = require('fs');
+const pdfParse = require('pdf-parse');
+const mammoth = require('mammoth');
 
-// Configure multer for CV uploads
+// Use /tmp for Vercel (only writable directory)
+const uploadDir = process.env.VERCEL ? '/tmp/uploads' : './uploads/ats';
+
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        const uploadDir = path.join(__dirname, '..', 'uploads', 'ats');
         if (!fs.existsSync(uploadDir)) {
             fs.mkdirSync(uploadDir, { recursive: true });
         }
@@ -66,22 +69,62 @@ router.post('/analyze', upload.single('cv'), async (req, res) => {
         }
 
         const cvPath = req.file.path;
-        const fileType = path.extname(req.file.originalname).toLowerCase().replace('.', '');
+        const ext = path.extname(req.file.originalname).toLowerCase();
 
-        const result = await runPythonAnalyzerWindows(cvPath, jobDescription, fileType);
-        
-        // Clean up file after analysis
+        // Extract text based on file type
+        let cvText = '';
+        try {
+            if (ext === '.pdf') {
+                const dataBuffer = fs.readFileSync(cvPath);
+                const pdfData = await pdfParse(dataBuffer);
+                cvText = pdfData.text;
+            } else if (ext === '.docx' || ext === '.doc') {
+                const result = await mammoth.extractRawText({ path: cvPath });
+                cvText = result.value;
+            } else {
+                throw new Error('Unsupported file type');
+            }
+        } catch (extractError) {
+            console.error('Text extraction error:', extractError);
+            fs.unlinkSync(cvPath);
+            return res.render('ats-analyzer', {
+                user: req.session.userName,
+                result: null,
+                error: 'Failed to extract text from CV. Please try a different file.'
+            });
+        }
+
+        // Clean up uploaded file
         try {
             fs.unlinkSync(cvPath);
         } catch (e) {
             console.log('Failed to clean up CV file:', e);
         }
 
-        if (result.error) {
+        // Call Python ATS analyzer via HTTP
+        const pythonServiceUrl = process.env.VERCEL_URL 
+            ? `https://${process.env.VERCEL_URL}/ats/analyze`
+            : 'http://localhost:8000/ats/analyze';
+
+        let result;
+        try {
+            const response = await axios.post(pythonServiceUrl, {
+                cv_text: cvText,
+                job_description: jobDescription
+            }, {
+                timeout: 30000,
+                headers: { 'Content-Type': 'application/json' }
+            });
+            result = response.data;
+        } catch (pythonError) {
+            console.error('Python service error:', pythonError.message);
+            
+            // Fallback: Use Node.js implementation if available
+            // Or show error
             return res.render('ats-analyzer', {
                 user: req.session.userName,
                 result: null,
-                error: result.error
+                error: 'Analysis service temporarily unavailable. Please try again later.'
             });
         }
 
@@ -101,115 +144,4 @@ router.post('/analyze', upload.single('cv'), async (req, res) => {
     }
 });
 
-// Windows-compatible Python runner with CORRECT PATH
-function runPythonAnalyzerWindows(cvPath, jobDescription, fileType) {
-    return new Promise((resolve, reject) => {
-        // FIXED: Point to analytics-service subdirectory
-        const pythonScript = path.join(__dirname, '..', 'analytics-service', 'ats_analyzer.py');
-        
-        console.log('[ATS] Looking for Python script at:', pythonScript);
-        
-        // Verify script exists
-        if (!fs.existsSync(pythonScript)) {
-            return resolve({ 
-                error: `ATS analyzer script not found at: ${pythonScript}\n` +
-                       `Expected location: analytics-service/ats_analyzer.py`
-            });
-        }
-
-        const pythonCommands = [
-            process.env.PYTHON_PATH,
-            'py',
-            'python',
-            'python3',
-            'C:\\Python311\\python.exe',
-            'C:\\Python310\\python.exe',
-            'C:\\Users\\22033\\AppData\\Local\\Programs\\Python\\Python311\\python.exe',
-            'C:\\Users\\22033\\AppData\\Local\\Programs\\Python\\Python310\\python.exe'
-        ].filter(Boolean);
-
-        const escapedJD = jobDescription
-            .replace(/"/g, '\\"')
-            .replace(/\r/g, ' ')
-            .replace(/\n/g, ' ');
-
-        tryNextCommand(0);
-
-        function tryNextCommand(index) {
-            if (index >= pythonCommands.length) {
-                return resolve({ 
-                    error: `Python not found. Tried: ${pythonCommands.join(', ')}\n\n` +
-                           `Please either:\n` +
-                           `1. Install Python from python.org\n` +
-                           `2. Add Python to your PATH\n` +
-                           `3. Set PYTHON_PATH environment variable\n` +
-                           `4. Disable Microsoft Store Python alias in Settings`
-                });
-            }
-
-            const cmd = pythonCommands[index];
-            console.log(`[ATS] Trying Python: ${cmd}`);
-
-            const pythonProcess = spawn(cmd, [
-                pythonScript,
-                cvPath,
-                escapedJD,
-                fileType
-            ], {
-                timeout: 30000,
-                windowsHide: true,
-                shell: false
-            });
-
-            let output = '';
-            let errorOutput = '';
-            let hasReceivedData = false;
-
-            pythonProcess.stdout.on('data', (data) => {
-                hasReceivedData = true;
-                output += data.toString();
-            });
-
-            pythonProcess.stderr.on('data', (data) => {
-                errorOutput += data.toString();
-                console.log(`[ATS] stderr: ${data.toString()}`);
-            });
-
-            pythonProcess.on('error', (err) => {
-                console.log(`[ATS] ${cmd} failed to spawn:`, err.code);
-                if (err.code === 'ENOENT') {
-                    tryNextCommand(index + 1);
-                } else {
-                    resolve({ error: `Python error: ${err.message}` });
-                }
-            });
-
-            pythonProcess.on('close', (code) => {
-                console.log(`[ATS] ${cmd} exited with code ${code}`);
-                
-                if (!hasReceivedData || code !== 0) {
-                    if (index < pythonCommands.length - 1) {
-                        tryNextCommand(index + 1);
-                    } else {
-                        resolve({ error: `Python analysis failed: ${errorOutput || 'No output'}` });
-                    }
-                    return;
-                }
-
-                try {
-                    const jsonMatch = output.match(/\{[\s\S]*\}/);
-                    if (jsonMatch) {
-                        const result = JSON.parse(jsonMatch[0]);
-                        resolve(result);
-                    } else {
-                        resolve({ error: 'Invalid response from analysis engine (no JSON found)' });
-                    }
-                } catch (parseErr) {
-                    resolve({ error: 'Failed to parse analysis results' });
-                }
-            });
-        }
-    });
-}
-
-module.exports = router; 
+module.exports = router;
