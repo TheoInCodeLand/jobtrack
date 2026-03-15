@@ -32,11 +32,10 @@ function checkAuth(req, res, next) {
     }
     res.redirect('/auth/login');
 }
-const authRoutes = require('./routes/auth');
-const applicationRoutes = require('./routes/applications');
 
-app.use('/auth', authRoutes);
-app.use('/applications', checkAuth, applicationRoutes);
+app.use('/auth', require('./routes/auth'));
+app.use('/ats', checkAuth, require('./routes/ats'));
+app.use('/applications', checkAuth, require('./routes/applications'));
 
 app.get('/', (req, res) => {
     res.render('index'); 

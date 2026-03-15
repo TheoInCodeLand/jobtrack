@@ -2,324 +2,792 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>AI Analytics | Optimus Job Tracker</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Analytics · Optimus Tracker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
-        .health-score { font-size: 4rem; font-weight: 700; }
-        .health-excellent { color: #198754; }
-        .health-good { color: #0d6efd; }
-        .health-warning { color: #ffc107; }
-        .health-critical { color: #dc3545; }
-        
-        .priority-critical { border-left: 4px solid #dc3545; }
+        /* ----- BASE & DASHBOARD STYLES (copied from dashboard) ----- */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --background: 0 0% 100%; --foreground: 222.2 84% 4.9%;
+            --card: 0 0% 100%; --card-foreground: 222.2 84% 4.9%;
+            --popover: 0 0% 100%; --popover-foreground: 222.2 84% 4.9%;
+            --primary: 221.2 83.2% 53.3%; --primary-foreground: 210 40% 98%;
+            --secondary: 210 40% 96%; --secondary-foreground: 222.2 84% 4.9%;
+            --muted: 210 40% 96%; --muted-foreground: 215.4 16.3% 46.9%;
+            --accent: 210 40% 96%; --accent-foreground: 222.2 84% 4.9%;
+            --destructive: 0 84.2% 60.2%; --destructive-foreground: 210 40% 98%;
+            --border: 214.3 31.8% 91.4%; --input: 214.3 31.8% 91.4%;
+            --ring: 221.2 83.2% 53.3%; --radius: 0.75rem;
+            --sidebar-background: 0 0% 98%; --sidebar-foreground: 240 5.3% 26.1%;
+            --sidebar-primary: 240 5.9% 10%; --sidebar-primary-foreground: 0 0% 98%;
+            --sidebar-accent: 240 4.8% 95.9%; --sidebar-accent-foreground: 240 5.9% 10%;
+            --sidebar-border: 220 13% 91%; --sidebar-ring: 217.2 91.2% 59.8%;
+
+            /* Status Colors (from dashboard) */
+            --status-applied-bg: 210 40% 96%;
+            --status-applied-text: 215.4 16.3% 46.9%;
+            --status-shortlisted-bg: 199 89% 48%;
+            --status-shortlisted-text: 0 0% 100%;
+            --status-interview-bg: 45 93% 47%;
+            --status-interview-text: 0 0% 100%;
+            --status-offer-bg: 142 76% 36%;
+            --status-offer-text: 0 0% 100%;
+            --status-rejected-bg: 0 84.2% 60.2%;
+            --status-rejected-text: 0 0% 100%;
+            --status-ghosted-bg: 220 13% 91%;
+            --status-ghosted-text: 220 9% 46%;
+            --status-withdrawn-bg: 0 0% 100%;
+            --status-withdrawn-text: 215.4 16.3% 46.9%;
+        }
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background-color: hsl(var(--background));
+            color: hsl(var(--foreground));
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+        .app-wrapper { display: flex; min-height: 100vh; width: 100%; }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed; left: 0; top: 0; width: 16rem; height: 100vh;
+            background-color: hsl(var(--sidebar-background));
+            border-right: 1px solid hsl(var(--sidebar-border));
+            display: flex; flex-direction: column; z-index: 40;
+        }
+        .sidebar-header { padding: 1.5rem; border-bottom: 1px solid hsl(var(--sidebar-border)); }
+        .sidebar-logo {
+            display: flex; align-items: center; gap: 0.75rem; text-decoration: none;
+            color: hsl(var(--sidebar-foreground));
+        }
+        .sidebar-logo-icon {
+            width: 2rem; height: 2rem;
+            background: linear-gradient(135deg, hsl(var(--primary)), hsl(221.2 83.2% 46%));
+            border-radius: var(--radius); display: flex; align-items: center; justify-content: center;
+            color: white;
+        }
+        .sidebar-logo-icon svg { width: 1.25rem; height: 1.25rem; }
+        .sidebar-logo-text { font-weight: 700; font-size: 1.125rem; letter-spacing: -0.025em; }
+        .sidebar-content { flex: 1; padding: 1rem; overflow-y: auto; }
+        .sidebar-menu { list-style: none; display: flex; flex-direction: column; gap: 0.25rem; }
+        .sidebar-menu-item { position: relative; }
+        .sidebar-menu-button {
+            display: flex; align-items: center; gap: 0.75rem; width: 100%;
+            padding: 0.625rem 0.75rem; font-size: 0.875rem; font-weight: 500;
+            color: hsl(var(--sidebar-foreground)); text-decoration: none;
+            border-radius: calc(var(--radius) - 2px); border: none; background: transparent;
+            cursor: pointer; transition: background-color 0.15s;
+        }
+        .sidebar-menu-button:hover { background-color: hsl(var(--sidebar-accent)); color: hsl(var(--sidebar-accent-foreground)); }
+        .sidebar-menu-button.active { background-color: hsl(var(--sidebar-accent)); color: hsl(var(--sidebar-accent-foreground)); font-weight: 600; }
+        .sidebar-menu-button svg { width: 1rem; height: 1rem; flex-shrink: 0; }
+        .sidebar-footer { padding: 1rem; border-top: 1px solid hsl(var(--sidebar-border)); }
+        .sidebar-user {
+            display: flex; align-items: center; gap: 0.75rem;
+            padding: 0.75rem; border-radius: calc(var(--radius) - 2px);
+            background-color: hsl(var(--sidebar-accent) / 0.5);
+        }
+        .sidebar-user-avatar {
+            width: 2rem; height: 2rem; border-radius: 50%; object-fit: cover;
+            background-color: hsl(var(--muted));
+        }
+        .sidebar-user-info { display: flex; flex-direction: column; min-width: 0; }
+        .sidebar-user-name { font-size: 0.875rem; font-weight: 600; color: hsl(var(--sidebar-foreground)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .sidebar-user-role { font-size: 0.75rem; color: hsl(var(--muted-foreground)); }
+
+        /* Main content */
+        .main-content { flex: 1; margin-left: 16rem; display: flex; flex-direction: column; min-height: 100vh; }
+
+        /* Topbar */
+        .topbar {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 1rem 1.5rem; border-bottom: 1px solid hsl(var(--border));
+            background-color: hsl(var(--background)); position: sticky; top: 0; z-index: 30;
+        }
+        .topbar-search { display: flex; align-items: center; gap: 1rem; flex: 1; max-width: 28rem; }
+        .search-input-wrapper { position: relative; flex: 1; }
+        .search-icon {
+            position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%);
+            color: hsl(var(--muted-foreground)); width: 1rem; height: 1rem;
+        }
+        .search-input {
+            width: 100%; height: 2.5rem; padding: 0.5rem 0.75rem 0.5rem 2.5rem;
+            font-size: 0.875rem; border: 1px solid hsl(var(--input));
+            border-radius: var(--radius); background-color: transparent; outline: none;
+            transition: border-color 0.15s, box-shadow 0.15s; font-family: inherit;
+        }
+        .search-input:focus { border-color: hsl(var(--ring)); box-shadow: 0 0 0 2px hsl(var(--ring) / 0.2); }
+        .search-input::placeholder { color: hsl(var(--muted-foreground)); }
+
+        .topbar-actions { display: flex; align-items: center; gap: 0.75rem; }
+        .icon-button {
+            display: flex; align-items: center; justify-content: center;
+            width: 2.5rem; height: 2.5rem; border-radius: 0.375rem; background: transparent;
+            border: none; cursor: pointer; color: hsl(var(--foreground));
+            transition: background-color 0.15s;
+        }
+        .icon-button:hover { background-color: hsl(var(--accent)); }
+        .icon-button svg { width: 1.25rem; height: 1.25rem; }
+        .notification-badge {
+            position: absolute; top: -0.25rem; right: -0.25rem; width: 1.25rem; height: 1.25rem;
+            display: flex; align-items: center; justify-content: center; font-size: 0.75rem;
+            font-weight: 600; background-color: hsl(var(--primary)); color: hsl(var(--primary-foreground));
+            border-radius: 50%;
+        }
+        .avatar-button {
+            width: 2.25rem; height: 2.25rem; border-radius: 50%; overflow: hidden; cursor: pointer;
+            border: 2px solid hsl(var(--border)); padding: 0; background: transparent;
+            transition: border-color 0.15s;
+        }
+        .avatar-button:hover { border-color: hsl(var(--ring)); }
+        .avatar-button img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* Page content */
+        .page-content { flex: 1; padding: 1.5rem 2rem 2rem; display: flex; flex-direction: column; gap: 1.5rem; }
+        .page-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+        .page-title { font-size: 1.875rem; font-weight: 700; letter-spacing: -0.025em; color: hsl(var(--foreground)); }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+            padding: 0.5rem 1rem; font-size: 0.875rem; font-weight: 500;
+            border-radius: var(--radius); cursor: pointer; transition: all 0.15s;
+            white-space: nowrap; text-decoration: none; border: none; font-family: inherit;
+        }
+        .btn:active { transform: scale(0.98); }
+        .btn-primary { background-color: hsl(var(--primary)); color: hsl(var(--primary-foreground)); }
+        .btn-primary:hover { background-color: hsl(221.2 83.2% 46%); }
+        .btn-outline { background-color: transparent; border: 1px solid hsl(var(--input)); color: hsl(var(--foreground)); }
+        .btn-outline:hover { background-color: hsl(var(--accent)); border-color: hsl(var(--ring)); }
+        .btn-sm { height: 2.25rem; padding: 0.25rem 0.75rem; font-size: 0.875rem; }
+
+        /* Alerts (from dashboard) */
+        .alert {
+            display: flex; align-items: center; gap: 0.75rem;
+            padding: 1rem 1.25rem; border-radius: var(--radius);
+            border: 1px solid hsl(var(--border));
+            background-color: hsl(var(--background));
+            font-size: 0.875rem;
+        }
+        .alert-warning {
+            background-color: hsl(45 93% 95%);
+            border-color: hsl(45 93% 80%);
+            color: hsl(28 73% 25%);
+        }
+        .alert-success {
+            background-color: hsl(142 76% 95%);
+            border-color: hsl(142 76% 80%);
+            color: hsl(142 76% 25%);
+        }
+        .alert-icon { width: 1.25rem; height: 1.25rem; flex-shrink: 0; }
+
+        /* Cards */
+        .card {
+            border-radius: var(--radius); border: 1px solid hsl(var(--border));
+            background-color: hsl(var(--card)); overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .card-header {
+            padding: 1.25rem 1.5rem; border-bottom: 1px solid hsl(var(--border));
+            background-color: hsl(var(--muted) / 0.3);
+            font-weight: 600; display: flex; align-items: center; gap: 0.5rem;
+        }
+        .card-title { font-size: 1.125rem; font-weight: 600; }
+        .card-content { padding: 1.5rem; }
+
+        /* Badges (from dashboard) */
+        .badge {
+            display: inline-flex; align-items: center; padding: 0.375rem 0.875rem;
+            border-radius: 9999px; font-size: 0.75rem; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.025em; white-space: nowrap;
+        }
+        .badge-applied { background-color: hsl(var(--status-applied-bg)); color: hsl(var(--status-applied-text)); }
+        .badge-shortlisted { background-color: hsl(var(--status-shortlisted-bg)); color: hsl(var(--status-shortlisted-text)); }
+        .badge-interview { background-color: hsl(var(--status-interview-bg)); color: hsl(var(--status-interview-text)); }
+        .badge-offer { background-color: hsl(var(--status-offer-bg)); color: hsl(var(--status-offer-text)); }
+        .badge-rejected { background-color: hsl(var(--status-rejected-bg)); color: hsl(var(--status-rejected-text)); }
+        .badge-ghosted { background-color: hsl(var(--status-ghosted-bg)); color: hsl(var(--status-ghosted-text)); border: 1px solid hsl(var(--border)); }
+        .badge-withdrawn { background-color: hsl(var(--status-withdrawn-bg)); color: hsl(var(--status-withdrawn-text)); border: 1px solid hsl(var(--border)); }
+        .badge-primary { background-color: hsl(var(--primary) / 0.1); color: hsl(var(--primary)); }
+        .badge-warning { background-color: hsl(45 93% 95%); color: hsl(28 73% 25%); }
+        .badge-success { background-color: hsl(142 76% 95%); color: hsl(142 76% 25%); }
+        .badge-danger { background-color: hsl(0 84.2% 95%); color: hsl(0 84.2% 40%); }
+
+        /* Table (from dashboard) */
+        .table-container { overflow-x: auto; }
+        .data-table {
+            width: 100%; border-collapse: collapse; font-size: 0.875rem;
+        }
+        .data-table thead {
+            background-color: hsl(var(--muted));
+        }
+        .data-table th {
+            padding: 0.875rem 1rem; text-align: left; font-weight: 600;
+            font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;
+            color: hsl(var(--muted-foreground)); white-space: nowrap;
+        }
+        .data-table td {
+            padding: 1rem; border-bottom: 1px solid hsl(var(--border));
+            vertical-align: middle;
+        }
+        .data-table tbody tr:hover { background-color: hsl(var(--muted) / 0.5); }
+
+        /* Progress bars (new, matching design) */
+        .progress {
+            height: 0.5rem; background-color: hsl(var(--muted));
+            border-radius: 9999px; overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%; background-color: hsl(var(--primary));
+            border-radius: 9999px; transition: width 0.2s;
+        }
+        .progress-bar.bg-success { background-color: hsl(var(--status-offer-bg)); }
+        .progress-bar.bg-info { background-color: hsl(var(--status-shortlisted-bg)); }
+        .progress-bar.bg-warning { background-color: hsl(var(--status-interview-bg)); }
+        .progress-bar.bg-danger { background-color: hsl(var(--status-rejected-bg)); }
+
+        /* Priority cards */
+        .priority-critical { border-left: 4px solid hsl(var(--destructive)); }
         .priority-high { border-left: 4px solid #fd7e14; }
-        .priority-medium { border-left: 4px solid #ffc107; }
-        .priority-low { border-left: 4px solid #0d6efd; }
-        
-        .metric-card { transition: transform 0.2s; }
-        .metric-card:hover { transform: translateY(-3px); }
-        
-        .ai-offline { opacity: 0.7; }
-        .real-data-badge { position: absolute; top: 10px; right: 10px; }
+        .priority-medium { border-left: 4px solid hsl(var(--status-interview-bg)); }
+        .priority-low { border-left: 4px solid hsl(var(--primary)); }
+
+        /* Utilities */
+        .text-success { color: hsl(var(--status-offer-bg)); }
+        .text-warning { color: hsl(var(--status-interview-bg)); }
+        .text-danger { color: hsl(var(--destructive)); }
+        .text-muted { color: hsl(var(--muted-foreground)); }
+        .bg-white { background-color: white; }
+        .bg-light { background-color: hsl(var(--muted)); }
+        .border-start { border-left: 1px solid hsl(var(--border)); }
+        .border-end { border-right: 1px solid hsl(var(--border)); }
+        .border-white { border-color: white; }
+        .border-opacity-25 { opacity: 0.25; }
+        .shadow { box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .shadow-sm { box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+        .fw-bold { font-weight: 600; }
+        .small { font-size: 0.875rem; }
+        .display-1 { font-size: 4rem; font-weight: 700; }
+        .h3 { font-size: 1.5rem; font-weight: 600; }
+        .h4 { font-size: 1.25rem; font-weight: 600; }
+        .h5 { font-size: 1.125rem; font-weight: 600; }
+        .h6 { font-size: 1rem; font-weight: 600; }
+        .lead { font-size: 1.1rem; }
+        .d-flex { display: flex; }
+        .align-items-center { align-items: center; }
+        .justify-content-between { justify-content: space-between; }
+        .justify-content-end { justify-content: flex-end; }
+        .gap-2 { gap: 0.5rem; }
+        .gap-3 { gap: 0.75rem; }
+        .gap-4 { gap: 1rem; }
+        .mt-2 { margin-top: 0.5rem; }
+        .mt-3 { margin-top: 0.75rem; }
+        .mt-4 { margin-top: 1rem; }
+        .mb-0 { margin-bottom: 0; }
+        .mb-2 { margin-bottom: 0.5rem; }
+        .mb-3 { margin-bottom: 0.75rem; }
+        .mb-4 { margin-bottom: 1rem; }
+        .p-2 { padding: 0.5rem; }
+        .p-3 { padding: 0.75rem; }
+        .p-4 { padding: 1rem; }
+        .p-5 { padding: 2rem; }
+        .py-4 { padding-top: 1rem; padding-bottom: 1rem; }
+        .py-5 { padding-top: 2rem; padding-bottom: 2rem; }
+        .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
+        .rounded { border-radius: var(--radius); }
+        .border-0 { border: none; }
+        .border-top { border-top: 1px solid hsl(var(--border)); }
+        .border-bottom { border-bottom: 1px solid hsl(var(--border)); }
+        .text-center { text-align: center; }
+        .text-capitalize { text-transform: capitalize; }
+        .w-100 { width: 100%; }
+        .h-100 { height: 100%; }
+        .position-relative { position: relative; }
+        .position-absolute { position: absolute; }
+        .top-0 { top: 0; }
+        .end-0 { right: 0; }
+        .m-0 { margin: 0; }
+        .bg-gradient { background: linear-gradient(135deg, hsl(var(--primary)), #764ba2); }
+        .text-white { color: white; }
+        .text-white-50 { color: rgba(255,255,255,0.5); }
+        .opacity-25 { opacity: 0.25; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.open { transform: translateX(0); }
+            .main-content { margin-left: 0; }
+            .mobile-toggle { display: flex; }
+            .page-content { padding: 1rem; }
+            .card-content { padding: 1.25rem; }
+        }
+        .mobile-toggle {
+            display: none; align-items: center; justify-content: center; width: 2.5rem; height: 2.5rem;
+            background: transparent; border: none; cursor: pointer; color: hsl(var(--foreground));
+            border-radius: 0.375rem;
+        }
+        .mobile-toggle:hover { background-color: hsl(var(--accent)); }
+        .sidebar-overlay { display: none; position: fixed; inset: 0; background-color: rgba(0,0,0,0.5); z-index: 35; }
+        .sidebar-overlay.show { display: block; }
+
+        /* Dropdown */
+        .dropdown { position: relative; display: inline-block; }
+        .dropdown-content {
+            display: none; position: absolute; right: 0; top: calc(100% + 0.5rem);
+            min-width: 12rem; background-color: hsl(var(--popover));
+            border: 1px solid hsl(var(--border)); border-radius: var(--radius);
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); z-index: 50;
+            padding: 0.25rem; animation: slideIn 0.15s ease-out;
+        }
+        .dropdown-content.show { display: block; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(-0.5rem); } to { opacity: 1; transform: translateY(0); } }
+        .dropdown-label { padding: 0.5rem; font-size: 0.875rem; font-weight: 600; }
+        .dropdown-separator { height: 1px; background-color: hsl(var(--border)); margin: 0.25rem 0; }
+        .dropdown-item {
+            display: block; width: 100%; padding: 0.5rem; font-size: 0.875rem; text-align: left;
+            background: none; border: none; cursor: pointer; border-radius: calc(var(--radius) - 4px);
+            color: hsl(var(--foreground)); text-decoration: none;
+        }
+        .dropdown-item:hover { background-color: hsl(var(--accent)); }
+
+        /* Health score */
+        .health-score { font-size: 4rem; font-weight: 700; line-height: 1; }
+        .health-excellent { color: hsl(var(--status-offer-bg)); }
+        .health-good { color: hsl(var(--primary)); }
+        .health-warning { color: hsl(var(--status-interview-bg)); }
+        .health-critical { color: hsl(var(--destructive)); }
     </style>
 </head>
-<body class="bg-light">
-    
-    <nav class="navbar navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand fw-bold" href="/applications/dashboard">
-                <i class="bi bi-briefcase-fill"></i> Optimus Analytics
-            </a>
-            <div class="d-flex gap-2">
-                <a href="/applications/dashboard" class="btn btn-outline-light btn-sm">Dashboard</a>
-                <a href="/auth/logout" class="btn btn-outline-danger btn-sm">Logout</a>
+<body>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <div class="app-wrapper">
+        <!-- SIDEBAR (identical to dashboard) -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <a href="/applications/dashboard" class="sidebar-logo">
+                    <div class="sidebar-logo-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                    </div>
+                    <span class="sidebar-logo-text">Optimus Tracker</span>
+                </a>
             </div>
-        </div>
-    </nav>
-
-    <div class="container py-4">
-        
-        <!-- Connection Status -->
-        <% if (!aiConnected) { %>
-        <div class="alert alert-warning d-flex align-items-center mb-4">
-            <i class="bi bi-wifi-off me-2"></i>
-            <div>
-                <strong>AI Engine Offline</strong> - Showing real-time analytics from your <%= applications.length %> applications. 
-                <a href="#" onclick="location.reload()" class="alert-link">Retry connection</a> or 
-                <a href="http://localhost:8000" target="_blank" class="alert-link">start Python service</a>.
+            <nav class="sidebar-content">
+                <ul class="sidebar-menu">
+                    <li class="sidebar-menu-item">
+                        <a href="/applications/dashboard" class="sidebar-menu-button">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-menu-item">
+                        <a href="/applications/analytics" class="sidebar-menu-button">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" x2="18" y1="20" y2="10"></line><line x1="12" x2="12" y1="20" y2="4"></line><line x1="6" x2="6" y1="20" y2="14"></line></svg>
+                            <span>Analytics</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-menu-item">
+                        <a href="/applications/ai-analytics" class="sidebar-menu-button active">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"/><path d="M8.5 8.5v.01"/><path d="M16 15.5v.01"/><path d="M12 12v.01"/><path d="M11 17v.01"/><path d="M7 14v.01"/></svg>
+                            <span>AI Analytics</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-menu-item">
+                        <a href="/ats" class="sidebar-menu-button">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                            <span>ATS Check</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="sidebar-user">
+                    <div class="sidebar-user-avatar" style="display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, hsl(var(--primary)), hsl(221.2 83.2% 46%)); color: white; font-weight: 600; font-size: 0.875rem;">
+                        <%= user ? user.charAt(0).toUpperCase() : 'U' %>
+                    </div>
+                    <div class="sidebar-user-info">
+                        <span class="sidebar-user-name"><%= user || 'User' %></span>
+                        <span class="sidebar-user-role">Job Seeker</span>
+                    </div>
+                </div>
             </div>
-        </div>
-        <% } else { %>
-        <div class="alert alert-success d-flex align-items-center mb-4">
-            <i class="bi bi-cpu me-2"></i>
-            <div><strong>AI Engine Active</strong> - Machine learning models analyzing your data</div>
-        </div>
-        <% } %>
+        </aside>
 
-        <% if (!hasData) { %>
-        <!-- No Data State -->
-        <div class="card text-center py-5">
-            <div class="card-body">
-                <i class="bi bi-inbox display-1 text-muted"></i>
-                <h3 class="mt-3">No Applications Yet</h3>
-                <p class="text-muted">Track your first application to see AI-powered analytics</p>
-                <a href="/applications/add" class="btn btn-primary btn-lg">+ Track First Application</a>
-            </div>
-        </div>
-        <% } else { %>
+        <!-- MAIN CONTENT -->
+        <main class="main-content">
+            <!-- Topbar (with notification & user dropdowns) -->
+            <header class="topbar">
+                <div class="topbar-search">
+                    <button class="mobile-toggle" id="mobileToggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M9 3v18"></path></svg>
+                    </button>
+                    <div class="search-input-wrapper">
+                        <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+                        <input type="text" class="search-input" placeholder="Search applications...">
+                    </div>
+                </div>
+                <div class="topbar-actions">
+                    <!-- Notification dropdown -->
+                    <div class="dropdown">
+                        <button class="icon-button" id="notificationBtn">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg>
+                        </button>
+                        <div class="dropdown-content" id="notificationDropdown">
+                            <div class="dropdown-label">Notifications</div>
+                            <div class="dropdown-separator"></div>
+                            <div class="dropdown-item">No new notifications</div>
+                        </div>
+                    </div>
+                    <!-- User dropdown -->
+                    <div class="dropdown">
+                        <button class="avatar-button" id="userBtn">
+                            <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background: linear-gradient(135deg, hsl(var(--primary)), hsl(221.2 83.2% 46%)); color: white; font-weight:600; font-size:0.875rem;">
+                                <%= user ? user.charAt(0).toUpperCase() : 'U' %>
+                            </div>
+                        </button>
+                        <div class="dropdown-content" id="userDropdown">
+                            <div class="dropdown-label">My Account</div>
+                            <div class="dropdown-separator"></div>
+                            <a href="/user/profile" class="dropdown-item">Profile</a>
+                            <a href="/user/settings" class="dropdown-item">Settings</a>
+                            <div class="dropdown-separator"></div>
+                            <a href="/auth/logout" class="dropdown-item" style="color: hsl(var(--destructive));">Log out</a>
+                        </div>
+                    </div>
+                </div>
+            </header>
 
-        <!-- Executive Summary -->
-        <div class="card mb-4 border-0 shadow <%= !aiConnected ? 'ai-offline' : '' %>" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
-            <div class="card-body p-4 position-relative">
+            <!-- PAGE CONTENT -->
+            <div class="page-content">
+                <div class="page-header">
+                    <h1 class="page-title">AI Analytics</h1>
+                    <a href="/applications/dashboard" class="btn btn-outline">
+                        <i class="bi bi-arrow-left"></i> Back to Dashboard
+                    </a>
+                </div>
+
+                <!-- Connection Status Alerts -->
                 <% if (!aiConnected) { %>
-                <span class="badge bg-warning text-dark real-data-badge">LIVE DATA</span>
+                <div class="alert alert-warning d-flex align-items-center">
+                    <i class="bi bi-wifi-off me-2 fs-5"></i>
+                    <div>
+                        <strong>AI Engine Offline</strong> – Showing real-time analytics from your <%= applications.length %> applications.
+                        <a href="#" onclick="location.reload()" class="text-decoration-underline fw-bold">Retry connection</a> or
+                        <a href="http://localhost:8000" target="_blank" class="text-decoration-underline fw-bold">start Python service</a>.
+                    </div>
+                </div>
+                <% } else { %>
+                <div class="alert alert-success d-flex align-items-center">
+                    <i class="bi bi-cpu me-2 fs-5"></i>
+                    <div><strong>AI Engine Active</strong> – Machine learning models analyzing your data</div>
+                </div>
                 <% } %>
-                
-                <div class="row align-items-center">
-                    <div class="col-md-3 text-center border-end border-white border-opacity-25">
-                        <div class="text-white-50 small text-uppercase mb-2">Pipeline Health</div>
-                        <% const score = analysis.executive_summary?.pipeline_health_score || 0; %>
-                        <% const healthClass = score >= 75 ? 'health-excellent' : score >= 50 ? 'health-good' : score >= 30 ? 'health-warning' : 'health-critical'; %>
-                        <div class="health-score <%= healthClass %>"><%= Math.round(score) %></div>
-                        <div class="small">/ 100</div>
+
+                <% if (!hasData) { %>
+                <!-- No Data State -->
+                <div class="card text-center py-5">
+                    <div class="card-content">
+                        <i class="bi bi-inbox display-1 text-muted"></i>
+                        <h3 class="mt-3">No Applications Yet</h3>
+                        <p class="text-muted">Track your first application to see AI-powered analytics</p>
+                        <a href="/applications/add" class="btn btn-primary btn-lg mt-3">+ Track First Application</a>
                     </div>
-                    <div class="col-md-9 ps-md-4">
-                        <h4 class="mb-3">
-                            <i class="bi <%= aiConnected ? 'bi-robot' : 'bi-graph-up' %>"></i> 
-                            <%= aiConnected ? 'AI Executive Summary' : 'Analytics Dashboard' %>
-                        </h4>
-                        <p class="mb-3 lead"><%= analysis.executive_summary?.ai_diagnosis || "Analysis based on your application data" %></p>
-                        
-                        <div class="row g-3 text-center">
-                            <div class="col-6 col-md-3">
-                                <div class="text-white-50 small">Total Applications</div>
-                                <div class="h3 mb-0"><%= analysis.executive_summary?.total_applications || basicStats.total %></div>
+                </div>
+                <% } else { %>
+
+                <!-- Executive Summary Card (gradient) -->
+                <div class="card mb-4 border-0 bg-gradient text-white <%= !aiConnected ? 'ai-offline' : '' %>" style="background: linear-gradient(135deg, hsl(var(--primary)), #764ba2);">
+                    <div class="card-content p-4 position-relative">
+                        <% if (!aiConnected) { %>
+                        <span class="badge bg-warning text-dark position-absolute top-0 end-0 m-3">LIVE DATA</span>
+                        <% } %>
+
+                        <div class="row align-items-center">
+                            <div class="col-md-3 text-center border-end border-white border-opacity-25">
+                                <div class="text-white-50 small text-uppercase mb-2">Pipeline Health</div>
+                                <% const score = analysis.executive_summary?.pipeline_health_score || 0; %>
+                                <% const healthClass = score >= 75 ? 'health-excellent' : score >= 50 ? 'health-good' : score >= 30 ? 'health-warning' : 'health-critical'; %>
+                                <div class="health-score <%= healthClass %>"><%= Math.round(score) %></div>
+                                <div class="small text-white-50">/ 100</div>
                             </div>
-                            <div class="col-6 col-md-3">
-                                <div class="text-white-50 small">Interview Rate</div>
-                                <div class="h3 mb-0"><%= analysis.executive_summary?.interview_rate || basicStats.interviewRate %>%</div>
-                            </div>
-                            <div class="col-6 col-md-3">
-                                <div class="text-white-50 small">Active Pipeline</div>
-                                <div class="h3 mb-0"><%= analysis.executive_summary?.active_applications || basicStats.active %></div>
-                            </div>
-                            <div class="col-6 col-md-3">
-                                <div class="text-white-50 small">Offers</div>
-                                <div class="h3 mb-0"><%= analysis.executive_summary?.offers_received || basicStats.offers %></div>
+                            <div class="col-md-9 ps-md-4">
+                                <h4 class="mb-3 d-flex align-items-center gap-2">
+                                    <i class="bi <%= aiConnected ? 'bi-robot' : 'bi-graph-up' %> fs-3"></i>
+                                    <%= aiConnected ? 'AI Executive Summary' : 'Analytics Dashboard' %>
+                                </h4>
+                                <p class="mb-3 lead text-white-50"><%= analysis.executive_summary?.ai_diagnosis || "Analysis based on your application data" %></p>
+
+                                <div class="row g-3 text-center">
+                                    <div class="col-6 col-md-3">
+                                        <div class="text-white-50 small">Total Applications</div>
+                                        <div class="h3 mb-0 text-white"><%= analysis.executive_summary?.total_applications || basicStats.total %></div>
+                                    </div>
+                                    <div class="col-6 col-md-3">
+                                        <div class="text-white-50 small">Interview Rate</div>
+                                        <div class="h3 mb-0 text-white"><%= analysis.executive_summary?.interview_rate || basicStats.interviewRate %>%</div>
+                                    </div>
+                                    <div class="col-6 col-md-3">
+                                        <div class="text-white-50 small">Active Pipeline</div>
+                                        <div class="h3 mb-0 text-white"><%= analysis.executive_summary?.active_applications || basicStats.active %></div>
+                                    </div>
+                                    <div class="col-6 col-md-3">
+                                        <div class="text-white-50 small">Offers</div>
+                                        <div class="h3 mb-0 text-white"><%= analysis.executive_summary?.offers_received || basicStats.offers %></div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
 
-        <!-- Conversion Funnel -->
-        <% if (analysis.executive_summary?.conversion_funnel || basicStats.total > 0) { %>
-        <% const funnel = analysis.executive_summary?.conversion_funnel || {
-            applied_to_screen: Math.round((basicStats.interviews + basicStats.offers) / basicStats.total * 100),
-            screen_to_interview: 100,
-            interview_to_offer: Math.round(basicStats.offers / Math.max(basicStats.interviews, 1) * 100)
-        }; %>
-        <div class="row mb-4">
-            <div class="col-12">
-                <h5 class="fw-bold mb-3">Conversion Funnel</h5>
-                <div class="d-flex align-items-center gap-3">
-                    <div class="flex-grow-1">
-                        <div class="d-flex justify-content-between small mb-1">
-                            <span>Applied → Response</span>
-                            <span class="fw-bold"><%= funnel.applied_to_screen %>%</span>
+                <!-- Conversion Funnel -->
+                <% if (analysis.executive_summary?.conversion_funnel || basicStats.total > 0) { %>
+                <% const funnel = analysis.executive_summary?.conversion_funnel || {
+                    applied_to_screen: Math.round((basicStats.interviews + basicStats.offers) / basicStats.total * 100),
+                    screen_to_interview: 100,
+                    interview_to_offer: Math.round(basicStats.offers / Math.max(basicStats.interviews, 1) * 100)
+                }; %>
+                <div class="mb-4">
+                    <h5 class="fw-bold mb-3">Conversion Funnel</h5>
+                    <div class="d-flex flex-column flex-md-row align-items-center gap-3">
+                        <div class="flex-grow-1 w-100">
+                            <div class="d-flex justify-content-between small mb-1">
+                                <span>Applied → Response</span>
+                                <span class="fw-bold"><%= funnel.applied_to_screen %>%</span>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar bg-primary" style="width: <%= funnel.applied_to_screen %>%"></div>
+                            </div>
                         </div>
-                        <div class="progress" style="height: 10px;">
-                            <div class="progress-bar bg-primary" style="width: <%= funnel.applied_to_screen %>%"></div>
+                        <i class="bi bi-arrow-right text-muted d-none d-md-block fs-4"></i>
+                        <div class="flex-grow-1 w-100">
+                            <div class="d-flex justify-content-between small mb-1">
+                                <span>Response → Interview</span>
+                                <span class="fw-bold"><%= funnel.screen_to_interview %>%</span>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar bg-info" style="width: <%= funnel.screen_to_interview %>%"></div>
+                            </div>
                         </div>
-                    </div>
-                    <i class="bi bi-arrow-right text-muted fs-4"></i>
-                    <div class="flex-grow-1">
-                        <div class="d-flex justify-content-between small mb-1">
-                            <span>Response → Interview</span>
-                            <span class="fw-bold"><%= funnel.screen_to_interview %>%</span>
-                        </div>
-                        <div class="progress" style="height: 10px;">
-                            <div class="progress-bar bg-info" style="width: <%= funnel.screen_to_interview %>%"></div>
-                        </div>
-                    </div>
-                    <i class="bi bi-arrow-right text-muted fs-4"></i>
-                    <div class="flex-grow-1">
-                        <div class="d-flex justify-content-between small mb-1">
-                            <span>Interview → Offer</span>
-                            <span class="fw-bold"><%= funnel.interview_to_offer %>%</span>
-                        </div>
-                        <div class="progress" style="height: 10px;">
-                            <div class="progress-bar bg-success" style="width: <%= funnel.interview_to_offer %>%"></div>
+                        <i class="bi bi-arrow-right text-muted d-none d-md-block fs-4"></i>
+                        <div class="flex-grow-1 w-100">
+                            <div class="d-flex justify-content-between small mb-1">
+                                <span>Interview → Offer</span>
+                                <span class="fw-bold"><%= funnel.interview_to_offer %>%</span>
+                            </div>
+                            <div class="progress">
+                                <div class="progress-bar bg-success" style="width: <%= funnel.interview_to_offer %>%"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-        <% } %>
+                <% } %>
 
-        <div class="row g-4">
-            <!-- Channel Performance -->
-            <div class="col-md-6">
-                <div class="card shadow-sm h-100">
-                    <div class="card-header bg-white fw-bold d-flex justify-content-between">
-                        <span><i class="bi bi-graph-up"></i> Channel Performance</span>
-                        <% if (!aiConnected) { %><span class="badge bg-secondary">Statistical</span><% } %>
-                    </div>
-                    <div class="card-body">
-                        <% const channels = analysis.channel_performance || basicStats.byMethod; %>
-                        <% if (channels && channels.length > 0) { %>
-                            <% channels.forEach(channel => { %>
-                            <div class="mb-3 p-3 bg-light rounded border-start border-4 border-<%= channel.success_rate > 30 ? 'success' : channel.success_rate > 10 ? 'warning' : 'secondary' %>">
-                                <div class="d-flex justify-content-between align-items-center mb-1">
-                                    <strong><%= channel.channel %></strong>
-                                    <span class="badge bg-<%= channel.success_rate > 30 ? 'success' : channel.success_rate > 10 ? 'warning' : 'secondary' %>">
-                                        <%= channel.success_rate %>% success
-                                    </span>
-                                </div>
-                                <div class="small text-muted">
-                                    <%= channel.applications || channel.total %> apps • <%= channel.positive_outcomes || channel.positive %> positive
-                                    <% if (channel.avg_time_to_response) { %> • <%= channel.avg_time_to_response %>d response<% } %>
-                                </div>
-                                <% if (channel.recommendation) { %>
-                                <div class="small mt-1 text-primary">
-                                    <i class="bi bi-lightbulb"></i> <%= channel.recommendation %>
-                                </div>
+                <div class="row g-4">
+                    <!-- Channel Performance -->
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header">
+                                <i class="bi bi-graph-up me-2"></i> Channel Performance
+                                <% if (!aiConnected) { %><span class="badge badge-primary ms-2">Statistical</span><% } %>
+                            </div>
+                            <div class="card-content">
+                                <% const channels = analysis.channel_performance || basicStats.byMethod; %>
+                                <% if (channels && channels.length > 0) { %>
+                                    <% channels.forEach(channel => { %>
+                                    <div class="mb-3 p-3 bg-light rounded border-start border-4 <%= channel.success_rate > 30 ? 'border-success' : channel.success_rate > 10 ? 'border-warning' : 'border-secondary' %>">
+                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                            <strong><%= channel.channel %></strong>
+                                            <span class="badge <%= channel.success_rate > 30 ? 'badge-offer' : channel.success_rate > 10 ? 'badge-warning' : 'badge-secondary' %>">
+                                                <%= channel.success_rate %>% success
+                                            </span>
+                                        </div>
+                                        <div class="small text-muted">
+                                            <%= channel.applications || channel.total %> apps • <%= channel.positive_outcomes || channel.positive %> positive
+                                            <% if (channel.avg_time_to_response) { %> • <%= channel.avg_time_to_response %>d response<% } %>
+                                        </div>
+                                        <% if (channel.recommendation) { %>
+                                        <div class="small mt-1 text-primary">
+                                            <i class="bi bi-lightbulb"></i> <%= channel.recommendation %>
+                                        </div>
+                                        <% } %>
+                                    </div>
+                                    <% }) %>
+                                <% } else { %>
+                                    <p class="text-muted">No channel data available</p>
                                 <% } %>
                             </div>
-                            <% }) %>
-                        <% } else { %>
-                            <p class="text-muted">No channel data available</p>
-                        <% } %>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Status Distribution -->
-            <div class="col-md-6">
-                <div class="card shadow-sm h-100">
-                    <div class="card-header bg-white fw-bold">
-                        <i class="bi bi-pie-chart"></i> Status Distribution
-                    </div>
-                    <div class="card-body">
-                        <% const statuses = basicStats.byStatus; %>
-                        <% Object.entries(statuses).forEach(([status, count]) => { %>
-                        <div class="d-flex justify-content-between align-items-center mb-2 p-2 bg-light rounded">
-                            <span class="text-capitalize"><%= status.replace(/-/g, ' ') %></span>
-                            <div class="d-flex align-items-center gap-2">
-                                <div class="progress flex-grow-1" style="width: 100px; height: 8px;">
-                                    <div class="progress-bar bg-<%= 
-                                        status === 'offer received' ? 'success' : 
-                                        status === 'rejected' ? 'danger' : 
-                                        status === 'ghosted' ? 'dark' : 
-                                        status === 'interview' ? 'info' : 'primary' 
-                                    %>" style="width: <%= (count / basicStats.total * 100) %>%"></div>
-                                </div>
-                                <span class="badge bg-secondary"><%= count %></span>
-                            </div>
                         </div>
-                        <% }) %>
                     </div>
-                </div>
-            </div>
 
-            <!-- AI Recommendations -->
-            <div class="col-12">
-                <div class="card shadow-sm">
-                    <div class="card-header bg-white fw-bold">
-                        <i class="bi bi-stars"></i> 
-                        <%= aiConnected ? 'AI-Generated Action Plan' : 'Recommended Actions' %>
-                    </div>
-                    <div class="card-body">
-                        <% const recs = analysis.actionable_recommendations || []; %>
-                        <% if (recs.length > 0) { %>
-                            <div class="row g-3">
-                                <% recs.forEach(rec => { %>
-                                <div class="col-md-6">
-                                    <div class="card priority-<%= rec.priority.toLowerCase() %> h-100">
-                                        <div class="card-body">
-                                            <div class="d-flex justify-content-between align-items-start mb-2">
-                                                <span class="badge bg-<%= 
-                                                    rec.priority === 'CRITICAL' ? 'danger' : 
-                                                    rec.priority === 'HIGH' ? 'warning text-dark' : 
-                                                    'secondary' 
-                                                %>"><%= rec.priority %></span>
-                                                <small class="text-muted"><%= rec.category %></small>
-                                            </div>
-                                            <h6 class="card-title"><%= rec.issue %></h6>
-                                            <p class="card-text small"><%= rec.action %></p>
-                                            <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
-                                                <small class="text-success"><i class="bi bi-graph-up"></i> <%= rec.expected_impact %></small>
-                                                <small class="text-muted"><%= rec.timeframe %></small>
-                                            </div>
+                    <!-- Status Distribution -->
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-header">
+                                <i class="bi bi-pie-chart me-2"></i> Status Distribution
+                            </div>
+                            <div class="card-content">
+                                <% const statuses = basicStats.byStatus; %>
+                                <% Object.entries(statuses).forEach(([status, count]) => { %>
+                                <div class="d-flex justify-content-between align-items-center mb-2 p-2 bg-light rounded">
+                                    <span class="text-capitalize"><%= status.replace(/-/g, ' ') %></span>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="progress" style="width: 100px;">
+                                            <div class="progress-bar <%= 
+                                                status === 'offer received' ? 'bg-success' : 
+                                                status === 'rejected' ? 'bg-danger' : 
+                                                status === 'ghosted' ? 'bg-secondary' : 
+                                                status === 'interview' ? 'bg-info' : 'bg-primary' 
+                                            %>" style="width: <%= (count / basicStats.total * 100) %>%"></div>
                                         </div>
+                                        <span class="badge badge-secondary"><%= count %></span>
                                     </div>
                                 </div>
                                 <% }) %>
                             </div>
-                        <% } else { %>
-                            <div class="text-center py-4 text-muted">
-                                <i class="bi bi-check-circle display-4 text-success"></i>
-                                <p class="mt-2">No critical issues detected. Your strategy is solid!</p>
+                        </div>
+                    </div>
+
+                    <!-- AI Recommendations -->
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <i class="bi bi-stars me-2"></i>
+                                <%= aiConnected ? 'AI-Generated Action Plan' : 'Recommended Actions' %>
                             </div>
-                        <% } %>
+                            <div class="card-content">
+                                <% const recs = analysis.actionable_recommendations || []; %>
+                                <% if (recs.length > 0) { %>
+                                    <div class="row g-3">
+                                        <% recs.forEach(rec => { %>
+                                        <div class="col-md-6">
+                                            <div class="card h-100 priority-<%= rec.priority.toLowerCase() %>">
+                                                <div class="card-content">
+                                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                                        <span class="badge <%= 
+                                                            rec.priority === 'CRITICAL' ? 'badge-danger' : 
+                                                            rec.priority === 'HIGH' ? 'badge-warning' : 
+                                                            rec.priority === 'MEDIUM' ? 'badge-primary' : 'badge-secondary' 
+                                                        %>"><%= rec.priority %></span>
+                                                        <small class="text-muted"><%= rec.category %></small>
+                                                    </div>
+                                                    <h6 class="fw-bold"><%= rec.issue %></h6>
+                                                    <p class="small text-muted"><%= rec.action %></p>
+                                                    <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
+                                                        <small class="text-success"><i class="bi bi-graph-up"></i> <%= rec.expected_impact %></small>
+                                                        <small class="text-muted"><%= rec.timeframe %></small>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <% }) %>
+                                    </div>
+                                <% } else { %>
+                                    <div class="text-center py-4 text-muted">
+                                        <i class="bi bi-check-circle display-4 text-success"></i>
+                                        <p class="mt-2">No critical issues detected. Your strategy is solid!</p>
+                                    </div>
+                                <% } %>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Applications Table -->
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <i class="bi bi-clock-history me-2"></i> Recent Applications
+                            </div>
+                            <div class="card-content p-0">
+                                <div class="table-container">
+                                    <table class="data-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Company</th>
+                                                <th>Role</th>
+                                                <th>Method</th>
+                                                <th>Status</th>
+                                                <th>Applied</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <% applications.slice(0, 5).forEach(app => { %>
+                                            <tr>
+                                                <td><strong><%= app.company_name %></strong></td>
+                                                <td><%= app.job_title %></td>
+                                                <td><span class="badge badge-secondary"><%= app.app_method %></span></td>
+                                                <td>
+                                                    <span class="badge <%= 
+                                                        app.status === 'offer received' ? 'badge-offer' : 
+                                                        app.status === 'rejected' ? 'badge-rejected' : 
+                                                        app.status === 'ghosted' ? 'badge-ghosted' : 
+                                                        app.status === 'interview' ? 'badge-interview' : 
+                                                        app.status === 'shortlisted' ? 'badge-shortlisted' : 
+                                                        'badge-applied' 
+                                                    %>"><%= app.status %></span>
+                                                </td>
+                                                <td><%= new Date(app.date_applied).toLocaleDateString() %></td>
+                                            </tr>
+                                            <% }) %>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <% if (applications.length > 5) { %>
+                                <div class="card-footer text-center border-top bg-light py-3">
+                                    <a href="/applications/dashboard" class="text-decoration-none">View all <%= applications.length %> applications →</a>
+                                </div>
+                                <% } %>
+                            </div>
+                        </div>
                     </div>
                 </div>
+                <% } %>
             </div>
-
-            <!-- Recent Applications Table -->
-            <div class="col-12">
-                <div class="card shadow-sm">
-                    <div class="card-header bg-white fw-bold">
-                        <i class="bi bi-clock-history"></i> Recent Applications
-                    </div>
-                    <div class="card-body p-0">
-                        <div class="table-responsive">
-                            <table class="table table-hover mb-0">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th>Company</th>
-                                        <th>Role</th>
-                                        <th>Method</th>
-                                        <th>Status</th>
-                                        <th>Applied</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <% applications.slice(0, 5).forEach(app => { %>
-                                    <tr>
-                                        <td><strong><%= app.company_name %></strong></td>
-                                        <td><%= app.job_title %></td>
-                                        <td><span class="badge bg-light text-dark"><%= app.app_method %></span></td>
-                                        <td>
-                                            <span class="badge bg-<%= 
-                                                app.status === 'offer received' ? 'success' : 
-                                                app.status === 'rejected' ? 'danger' : 
-                                                app.status === 'ghosted' ? 'dark' : 
-                                                app.status === 'interview' ? 'info' : 
-                                                'secondary' 
-                                            %>"><%= app.status %></span>
-                                        </td>
-                                        <td><%= new Date(app.date_applied).toLocaleDateString() %></td>
-                                    </tr>
-                                    <% }) %>
-                                </tbody>
-                            </table>
-                        </div>
-                        <% if (applications.length > 5) { %>
-                        <div class="card-footer text-center">
-                            <a href="/applications/dashboard" class="text-decoration-none">View all <%= applications.length %> applications →</a>
-                        </div>
-                        <% } %>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <% } %>
+        </main>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Mobile sidebar toggle
+        const mobileToggle = document.getElementById('mobileToggle');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        if (mobileToggle) {
+            mobileToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('open');
+                overlay.classList.toggle('show');
+            });
+        }
+        if (overlay) {
+            overlay.addEventListener('click', () => {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('show');
+            });
+        }
+
+        // Dropdown toggles
+        function setupDropdown(btnId, dropdownId) {
+            const btn = document.getElementById(btnId);
+            const dd = document.getElementById(dropdownId);
+            if (btn && dd) {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    document.querySelectorAll('.dropdown-content.show').forEach(el => el.classList.remove('show'));
+                    dd.classList.toggle('show');
+                });
+            }
+        }
+        setupDropdown('notificationBtn', 'notificationDropdown');
+        setupDropdown('userBtn', 'userDropdown');
+
+        document.addEventListener('click', () => {
+            document.querySelectorAll('.dropdown-content.show').forEach(el => el.classList.remove('show'));
+        });
+        document.querySelectorAll('.dropdown-content').forEach(el => {
+            el.addEventListener('click', (e) => e.stopPropagation());
+        });
+    </script>
 </body>
 </html>

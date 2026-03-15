@@ -2,259 +2,1362 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard | Optimus Job Tracker</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        .status-badge { font-size: 0.75rem; padding: 0.5em 0.8em; }
-        .status-applied { background-color: #e2e3e5; color: #383d41; }
-        .status-shortlisted { background-color: #cff4fc; color: #055160; }
-        .status-interview { background-color: #fff3cd; color: #856404; }
-        .status-offer { background-color: #d1e7dd; color: #0f5132; }
-        .status-rejected { background-color: #f8d7da; color: #842029; }
-        .status-ghosted { background-color: #343a40; color: #ffffff; }
-        .status-withdrawn { background-color: #f8f9fa; color: #6c757d; border: 1px solid #dee2e6; }
-        
-        .stat-card { transition: transform 0.2s; }
-        .stat-card:hover { transform: translateY(-2px); }
-        
-        .skill-badge { font-size: 0.7rem; margin-right: 3px; margin-bottom: 3px; display: inline-block; }
-        
-        .alert-followup { border-left: 4px solid #ffc107; }
-        
-        @media (max-width: 768px) {
-            .table-responsive-stack tr { display: flex; flex-direction: column; margin-bottom: 1rem; border: 1px solid #dee2e6; }
-            .table-responsive-stack td { display: block; border: none; }
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
         }
+
+        :root {
+            --background: 0 0% 100%;
+            --foreground: 222.2 84% 4.9%;
+            --card: 0 0% 100%;
+            --card-foreground: 222.2 84% 4.9%;
+            --popover: 0 0% 100%;
+            --popover-foreground: 222.2 84% 4.9%;
+            --primary: 221.2 83.2% 53.3%;
+            --primary-foreground: 210 40% 98%;
+            --secondary: 210 40% 96%;
+            --secondary-foreground: 222.2 84% 4.9%;
+            --muted: 210 40% 96%;
+            --muted-foreground: 215.4 16.3% 46.9%;
+            --accent: 210 40% 96%;
+            --accent-foreground: 222.2 84% 4.9%;
+            --destructive: 0 84.2% 60.2%;
+            --destructive-foreground: 210 40% 98%;
+            --border: 214.3 31.8% 91.4%;
+            --input: 214.3 31.8% 91.4%;
+            --ring: 221.2 83.2% 53.3%;
+            --radius: 0.75rem;
+            --sidebar-background: 0 0% 98%;
+            --sidebar-foreground: 240 5.3% 26.1%;
+            --sidebar-primary: 240 5.9% 10%;
+            --sidebar-primary-foreground: 0 0% 98%;
+            --sidebar-accent: 240 4.8% 95.9%;
+            --sidebar-accent-foreground: 240 5.9% 10%;
+            --sidebar-border: 220 13% 91%;
+            --sidebar-ring: 217.2 91.2% 59.8%;
+            
+            /* Status Colors */
+            --status-applied-bg: 210 40% 96%;
+            --status-applied-text: 215.4 16.3% 46.9%;
+            --status-shortlisted-bg: 199 89% 48%;
+            --status-shortlisted-text: 0 0% 100%;
+            --status-interview-bg: 45 93% 47%;
+            --status-interview-text: 0 0% 100%;
+            --status-offer-bg: 142 76% 36%;
+            --status-offer-text: 0 0% 100%;
+            --status-rejected-bg: 0 84.2% 60.2%;
+            --status-rejected-text: 0 0% 100%;
+            --status-ghosted-bg: 220 13% 91%;
+            --status-ghosted-text: 220 9% 46%;
+            --status-withdrawn-bg: 0 0% 100%;
+            --status-withdrawn-text: 215.4 16.3% 46.9%;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: hsl(var(--background));
+            color: hsl(var(--foreground));
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Layout */
+        .app-wrapper {
+            display: flex;
+            min-height: 100vh;
+            width: 100%;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 16rem;
+            height: 100vh;
+            background-color: hsl(var(--sidebar-background));
+            border-right: 1px solid hsl(var(--sidebar-border));
+            display: flex;
+            flex-direction: column;
+            z-index: 40;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid hsl(var(--sidebar-border));
+        }
+
+        .sidebar-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            color: hsl(var(--sidebar-foreground));
+        }
+
+        .sidebar-logo-icon {
+            width: 2rem;
+            height: 2rem;
+            background: linear-gradient(135deg, hsl(var(--primary)), hsl(221.2 83.2% 46%));
+            border-radius: var(--radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .sidebar-logo-icon svg {
+            width: 1.25rem;
+            height: 1.25rem;
+        }
+
+        .sidebar-logo-text {
+            font-weight: 700;
+            font-size: 1.125rem;
+            letter-spacing: -0.025em;
+        }
+
+        .sidebar-content {
+            flex: 1;
+            padding: 1rem;
+            overflow-y: auto;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .sidebar-menu-item {
+            position: relative;
+        }
+
+        .sidebar-menu-button {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            width: 100%;
+            padding: 0.625rem 0.75rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: hsl(var(--sidebar-foreground));
+            text-decoration: none;
+            border-radius: calc(var(--radius) - 2px);
+            transition: background-color 0.15s, color 0.15s;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+        }
+
+        .sidebar-menu-button:hover {
+            background-color: hsl(var(--sidebar-accent));
+            color: hsl(var(--sidebar-accent-foreground));
+        }
+
+        .sidebar-menu-button.active {
+            background-color: hsl(var(--sidebar-accent));
+            color: hsl(var(--sidebar-accent-foreground));
+            font-weight: 600;
+        }
+
+        .sidebar-menu-button svg {
+            width: 1rem;
+            height: 1rem;
+            flex-shrink: 0;
+        }
+
+        .sidebar-footer {
+            padding: 1rem;
+            border-top: 1px solid hsl(var(--sidebar-border));
+        }
+
+        .sidebar-user {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            border-radius: calc(var(--radius) - 2px);
+            background-color: hsl(var(--sidebar-accent) / 0.5);
+        }
+
+        .sidebar-user-avatar {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            object-fit: cover;
+            background-color: hsl(var(--muted));
+        }
+
+        .sidebar-user-info {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .sidebar-user-name {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: hsl(var(--sidebar-foreground));
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .sidebar-user-role {
+            font-size: 0.75rem;
+            color: hsl(var(--muted-foreground));
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 16rem;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Topbar */
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid hsl(var(--border));
+            background-color: hsl(var(--background));
+            position: sticky;
+            top: 0;
+            z-index: 30;
+        }
+
+        .topbar-search {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex: 1;
+            max-width: 28rem;
+        }
+
+        .search-input-wrapper {
+            position: relative;
+            flex: 1;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 0.75rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: hsl(var(--muted-foreground));
+            width: 1rem;
+            height: 1rem;
+        }
+
+        .search-input {
+            width: 100%;
+            height: 2.5rem;
+            padding: 0.5rem 0.75rem 0.5rem 2.5rem;
+            font-size: 0.875rem;
+            border: 1px solid hsl(var(--input));
+            border-radius: var(--radius);
+            background-color: transparent;
+            outline: none;
+            transition: border-color 0.15s, box-shadow 0.15s;
+            font-family: inherit;
+        }
+
+        .search-input:focus {
+            border-color: hsl(var(--ring));
+            box-shadow: 0 0 0 2px hsl(var(--ring) / 0.2);
+        }
+
+        .search-input::placeholder {
+            color: hsl(var(--muted-foreground));
+        }
+
+        .topbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .icon-button {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 0.375rem;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            color: hsl(var(--foreground));
+            transition: background-color 0.15s;
+        }
+
+        .icon-button:hover {
+            background-color: hsl(var(--accent));
+        }
+
+        .icon-button svg {
+            width: 1.25rem;
+            height: 1.25rem;
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: -0.25rem;
+            right: -0.25rem;
+            width: 1.25rem;
+            height: 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background-color: hsl(var(--primary));
+            color: hsl(var(--primary-foreground));
+            border-radius: 50%;
+        }
+
+        .avatar-button {
+            width: 2.25rem;
+            height: 2.25rem;
+            border-radius: 50%;
+            overflow: hidden;
+            cursor: pointer;
+            border: 2px solid hsl(var(--border));
+            padding: 0;
+            background: transparent;
+            transition: border-color 0.15s;
+        }
+
+        .avatar-button:hover {
+            border-color: hsl(var(--ring));
+        }
+
+        .avatar-button img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        /* Page Content */
+        .page-content {
+            flex: 1;
+            padding: 1.5rem 2rem 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .page-title {
+            font-size: 1.875rem;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            color: hsl(var(--foreground));
+        }
+
+        .page-actions {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: background-color 0.15s, color 0.15s, border-color 0.15s, transform 0.1s;
+            white-space: nowrap;
+            text-decoration: none;
+            border: none;
+            font-family: inherit;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn svg {
+            width: 1rem;
+            height: 1rem;
+        }
+
+        .btn-primary {
+            background-color: hsl(var(--primary));
+            color: hsl(var(--primary-foreground));
+        }
+
+        .btn-primary:hover {
+            background-color: hsl(221.2 83.2% 46%);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid hsl(var(--input));
+            color: hsl(var(--foreground));
+        }
+
+        .btn-outline:hover {
+            background-color: hsl(var(--accent));
+        }
+
+        .btn-ghost {
+            background: transparent;
+            border: none;
+            color: hsl(var(--foreground));
+        }
+
+        .btn-ghost:hover {
+            background-color: hsl(var(--accent));
+        }
+
+        .btn-sm {
+            height: 2.25rem;
+            padding: 0.25rem 0.75rem;
+            font-size: 0.875rem;
+        }
+
+        .btn-icon {
+            width: 2.25rem;
+            height: 2.25rem;
+            padding: 0;
+        }
+
+        /* Select/Dropdown */
+        .form-select {
+            height: 2.25rem;
+            padding: 0.375rem 2rem 0.375rem 0.75rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            border: 1px solid hsl(var(--input));
+            border-radius: var(--radius);
+            background-color: hsl(var(--background));
+            color: hsl(var(--foreground));
+            cursor: pointer;
+            outline: none;
+            transition: border-color 0.15s, box-shadow 0.15s;
+            font-family: inherit;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.5rem center;
+            background-size: 1rem;
+        }
+
+        .form-select:focus {
+            border-color: hsl(var(--ring));
+            box-shadow: 0 0 0 2px hsl(var(--ring) / 0.2);
+        }
+
+        /* Alert */
+        .alert {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem 1.25rem;
+            border-radius: var(--radius);
+            border: 1px solid hsl(var(--border));
+            background-color: hsl(var(--background));
+            font-size: 0.875rem;
+        }
+
+        .alert-warning {
+            background-color: hsl(45 93% 95%);
+            border-color: hsl(45 93% 80%);
+            color: hsl(28 73% 25%);
+        }
+
+        .alert-icon {
+            width: 1.25rem;
+            height: 1.25rem;
+            flex-shrink: 0;
+        }
+
+        /* Cards */
+        .card {
+            border-radius: var(--radius);
+            border: 1px solid hsl(var(--border));
+            background-color: hsl(var(--card));
+            color: hsl(var(--card-foreground));
+            overflow: hidden;
+        }
+
+        .card-header {
+            display: flex;
+            flex-direction: column;
+            gap: 0.375rem;
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid hsl(var(--border));
+        }
+
+        .card-header-row {
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+        .card-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            line-height: 1;
+            color: hsl(var(--foreground));
+        }
+
+        .card-title-lg {
+            font-size: 1.125rem;
+            font-weight: 600;
+        }
+
+        .card-description {
+            font-size: 0.875rem;
+            color: hsl(var(--muted-foreground));
+        }
+
+        .card-content {
+            padding: 1.25rem 1.5rem;
+        }
+
+        .card-icon {
+            width: 1rem;
+            height: 1rem;
+            color: hsl(var(--muted-foreground));
+        }
+
+        .card-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: hsl(var(--foreground));
+            margin-top: 0.5rem;
+        }
+
+        .card-subtitle {
+            font-size: 0.75rem;
+            color: hsl(var(--muted-foreground));
+            margin-top: 0.25rem;
+        }
+
+        .card-subtitle a {
+            color: hsl(var(--primary));
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .card-subtitle a:hover {
+            text-decoration: underline;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(6, 1fr);
+            gap: 1rem;
+        }
+
+        /* Table */
+        .table-container {
+            overflow-x: auto;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+        }
+
+        .data-table thead {
+            background-color: hsl(var(--muted));
+        }
+
+        .data-table th {
+            padding: 0.875rem 1rem;
+            text-align: left;
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: hsl(var(--muted-foreground));
+            white-space: nowrap;
+        }
+
+        .data-table td {
+            padding: 1rem;
+            border-bottom: 1px solid hsl(var(--border));
+            vertical-align: top;
+        }
+
+        .data-table tbody tr {
+            transition: background-color 0.15s;
+        }
+
+        .data-table tbody tr:hover {
+            background-color: hsl(var(--muted) / 0.5);
+        }
+
+        .data-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* Status Badges */
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.375rem 0.875rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+            white-space: nowrap;
+        }
+
+        .badge-applied { background-color: hsl(var(--status-applied-bg)); color: hsl(var(--status-applied-text)); }
+        .badge-shortlisted { background-color: hsl(var(--status-shortlisted-bg)); color: hsl(var(--status-shortlisted-text)); }
+        .badge-interview { background-color: hsl(var(--status-interview-bg)); color: hsl(var(--status-interview-text)); }
+        .badge-offer { background-color: hsl(var(--status-offer-bg)); color: hsl(var(--status-offer-text)); }
+        .badge-rejected { background-color: hsl(var(--status-rejected-bg)); color: hsl(var(--status-rejected-text)); }
+        .badge-ghosted { background-color: hsl(var(--status-ghosted-bg)); color: hsl(var(--status-ghosted-text)); border: 1px solid hsl(var(--border)); }
+        .badge-withdrawn { background-color: hsl(var(--status-withdrawn-bg)); color: hsl(var(--status-withdrawn-text)); border: 1px solid hsl(var(--border)); }
+
+        .badge-warning {
+            background-color: hsl(45 93% 95%);
+            color: hsl(28 73% 25%);
+        }
+
+        .badge-secondary {
+            background-color: hsl(var(--secondary));
+            color: hsl(var(--secondary-foreground));
+        }
+
+        .badge-primary {
+            background-color: hsl(var(--primary) / 0.1);
+            color: hsl(var(--primary));
+        }
+
+        .badge-referral {
+            background-color: hsl(45 93% 47% / 0.15);
+            color: hsl(28 73% 35%);
+        }
+
+        /* Cell Content */
+        .cell-main {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .cell-title {
+            font-weight: 600;
+            color: hsl(var(--foreground));
+            text-decoration: none;
+            font-size: 0.9375rem;
+        }
+
+        .cell-title:hover {
+            color: hsl(var(--primary));
+            text-decoration: underline;
+        }
+
+        .cell-subtitle {
+            font-size: 0.8125rem;
+            color: hsl(var(--muted-foreground));
+        }
+
+        .cell-meta {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: 0.375rem;
+        }
+
+        .meta-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.75rem;
+            color: hsl(var(--muted-foreground));
+        }
+
+        .meta-item svg {
+            width: 0.875rem;
+            height: 0.875rem;
+        }
+
+        /* Skill Tags */
+        .skill-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.375rem;
+            margin-top: 0.5rem;
+        }
+
+        .skill-tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.5rem;
+            background-color: hsl(var(--primary) / 0.1);
+            color: hsl(var(--primary));
+            border-radius: calc(var(--radius) - 4px);
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        /* Empty State */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem;
+            text-align: center;
+            color: hsl(var(--muted-foreground));
+        }
+
+        .empty-state-icon {
+            width: 3rem;
+            height: 3rem;
+            margin-bottom: 1rem;
+            color: hsl(var(--muted-foreground) / 0.5);
+        }
+
+        .empty-state-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: hsl(var(--foreground));
+            margin-bottom: 0.25rem;
+        }
+
+        /* Mobile Toggle */
+        .mobile-toggle {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            width: 2.5rem;
+            height: 2.5rem;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            color: hsl(var(--foreground));
+            border-radius: 0.375rem;
+        }
+
+        .mobile-toggle:hover {
+            background-color: hsl(var(--accent));
+        }
+
+        .mobile-toggle svg {
+            width: 1.25rem;
+            height: 1.25rem;
+        }
+
+        /* Sidebar Overlay */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 35;
+        }
+
+        .sidebar-overlay.show {
+            display: block;
+        }
+
+        /* Dropdown */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: calc(100% + 0.5rem);
+            min-width: 12rem;
+            background-color: hsl(var(--popover));
+            border: 1px solid hsl(var(--border));
+            border-radius: var(--radius);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+            z-index: 50;
+            padding: 0.25rem;
+            animation: slideIn 0.15s ease-out;
+        }
+
+        .dropdown-content.show {
+            display: block;
+        }
+
+        .dropdown-content.wide {
+            min-width: 20rem;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-0.5rem); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .dropdown-label {
+            padding: 0.5rem;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: hsl(var(--foreground));
+        }
+
+        .dropdown-separator {
+            height: 1px;
+            background-color: hsl(var(--border));
+            margin: 0.25rem 0;
+        }
+
+        .dropdown-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            width: 100%;
+            padding: 0.5rem;
+            font-size: 0.875rem;
+            text-align: left;
+            background: none;
+            border: none;
+            cursor: pointer;
+            border-radius: calc(var(--radius) - 4px);
+            color: hsl(var(--foreground));
+            text-decoration: none;
+        }
+
+        .dropdown-item:hover {
+            background-color: hsl(var(--accent));
+        }
+
+        .dropdown-item-title {
+            font-weight: 500;
+        }
+
+        .dropdown-item-desc {
+            font-size: 0.75rem;
+            color: hsl(var(--muted-foreground));
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .stats-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .sidebar.open {
+                transform: translateX(0);
+            }
+
+            .main-content {
+                margin-left: 0;
+            }
+
+            .mobile-toggle {
+                display: flex;
+            }
+
+            .page-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .data-table {
+                font-size: 0.8125rem;
+            }
+
+            .data-table th,
+            .data-table td {
+                padding: 0.75rem;
+            }
+
+            .hide-mobile {
+                display: none;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Utilities */
+        .text-success { color: hsl(142 76% 36%); }
+        .text-danger { color: hsl(0 84.2% 60.2%); }
+        .text-warning { color: hsl(45 93% 47%); }
+        .text-muted { color: hsl(var(--muted-foreground)); }
+        .d-flex { display: flex; }
+        .align-items-center { align-items: center; }
+        .gap-1 { gap: 0.25rem; }
+        .gap-2 { gap: 0.5rem; }
+        .mt-1 { margin-top: 0.25rem; }
+        .ml-auto { margin-left: auto; }
     </style>
 </head>
-<body class="bg-light">
-    
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container-fluid px-4">
-            <a class="navbar-brand fw-bold" href="/applications/dashboard">
-                <i class="bi bi-briefcase-fill"></i> Optimus Tracker
-            </a>
-            <div class="d-flex align-items-center gap-3">
-                <a href="/applications/analytics" class="btn btn-outline-info btn-sm">
-                    <i class="bi bi-graph-up"></i> Analytics
-                </a>
-                <span class="text-light d-none d-md-inline">Welcome, <strong><%= user %></strong></span>
-                <a href="/auth/logout" class="btn btn-outline-light btn-sm">Logout</a>
-            </div>
-        </div>
-    </nav>
+<body>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-    <div class="container-fluid px-4 py-4">
-        <!-- Stats Row -->
-        <div class="row g-3 mb-4">
-            <div class="col-md-2 col-6">
-                <div class="card stat-card border-0 shadow-sm h-100">
-                    <div class="card-body text-center">
-                        <h3 class="text-primary mb-1"><%= stats.total %></h3>
-                        <small class="text-muted text-uppercase">Total</small>
+    <div class="app-wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <a href="/applications/dashboard" class="sidebar-logo">
+                    <div class="sidebar-logo-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
                     </div>
-                </div>
-            </div>
-            <div class="col-md-2 col-6">
-                <div class="card stat-card border-0 shadow-sm h-100">
-                    <div class="card-body text-center">
-                        <h3 class="text-secondary mb-1"><%= stats.applied %></h3>
-                        <small class="text-muted text-uppercase">Applied</small>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-2 col-6">
-                <div class="card stat-card border-0 shadow-sm h-100">
-                    <div class="card-body text-center">
-                        <h3 class="text-info mb-1"><%= stats.in_progress %></h3>
-                        <small class="text-muted text-uppercase">In Progress</small>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-2 col-6">
-                <div class="card stat-card border-0 shadow-sm h-100">
-                    <div class="card-body text-center">
-                        <h3 class="text-success mb-1"><%= stats.offers %></h3>
-                        <small class="text-muted text-uppercase">Offers</small>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-2 col-6">
-                <div class="card stat-card border-0 shadow-sm h-100">
-                    <div class="card-body text-center">
-                        <h3 class="text-danger mb-1"><%= stats.closed %></h3>
-                        <small class="text-muted text-uppercase">Closed</small>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-2 col-6">
-                <div class="card stat-card border-0 shadow-sm h-100 <%= stats.needs_followup > 0 ? 'border-warning' : '' %>">
-                    <div class="card-body text-center">
-                        <h3 class="<%= stats.needs_followup > 0 ? 'text-warning' : 'text-muted' %> mb-1">
-                            <%= stats.needs_followup %>
-                        </h3>
-                        <small class="text-muted text-uppercase">Follow-up</small>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Follow-up Alert -->
-        <% if (stats.needs_followup > 0) { %>
-        <div class="alert alert-followup alert-dismissible fade show mb-4" role="alert">
-            <i class="bi bi-bell-fill"></i> <strong>Action needed:</strong> You have <%= stats.needs_followup %> application(s) requiring follow-up today.
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-        <% } %>
-
-        <!-- Controls -->
-        <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
-            <h4 class="fw-bold text-primary mb-0">Application Pipeline</h4>
-            <div class="d-flex gap-2 flex-wrap">
-                <form method="GET" action="/applications/dashboard" class="d-flex gap-2">
-                    <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
-                        <option value="all" <%= currentFilter === 'all' ? 'selected' : '' %>>All Statuses</option>
-                        <option value="applied" <%= currentFilter === 'applied' ? 'selected' : '' %>>Applied</option>
-                        <option value="shortlisted" <%= currentFilter === 'shortlisted' ? 'selected' : '' %>>Shortlisted</option>
-                        <option value="interview" <%= currentFilter === 'interview' ? 'selected' : '' %>>Interview</option>
-                        <option value="final interview" <%= currentFilter === 'final interview' ? 'selected' : '' %>>Final Interview</option>
-                        <option value="offer received" <%= currentFilter === 'offer received' ? 'selected' : '' %>>Offer Received</option>
-                        <option value="rejected" <%= currentFilter === 'rejected' ? 'selected' : '' %>>Rejected</option>
-                        <option value="ghosted" <%= currentFilter === 'ghosted' ? 'selected' : '' %>>Ghosted</option>
-                    </select>
-                </form>
-                <a href="/applications/add" class="btn btn-success fw-bold shadow-sm">
-                    <i class="bi bi-plus-lg"></i> Track New Job
+                    <span class="sidebar-logo-text">Optimus Tracker</span>
                 </a>
             </div>
-        </div>
-
-        <!-- Applications Table -->
-        <div class="card shadow-sm border-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>Company & Role</th>
-                            <th>Details</th>
-                            <th>Timeline</th>
-                            <th>Status</th>
-                            <th>Resume</th>
-                            <th>Update</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <% if (apps.length === 0) { %>
-                            <tr>
-                                <td colspan="6" class="text-center py-5 text-muted">
-                                    <i class="bi bi-inbox display-4 d-block mb-3"></i>
-                                    No applications found. <a href="/applications/add">Track your first application</a>
-                                </td>
-                            </tr>
-                        <% } %>
-
-                        <% apps.forEach(app => { 
-                            const daysSince = Math.floor((new Date() - new Date(app.date_applied)) / (1000 * 60 * 60 * 24));
-                            const isOld = daysSince > 30 && app.status === 'applied';
-                        %>
-                        <tr class="<%= isOld ? 'table-warning' : '' %>">
-                            <td>
-                                <div class="d-flex align-items-center gap-2 mb-1">
-                                    <strong class="text-dark"><%= app.company_name %></strong>
-                                    <% if (app.referral) { %><span class="badge bg-warning text-dark" title="Referral"><i class="bi bi-person-check"></i></span><% } %>
-                                    <% if (app.tailored_resume) { %><span class="badge bg-success" title="Tailored Resume"><i class="bi bi-star-fill"></i></span><% } %>
-                                </div>
-                                <a href="/applications/view/<%= app.id %>" class="text-decoration-none fw-bold text-primary">
-                                    <%= app.job_title %>
-                                </a>
-                                <div class="small text-muted">
-                                    <%= app.job_level %> • <%= app.location || 'Location N/A' %>
-                                    <% if (app.work_arrangement) { %> • <%= app.work_arrangement %><% } %>
-                                </div>
-                                <% if (app.job_domain && app.job_domain.length > 0) { %>
-                                    <div class="mt-1">
-                                        <% app.job_domain.slice(0, 2).forEach(domain => { %>
-                                            <span class="badge bg-primary bg-opacity-10 text-primary skill-badge"><%= domain %></span>
-                                        <% }) %>
-                                    </div>
-                                <% } %>
-                            </td>
-
-                            <td>
-                                <small class="d-block text-muted">
-                                    <i class="bi bi-send"></i> <%= app.app_method %>
-                                </small>
-                                <% if (app.assessment_upfront) { %>
-                                    <span class="badge bg-warning text-dark skill-badge">
-                                        <i class="bi bi-clipboard-check"></i> <%= app.assessment_type || 'Assessment' %>
-                                    </span>
-                                <% } %>
-                                <small class="d-block text-muted mt-1">
-                                    <i class="bi bi-clock"></i> <%= app.time_spent_minutes %> mins
-                                </small>
-                            </td>
-
-                            <td>
-                                <small class="d-block">
-                                    <strong>Applied:</strong> <%= new Date(app.date_applied).toLocaleDateString() %>
-                                </small>
-                                <% if (app.closing_date) { %>
-                                    <small class="d-block text-muted">
-                                        Closes: <%= new Date(app.closing_date).toLocaleDateString() %>
-                                    </small>
-                                <% } %>
-                                <% if (app.follow_up_date && new Date(app.follow_up_date) <= new Date() && !['offer received', 'rejected', 'ghosted', 'withdrawn'].includes(app.status)) { %>
-                                    <span class="badge bg-warning text-dark mt-1">Follow-up due</span>
-                                <% } else if (isOld) { %>
-                                    <span class="badge bg-secondary mt-1"><%= daysSince %> days old</span>
-                                <% } %>
-                            </td>
-
-                            <td>
-                                <span class="badge rounded-pill status-<%= app.status.toLowerCase().replace(/ /g, '-') %> status-badge">
-                                    <%= app.status.toUpperCase() %>
-                                </span>
-                            </td>
-
-                            <td>
-                                <% if(app.resume_path) { %>
-                                    <a href="<%= app.resume_path %>" target="_blank" class="btn btn-sm btn-outline-danger">
-                                        <i class="bi bi-file-pdf"></i> PDF
-                                    </a>
-                                <% } else { %>
-                                    <span class="text-muted small">—</span>
-                                <% } %>
-                            </td>
-
-                            <td>
-                                <form action="/applications/update-status/<%= app.id %>" method="POST" class="d-flex gap-1">
-                                    <select name="status" class="form-select form-select-sm" style="width: 130px;">
-                                        <option value="applied" <%= app.status === 'applied' ? 'selected' : '' %>>Applied</option>
-                                        <option value="application viewed" <%= app.status === 'application viewed' ? 'selected' : '' %>>Viewed</option>
-                                        <option value="shortlisted" <%= app.status === 'shortlisted' ? 'selected' : '' %>>Shortlisted</option>
-                                        <option value="assessment/test stage" <%= app.status === 'assessment/test stage' ? 'selected' : '' %>>Assessment</option>
-                                        <option value="phone screen" <%= app.status === 'phone screen' ? 'selected' : '' %>>Phone Screen</option>
-                                        <option value="interview" <%= app.status === 'interview' ? 'selected' : '' %>>Interview</option>
-                                        <option value="final interview" <%= app.status === 'final interview' ? 'selected' : '' %>>Final Interview</option>
-                                        <option value="offer received" <%= app.status === 'offer received' ? 'selected' : '' %>>Offer</option>
-                                        <option value="rejected" <%= app.status === 'rejected' ? 'selected' : '' %>>Rejected</option>
-                                        <option value="withdrawn" <%= app.status === 'withdrawn' ? 'selected' : '' %>>Withdrawn</option>
-                                        <option value="ghosted" <%= app.status === 'ghosted' ? 'selected' : '' %>>Ghosted</option>
-                                    </select>
-                                    <button type="submit" class="btn btn-sm btn-dark" title="Update">
-                                        <i class="bi bi-check-lg"></i>
-                                    </button>
-                                </form>
-                            </td>
-                        </tr>
-                        <% }) %>
-                    </tbody>
-                </table>
+            <nav class="sidebar-content">
+                <ul class="sidebar-menu">
+                    <li class="sidebar-menu-item">
+                        <a href="/applications/dashboard" class="sidebar-menu-button active">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-menu-item">
+                        <a href="/applications/analytics" class="sidebar-menu-button">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" x2="18" y1="20" y2="10"></line><line x1="12" x2="12" y1="20" y2="4"></line><line x1="6" x2="6" y1="20" y2="14"></line></svg>
+                            <span>Analytics</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-menu-item">
+                        <a href="/applications/ai-analytics" class="sidebar-menu-button">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"/><path d="M8.5 8.5v.01"/><path d="M16 15.5v.01"/><path d="M12 12v.01"/><path d="M11 17v.01"/><path d="M7 14v.01"/></svg>
+                            <span>AI Analytics</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-menu-item">
+                        <a href="/ats" class="sidebar-menu-button">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                            <span>ATS Check</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="sidebar-user">
+                    <div class="sidebar-user-avatar" style="display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, hsl(var(--primary)), hsl(221.2 83.2% 46%)); color: white; font-weight: 600; font-size: 0.875rem;">
+                        <%= user.charAt(0).toUpperCase() %>
+                    </div>
+                    <div class="sidebar-user-info">
+                        <span class="sidebar-user-name"><%= user %></span>
+                        <span class="sidebar-user-role">Job Seeker</span>
+                    </div>
+                </div>
             </div>
-        </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Topbar -->
+            <header class="topbar">
+                <div class="topbar-search">
+                    <button class="mobile-toggle" id="mobileToggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M9 3v18"></path></svg>
+                    </button>
+                    <form action="/applications/dashboard" method="GET" class="search-input-wrapper">
+                        <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+                        <input type="text" name="search" class="search-input" placeholder="Search applications...">
+                    </form>
+                </div>
+
+                <div class="topbar-actions">
+                    <div class="dropdown">
+                        <button class="icon-button" id="notificationBtn">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg>
+                            <% if (stats.needs_followup > 0) { %>
+                            <span class="notification-badge"><%= stats.needs_followup %></span>
+                            <% } %>
+                        </button>
+                        <div class="dropdown-content wide" id="notificationDropdown">
+                            <div class="dropdown-label">Notifications</div>
+                            <div class="dropdown-separator"></div>
+                            <% if (stats.needs_followup > 0) { %>
+                            <a href="/applications/dashboard?filter=followup" class="dropdown-item">
+                                <span class="dropdown-item-title">Follow-ups Due</span>
+                                <span class="dropdown-item-desc">You have <%= stats.needs_followup %> application(s) requiring follow-up</span>
+                            </a>
+                            <% } else { %>
+                            <div class="dropdown-item">
+                                <span class="dropdown-item-desc">No new notifications</span>
+                            </div>
+                            <% } %>
+                        </div>
+                    </div>
+
+                    <div class="dropdown">
+                        <button class="avatar-button" id="userBtn">
+                            <div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, hsl(var(--primary)), hsl(221.2 83.2% 46%)); color: white; font-weight: 600; font-size: 0.875rem;">
+                                <%= user.charAt(0).toUpperCase() %>
+                            </div>
+                        </button>
+                        <div class="dropdown-content" id="userDropdown">
+                            <div class="dropdown-label">My Account</div>
+                            <div class="dropdown-separator"></div>
+                            <a href="/user/profile" class="dropdown-item">Profile</a>
+                            <a href="/user/settings" class="dropdown-item">Settings</a>
+                            <div class="dropdown-separator"></div>
+                            <a href="/auth/logout" class="dropdown-item" style="color: hsl(var(--destructive));">Log out</a>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Page Content -->
+            <div class="page-content">
+                <div class="page-header">
+                    <h1 class="page-title">Application Pipeline</h1>
+                    <div class="page-actions">
+                        <form method="GET" action="/applications/dashboard" style="display: flex; align-items: center;">
+                            <select name="status" class="form-select" onchange="this.form.submit()">
+                                <option value="all" <%= currentFilter === 'all' ? 'selected' : '' %>>All Statuses</option>
+                                <option value="applied" <%= currentFilter === 'applied' ? 'selected' : '' %>>Applied</option>
+                                <option value="shortlisted" <%= currentFilter === 'shortlisted' ? 'selected' : '' %>>Shortlisted</option>
+                                <option value="interview" <%= currentFilter === 'interview' ? 'selected' : '' %>>Interview</option>
+                                <option value="final interview" <%= currentFilter === 'final interview' ? 'selected' : '' %>>Final Interview</option>
+                                <option value="offer received" <%= currentFilter === 'offer received' ? 'selected' : '' %>>Offer Received</option>
+                                <option value="rejected" <%= currentFilter === 'rejected' ? 'selected' : '' %>>Rejected</option>
+                                <option value="ghosted" <%= currentFilter === 'ghosted' ? 'selected' : '' %>>Ghosted</option>
+                            </select>
+                        </form>
+                        <a href="/applications/add" class="btn btn-primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+                            Track New Job
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Follow-up Alert -->
+                <% if (stats.needs_followup > 0) { %>
+                <div class="alert alert-warning" role="alert">
+                    <svg class="alert-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+                    <div>
+                        <strong>Action needed:</strong> You have <%= stats.needs_followup %> application(s) requiring follow-up today.
+                    </div>
+                </div>
+                <% } %>
+
+                <!-- Stats Grid -->
+                <div class="stats-grid">
+                    <div class="card">
+                        <div class="card-header card-header-row">
+                            <h3 class="card-title">Total</h3>
+                            <svg class="card-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-value"><%= stats.total %></div>
+                            <p class="card-subtitle">All time applications</p>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header card-header-row">
+                            <h3 class="card-title">Applied</h3>
+                            <svg class="card-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-value" style="color: hsl(var(--muted-foreground));"><%= stats.applied %></div>
+                            <p class="card-subtitle">Awaiting response</p>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header card-header-row">
+                            <h3 class="card-title">In Progress</h3>
+                            <svg class="card-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-value" style="color: hsl(199 89% 48%);"><%= stats.in_progress %></div>
+                            <p class="card-subtitle">Active pipelines</p>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header card-header-row">
+                            <h3 class="card-title">Offers</h3>
+                            <svg class="card-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-value text-success"><%= stats.offers %></div>
+                            <p class="card-subtitle">Congratulations!</p>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header card-header-row">
+                            <h3 class="card-title">Closed</h3>
+                            <svg class="card-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" x2="9" y1="9" y2="15"/><line x1="9" x2="15" y1="9" y2="15"/></svg>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-value text-danger"><%= stats.closed %></div>
+                            <p class="card-subtitle">Rejected / Ghosted</p>
+                        </div>
+                    </div>
+
+                    <div class="card <%= stats.needs_followup > 0 ? 'border-warning' : '' %>" style="<%= stats.needs_followup > 0 ? 'border-color: hsl(45 93% 47%) !important;' : '' %>">
+                        <div class="card-header card-header-row">
+                            <h3 class="card-title">Follow-up</h3>
+                            <svg class="card-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+                        </div>
+                        <div class="card-content">
+                            <div class="card-value <%= stats.needs_followup > 0 ? 'text-warning' : 'text-muted' %>"><%= stats.needs_followup %></div>
+                            <p class="card-subtitle">Require attention</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Applications Table -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title card-title-lg">Recent Applications</h3>
+                        <p class="card-description">Manage your job application pipeline</p>
+                    </div>
+                    <div class="card-content" style="padding: 0;">
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Company & Role</th>
+                                        <th class="hide-mobile">Details</th>
+                                        <th>Timeline</th>
+                                        <th>Status</th>
+                                        <th class="hide-mobile">Resume</th>
+                                        <th>Update</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% if (apps.length === 0) { %>
+                                        <tr>
+                                            <td colspan="6">
+                                                <div class="empty-state">
+                                                    <svg class="empty-state-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+                                                    <div class="empty-state-title">No applications found</div>
+                                                    <p>Start tracking your first job application</p>
+                                                    <a href="/applications/add" class="btn btn-primary" style="margin-top: 1rem;">Track New Job</a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    <% } %>
+
+                                    <% apps.forEach(app => { 
+                                        const daysSince = Math.floor((new Date() - new Date(app.date_applied)) / (1000 * 60 * 60 * 24));
+                                        const isOld = daysSince > 30 && app.status === 'applied';
+                                        const statusClass = app.status.toLowerCase().replace(/ /g, '-');
+                                    %>
+                                    <tr class="<%= isOld ? 'bg-warning-subtle' : '' %>">
+                                        <td>
+                                            <div class="cell-main">
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <strong class="text-dark" style="font-size: 0.9375rem;"><%= app.company_name %></strong>
+                                                    <% if (app.referral) { %><span class="badge badge-referral" title="Referral"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>Referral</span><% } %>
+                                                    <% if (app.tailored_resume) { %><span class="badge badge-primary" title="Tailored Resume"><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Tailored</span><% } %>
+                                                </div>
+                                                <a href="/applications/view/<%= app.id %>" class="cell-title"><%= app.job_title %></a>
+                                                <div class="cell-subtitle">
+                                                    <%= app.job_level %> • <%= app.location || 'Location N/A' %>
+                                                    <% if (app.work_arrangement) { %> • <%= app.work_arrangement %><% } %>
+                                                </div>
+                                                <% if (app.job_domain && app.job_domain.length > 0) { %>
+                                                    <div class="skill-tags">
+                                                        <% app.job_domain.slice(0, 3).forEach(domain => { %>
+                                                            <span class="skill-tag"><%= domain %></span>
+                                                        <% }) %>
+                                                    </div>
+                                                <% } %>
+                                            </div>
+                                        </td>
+
+                                        <td class="hide-mobile">
+                                            <div class="cell-main">
+                                                <span class="meta-item">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" x2="11" y1="2" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                                                    <%= app.app_method %>
+                                                </span>
+                                                <% if (app.assessment_upfront) { %>
+                                                    <span class="badge badge-warning" style="margin-top: 0.5rem;">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+                                                        <%= app.assessment_type || 'Assessment' %>
+                                                    </span>
+                                                <% } %>
+                                                <span class="meta-item mt-1">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                                    <%= app.time_spent_minutes %> mins spent
+                                                </span>
+                                            </div>
+                                        </td>
+
+                                        <td>
+                                            <div class="cell-main">
+                                                <span class="meta-item">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+                                                    <%= new Date(app.date_applied).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) %>
+                                                </span>
+                                                <% if (app.closing_date) { %>
+                                                    <span class="meta-item mt-1">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="16" y1="12" y2="16"/></svg>
+                                                        Closes <%= new Date(app.closing_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) %>
+                                                    </span>
+                                                <% } %>
+                                                <% if (app.follow_up_date && new Date(app.follow_up_date) <= new Date() && !['offer received', 'rejected', 'ghosted', 'withdrawn'].includes(app.status)) { %>
+                                                    <span class="badge badge-warning" style="margin-top: 0.5rem;">Follow-up due</span>
+                                                <% } else if (isOld) { %>
+                                                    <span class="badge badge-secondary" style="margin-top: 0.5rem;"><%= daysSince %> days old</span>
+                                                <% } %>
+                                            </div>
+                                        </td>
+
+                                        <td>
+                                            <span class="badge badge-<%= statusClass %>">
+                                                <%= app.status.toUpperCase() %>
+                                            </span>
+                                        </td>
+
+                                        <td class="hide-mobile">
+                                            <% if(app.resume_path) { %>
+                                                <a href="<%= app.resume_path %>" target="_blank" class="btn btn-outline btn-sm" style="padding: 0.375rem 0.75rem;">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 0.25rem;"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><path d="M12 18v-6"/><path d="m9 15 3 3 3-3"/></svg>
+                                                    PDF
+                                                </a>
+                                            <% } else { %>
+                                                <span class="text-muted" style="font-size: 0.8125rem;">—</span>
+                                            <% } %>
+                                        </td>
+
+                                        <td>
+                                            <form action="/applications/update-status/<%= app.id %>" method="POST" style="display: flex; gap: 0.5rem;">
+                                                <select name="status" class="form-select" style="width: 130px; font-size: 0.8125rem;">
+                                                    <option value="applied" <%= app.status === 'applied' ? 'selected' : '' %>>Applied</option>
+                                                    <option value="application viewed" <%= app.status === 'application viewed' ? 'selected' : '' %>>Viewed</option>
+                                                    <option value="shortlisted" <%= app.status === 'shortlisted' ? 'selected' : '' %>>Shortlisted</option>
+                                                    <option value="assessment/test stage" <%= app.status === 'assessment/test stage' ? 'selected' : '' %>>Assessment</option>
+                                                    <option value="phone screen" <%= app.status === 'phone screen' ? 'selected' : '' %>>Phone Screen</option>
+                                                    <option value="interview" <%= app.status === 'interview' ? 'selected' : '' %>>Interview</option>
+                                                    <option value="final interview" <%= app.status === 'final interview' ? 'selected' : '' %>>Final Interview</option>
+                                                    <option value="offer received" <%= app.status === 'offer received' ? 'selected' : '' %>>Offer</option>
+                                                    <option value="rejected" <%= app.status === 'rejected' ? 'selected' : '' %>>Rejected</option>
+                                                    <option value="withdrawn" <%= app.status === 'withdrawn' ? 'selected' : '' %>>Withdrawn</option>
+                                                    <option value="ghosted" <%= app.status === 'ghosted' ? 'selected' : '' %>>Ghosted</option>
+                                                </select>
+                                                <button type="submit" class="btn btn-primary btn-icon" title="Update Status">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                                </button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                    <% }) %>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Mobile Sidebar Toggle
+        const mobileToggle = document.getElementById('mobileToggle');
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+        if (mobileToggle) {
+            mobileToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('open');
+                sidebarOverlay.classList.toggle('show');
+            });
+        }
+
+        if (sidebarOverlay) {
+            sidebarOverlay.addEventListener('click', () => {
+                sidebar.classList.remove('open');
+                sidebarOverlay.classList.remove('show');
+            });
+        }
+
+        // Dropdown Toggles
+        function setupDropdown(buttonId, dropdownId) {
+            const button = document.getElementById(buttonId);
+            const dropdown = document.getElementById(dropdownId);
+
+            if (button && dropdown) {
+                button.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    document.querySelectorAll('.dropdown-content.show').forEach(el => {
+                        if (el.id !== dropdownId) el.classList.remove('show');
+                    });
+                    dropdown.classList.toggle('show');
+                });
+            }
+        }
+
+        setupDropdown('notificationBtn', 'notificationDropdown');
+        setupDropdown('userBtn', 'userDropdown');
+
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', () => {
+            document.querySelectorAll('.dropdown-content.show').forEach(el => {
+                el.classList.remove('show');
+            });
+        });
+
+        // Prevent dropdown from closing when clicking inside
+        document.querySelectorAll('.dropdown-content').forEach(el => {
+            el.addEventListener('click', (e) => e.stopPropagation());
+        });
+
+        // Keyboard shortcut for sidebar toggle (Ctrl/Cmd + B)
+        document.addEventListener('keydown', (e) => {
+            if ((e.metaKey || e.ctrlKey) && e.key === 'b') {
+                e.preventDefault();
+                sidebar.classList.toggle('open');
+                if (sidebarOverlay) sidebarOverlay.classList.toggle('show');
+            }
+        });
+    </script>
 </body>
 </html>

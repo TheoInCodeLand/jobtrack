@@ -2,277 +2,1127 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Add Job Application - Optimus Tracker</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Track New Application · Optimus Tracker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <style>
-        .section-header { background: #f8f9fa; padding: 1rem; margin: 1.5rem -1rem 1rem -1rem; font-weight: 600; color: #495057; }
-        .form-label { font-size: 0.9rem; font-weight: 500; }
-        .required::after { content: " *"; color: #dc3545; }
-        .contact-card { background: #f8f9fa; border-radius: 0.5rem; padding: 1rem; }
+        /* ===== DESIGN SYSTEM (matches your dashboard) ===== */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        :root {
+            --background: 0 0% 100%; --foreground: 222.2 84% 4.9%;
+            --card: 0 0% 100%; --card-foreground: 222.2 84% 4.9%;
+            --popover: 0 0% 100%; --popover-foreground: 222.2 84% 4.9%;
+            --primary: 221.2 83.2% 53.3%; --primary-foreground: 210 40% 98%;
+            --secondary: 210 40% 96%; --secondary-foreground: 222.2 84% 4.9%;
+            --muted: 210 40% 96%; --muted-foreground: 215.4 16.3% 46.9%;
+            --accent: 210 40% 96%; --accent-foreground: 222.2 84% 4.9%;
+            --destructive: 0 84.2% 60.2%; --destructive-foreground: 210 40% 98%;
+            --border: 214.3 31.8% 91.4%; --input: 214.3 31.8% 91.4%;
+            --ring: 221.2 83.2% 53.3%; --radius: 0.75rem;
+            --sidebar-background: 0 0% 98%; --sidebar-foreground: 240 5.3% 26.1%;
+            --sidebar-primary: 240 5.9% 10%; --sidebar-primary-foreground: 0 0% 98%;
+            --sidebar-accent: 240 4.8% 95.9%; --sidebar-accent-foreground: 240 5.9% 10%;
+            --sidebar-border: 220 13% 91%; --sidebar-ring: 217.2 91.2% 59.8%;
+            --success: 142.1 76.2% 36.3%; --warning: 38 92% 50%;
+        }
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background-color: hsl(var(--background));
+            color: hsl(var(--foreground));
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+        .app-wrapper { display: flex; min-height: 100vh; width: 100%; }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed; left: 0; top: 0; width: 16rem; height: 100vh;
+            background-color: hsl(var(--sidebar-background));
+            border-right: 1px solid hsl(var(--sidebar-border));
+            display: flex; flex-direction: column; z-index: 40;
+        }
+        .sidebar-header { padding: 1.5rem; border-bottom: 1px solid hsl(var(--sidebar-border)); }
+        .sidebar-logo {
+            display: flex; align-items: center; gap: 0.75rem; text-decoration: none;
+            color: hsl(var(--sidebar-foreground));
+        }
+        .sidebar-logo-icon {
+            width: 2rem; height: 2rem;
+            background: linear-gradient(135deg, hsl(var(--primary)), hsl(221.2 83.2% 46%));
+            border-radius: var(--radius); display: flex; align-items: center; justify-content: center;
+            color: white;
+        }
+        .sidebar-logo-icon svg { width: 1.25rem; height: 1.25rem; }
+        .sidebar-logo-text { font-weight: 700; font-size: 1.125rem; letter-spacing: -0.025em; }
+        .sidebar-content { flex: 1; padding: 1rem; overflow-y: auto; }
+        .sidebar-menu { list-style: none; display: flex; flex-direction: column; gap: 0.25rem; }
+        .sidebar-menu-item { position: relative; }
+        .sidebar-menu-button {
+            display: flex; align-items: center; gap: 0.75rem; width: 100%;
+            padding: 0.625rem 0.75rem; font-size: 0.875rem; font-weight: 500;
+            color: hsl(var(--sidebar-foreground)); text-decoration: none;
+            border-radius: calc(var(--radius) - 2px); border: none; background: transparent;
+            cursor: pointer;
+        }
+        .sidebar-menu-button:hover { background-color: hsl(var(--sidebar-accent)); color: hsl(var(--sidebar-accent-foreground)); }
+        .sidebar-menu-button.active { background-color: hsl(var(--sidebar-accent)); color: hsl(var(--sidebar-accent-foreground)); font-weight: 600; }
+        .sidebar-footer { padding: 1rem; border-top: 1px solid hsl(var(--sidebar-border)); }
+        .sidebar-user {
+            display: flex; align-items: center; gap: 0.75rem;
+            padding: 0.75rem; border-radius: calc(var(--radius) - 2px);
+            background-color: hsl(var(--sidebar-accent) / 0.5);
+        }
+        .sidebar-user-avatar {
+            width: 2rem; height: 2rem; border-radius: 50%; object-fit: cover;
+            background-color: hsl(var(--muted)); display: flex; align-items: center; justify-content: center;
+            color: white; font-weight: 600; font-size: 0.875rem;
+        }
+        .sidebar-user-info { display: flex; flex-direction: column; min-width: 0; }
+        .sidebar-user-name { font-size: 0.875rem; font-weight: 600; color: hsl(var(--sidebar-foreground)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .sidebar-user-role { font-size: 0.75rem; color: hsl(var(--muted-foreground)); }
+
+        /* Main content */
+        .main-content { flex: 1; margin-left: 16rem; display: flex; flex-direction: column; min-height: 100vh; }
+
+        /* Topbar */
+        .topbar {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 1rem 1.5rem; border-bottom: 1px solid hsl(var(--border));
+            background-color: hsl(var(--background)); position: sticky; top: 0; z-index: 30;
+        }
+        .topbar-search { display: flex; align-items: center; gap: 1rem; flex: 1; max-width: 28rem; }
+        .search-input-wrapper { position: relative; flex: 1; }
+        .search-icon {
+            position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%);
+            color: hsl(var(--muted-foreground)); width: 1rem; height: 1rem;
+        }
+        .search-input {
+            width: 100%; height: 2.5rem; padding: 0.5rem 0.75rem 0.5rem 2.5rem;
+            font-size: 0.875rem; border: 1px solid hsl(var(--input));
+            border-radius: var(--radius); background-color: transparent; outline: none;
+            transition: border-color 0.15s, box-shadow 0.15s; font-family: inherit;
+        }
+        .search-input:focus { border-color: hsl(var(--ring)); box-shadow: 0 0 0 2px hsl(var(--ring) / 0.2); }
+        .topbar-actions { display: flex; align-items: center; gap: 0.75rem; }
+        .icon-button {
+            display: flex; align-items: center; justify-content: center;
+            width: 2.5rem; height: 2.5rem; border-radius: 0.375rem; background: transparent;
+            border: none; cursor: pointer; color: hsl(var(--foreground));
+            transition: background-color 0.15s; position: relative;
+        }
+        .icon-button:hover { background-color: hsl(var(--accent)); }
+        .avatar-button {
+            width: 2.25rem; height: 2.25rem; border-radius: 50%; overflow: hidden; cursor: pointer;
+            border: 2px solid hsl(var(--border)); padding: 0; background: transparent;
+            transition: border-color 0.15s;
+        }
+        .avatar-button:hover { border-color: hsl(var(--ring)); }
+
+        /* Page content */
+        .page-content { flex: 1; padding: 1.5rem 2rem 2rem; display: flex; flex-direction: column; gap: 1.5rem; }
+        .page-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+        .page-title { font-size: 1.875rem; font-weight: 700; letter-spacing: -0.025em; color: hsl(var(--foreground)); }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+            padding: 0.5rem 1rem; font-size: 0.875rem; font-weight: 500;
+            border-radius: var(--radius); cursor: pointer; transition: all 0.15s;
+            white-space: nowrap; text-decoration: none; border: none; font-family: inherit;
+        }
+        .btn:active { transform: scale(0.98); }
+        .btn svg, .btn i { width: 1rem; height: 1rem; font-size: 1rem; }
+        .btn-primary { background-color: hsl(var(--primary)); color: hsl(var(--primary-foreground)); }
+        .btn-primary:hover { background-color: hsl(221.2 83.2% 46%); }
+        .btn-outline { background-color: transparent; border: 1px solid hsl(var(--input)); color: hsl(var(--foreground)); }
+        .btn-outline:hover { background-color: hsl(var(--accent)); }
+        .btn-ghost { background: transparent; border: none; color: hsl(var(--foreground)); }
+        .btn-ghost:hover { background-color: hsl(var(--accent)); }
+        .btn-success { background-color: hsl(var(--success)); color: white; }
+        .btn-success:hover { background-color: hsl(142.1 76.2% 30%); }
+        .btn-lg { padding: 0.75rem 1.5rem; font-size: 1rem; }
+
+        /* Cards */
+        .card { 
+            border-radius: var(--radius); border: 1px solid hsl(var(--border)); 
+            background-color: hsl(var(--card)); overflow: hidden; 
+            transition: box-shadow 0.2s;
+        }
+        .card:hover { box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        .card-header { 
+            padding: 1.25rem 1.5rem; border-bottom: 1px solid hsl(var(--border));
+            background: linear-gradient(to right, hsl(var(--muted)), transparent);
+        }
+        .card-title { font-size: 1.125rem; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; }
+        .card-content { padding: 1.5rem; }
+
+        /* Form elements */
+        .form-input, .form-select, textarea {
+            width: 100%; padding: 0.625rem 0.875rem; font-size: 0.875rem;
+            border: 1px solid hsl(var(--input)); border-radius: var(--radius);
+            background-color: hsl(var(--background)); color: hsl(var(--foreground));
+            outline: none; transition: all 0.15s; font-family: inherit;
+        }
+        .form-input:focus, .form-select:focus, textarea:focus {
+            border-color: hsl(var(--ring)); box-shadow: 0 0 0 3px hsl(var(--ring) / 0.15);
+        }
+        .form-input::placeholder, textarea::placeholder { color: hsl(var(--muted-foreground)); }
+        .form-select {
+            appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: right 0.75rem center; background-size: 1rem;
+            padding-right: 2.5rem;
+        }
+        .form-label { 
+            display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem;
+            color: hsl(var(--foreground));
+        }
+        .form-label .text-muted { font-weight: 400; font-size: 0.8rem; }
+        .required::after { content: " *"; color: hsl(var(--destructive)); }
+        
+        /* Form layout */
+        .form-grid { display: grid; gap: 1.25rem; }
+        .form-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.25rem; }
+        .form-col-2 { grid-template-columns: repeat(2, 1fr); }
+        .form-col-3 { grid-template-columns: repeat(3, 1fr); }
+        .form-col-4 { grid-template-columns: repeat(4, 1fr); }
+        @media (max-width: 768px) {
+            .form-row { grid-template-columns: 1fr; }
+        }
+
+        /* Section headers */
+        .section-header {
+            background: linear-gradient(135deg, hsl(var(--primary) / 0.1), hsl(var(--accent)));
+            padding: 0.875rem 1rem; margin: 1.5rem 0 1rem 0;
+            font-weight: 600; color: hsl(var(--foreground)); border-radius: var(--radius);
+            display: flex; align-items: center; gap: 0.625rem; border-left: 4px solid hsl(var(--primary));
+        }
+        .section-header i { font-size: 1.1rem; color: hsl(var(--primary)); }
+
+        /* Contact card */
+        .contact-card { 
+            background: hsl(var(--muted) / 0.5); border-radius: var(--radius); 
+            padding: 1.25rem; border: 1px solid hsl(var(--border));
+        }
+        .contact-card-title {
+            font-size: 0.875rem; font-weight: 600; color: hsl(var(--muted-foreground));
+            margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;
+        }
+
+        /* Checkbox & Radio */
+        .form-check { 
+            display: flex; align-items: center; gap: 0.625rem; 
+            padding: 0.5rem; border-radius: calc(var(--radius) - 2px);
+            transition: background-color 0.15s;
+        }
+        .form-check:hover { background-color: hsl(var(--accent)); }
+        .form-check-input { 
+            width: 1.125rem; height: 1.125rem; accent-color: hsl(var(--primary));
+            cursor: pointer;
+        }
+        .form-check-label { 
+            font-size: 0.875rem; cursor: pointer; user-select: none;
+            color: hsl(var(--foreground));
+        }
+
+        /* File upload */
+        .file-upload {
+            border: 2px dashed hsl(var(--input)); border-radius: var(--radius);
+            padding: 1.5rem; text-align: center; cursor: pointer;
+            transition: all 0.15s; background: hsl(var(--muted) / 0.3);
+        }
+        .file-upload:hover { border-color: hsl(var(--ring)); background: hsl(var(--accent)); }
+        .file-upload.has-file { border-color: hsl(var(--success)); background: hsl(var(--success) / 0.1); }
+        .file-upload i { font-size: 2rem; color: hsl(var(--muted-foreground)); margin-bottom: 0.5rem; }
+        .file-upload-text { font-size: 0.875rem; color: hsl(var(--muted-foreground)); }
+        .file-upload input[type="file"] { display: none; }
+
+        /* Conditional sections */
+        .conditional-section {
+            display: none;
+            animation: slideDown 0.3s ease-out;
+            padding: 1rem; background: hsl(var(--accent) / 0.5);
+            border-radius: var(--radius); margin-top: 0.75rem; border: 1px solid hsl(var(--border));
+        }
+        .conditional-section.show { display: block; }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Skills tags input */
+        .tags-input {
+            display: flex; flex-wrap: wrap; gap: 0.5rem; padding: 0.5rem;
+            border: 1px solid hsl(var(--input)); border-radius: var(--radius);
+            background: hsl(var(--background)); min-height: 2.75rem;
+        }
+        .tags-input:focus-within { border-color: hsl(var(--ring)); box-shadow: 0 0 0 3px hsl(var(--ring) / 0.15); }
+        .tag {
+            background: hsl(var(--primary)); color: white; padding: 0.25rem 0.625rem;
+            border-radius: calc(var(--radius) - 4px); font-size: 0.875rem;
+            display: flex; align-items: center; gap: 0.375rem;
+        }
+        .tag-remove { cursor: pointer; opacity: 0.8; }
+        .tag-remove:hover { opacity: 1; }
+        .tags-input input {
+            border: none; outline: none; flex: 1; min-width: 120px;
+            background: transparent; font-size: 0.875rem;
+        }
+
+        /* Rating stars */
+        .rating-input {
+            display: flex; gap: 0.25rem; flex-direction: row-reverse; justify-content: flex-end;
+        }
+        .rating-input input { display: none; }
+        .rating-input label {
+            cursor: pointer; font-size: 1.5rem; color: hsl(var(--muted));
+            transition: color 0.15s;
+        }
+        .rating-input label:hover,
+        .rating-input label:hover ~ label,
+        .rating-input input:checked ~ label {
+            color: hsl(var(--warning));
+        }
+
+        /* Alert/Info boxes */
+        .info-box {
+            background: hsl(var(--primary) / 0.1); border-left: 4px solid hsl(var(--primary));
+            padding: 1rem; border-radius: 0 var(--radius) var(--radius) 0;
+            margin-bottom: 1.5rem; display: flex; align-items: flex-start; gap: 0.75rem;
+        }
+        .info-box i { color: hsl(var(--primary)); font-size: 1.25rem; margin-top: 0.125rem; }
+        .info-box.success { background: hsl(var(--success) / 0.1); border-left-color: hsl(var(--success)); }
+        .info-box.success i { color: hsl(var(--success)); }
+        .info-box.warning { background: hsl(var(--warning) / 0.1); border-left-color: hsl(var(--warning)); }
+        .info-box.warning i { color: hsl(var(--warning)); }
+
+        /* Error states */
+        .form-input.error { border-color: hsl(var(--destructive)); }
+        .error-message {
+            color: hsl(var(--destructive)); font-size: 0.8rem; margin-top: 0.375rem;
+            display: flex; align-items: center; gap: 0.375rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-100%); transition: transform 0.3s; }
+            .sidebar.open { transform: translateX(0); }
+            .main-content { margin-left: 0; }
+            .mobile-toggle { display: flex !important; }
+            .page-content { padding: 1rem; }
+        }
+        .mobile-toggle { display: none; align-items: center; justify-content: center; width: 2.5rem; height: 2.5rem; background: transparent; border: none; cursor: pointer; color: hsl(var(--foreground)); border-radius: 0.375rem; }
+        .mobile-toggle:hover { background-color: hsl(var(--accent)); }
+        .sidebar-overlay { display: none; position: fixed; inset: 0; background-color: rgba(0,0,0,0.5); z-index: 35; }
+        .sidebar-overlay.show { display: block; }
+
+        /* Loading state */
+        .btn-loading { position: relative; color: transparent !important; pointer-events: none; }
+        .btn-loading::after {
+            content: ""; position: absolute; width: 1rem; height: 1rem;
+            border: 2px solid transparent; border-top-color: currentColor;
+            border-radius: 50%; animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* Tooltip */
+        [data-tooltip] { position: relative; }
+        [data-tooltip]::after {
+            content: attr(data-tooltip); position: absolute; bottom: 100%; left: 50%;
+            transform: translateX(-50%); padding: 0.375rem 0.75rem;
+            background: hsl(var(--popover)); color: hsl(var(--popover-foreground));
+            font-size: 0.75rem; border-radius: calc(var(--radius) - 4px);
+            white-space: nowrap; opacity: 0; pointer-events: none;
+            transition: opacity 0.15s; border: 1px solid hsl(var(--border));
+        }
+        [data-tooltip]:hover::after { opacity: 1; }
+
+        /* Progress indicator */
+        .form-progress {
+            display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.5rem;
+            padding: 1rem; background: hsl(var(--muted) / 0.5); border-radius: var(--radius);
+        }
+        .progress-step {
+            display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem;
+            color: hsl(var(--muted-foreground));
+        }
+        .progress-step.active { color: hsl(var(--primary)); font-weight: 600; }
+        .progress-step.completed { color: hsl(var(--success)); }
+        .progress-step i { font-size: 1.25rem; }
+        .progress-divider { flex: 1; height: 2px; background: hsl(var(--border)); max-width: 2rem; }
     </style>
 </head>
-<body class="bg-light">
-    <nav class="navbar navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand fw-bold" href="/applications/dashboard"><i class="bi bi-briefcase"></i> Optimus Tracker</a>
-            <div class="d-flex gap-2">
-                <a href="/applications/dashboard" class="btn btn-outline-light btn-sm">Dashboard</a>
-                <a href="/auth/logout" class="btn btn-outline-danger btn-sm">Logout</a>
+<body>
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+    <div class="app-wrapper">
+        <!-- SIDEBAR -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <a href="/applications/dashboard" class="sidebar-logo">
+                    <div class="sidebar-logo-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                    </div>
+                    <span class="sidebar-logo-text">Optimus Tracker</span>
+                </a>
             </div>
-        </div>
-    </nav>
-
-    <div class="container mt-4 mb-5">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h2 class="fw-bold text-primary">Track New Application</h2>
-            <a href="/applications/dashboard" class="btn btn-outline-secondary">← Back</a>
-        </div>
-
-        <form action="/applications/add" method="POST" enctype="multipart/form-data" class="card shadow-sm border-0">
-            <div class="card-body p-4">
-                
-                <!-- SECTION 1: Core Role Info -->
-                <div class="section-header"><i class="bi bi-briefcase-fill"></i> Core Role Information</div>
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label required">Company Name</label>
-                        <input type="text" name="company_name" class="form-control" required placeholder="e.g., Google">
+            <nav class="sidebar-content">
+                <ul class="sidebar-menu">
+                    <li class="sidebar-menu-item">
+                        <a href="/applications/dashboard" class="sidebar-menu-button">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-menu-item">
+                        <a href="/applications/analytics" class="sidebar-menu-button">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" x2="18" y1="20" y2="10"></line><line x1="12" x2="12" y1="20" y2="4"></line><line x1="6" x2="6" y1="20" y2="14"></line></svg>
+                            <span>Analytics</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-menu-item">
+                        <a href="/applications/ai-analytics" class="sidebar-menu-button">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"/><path d="M8.5 8.5v.01"/><path d="M16 15.5v.01"/><path d="M12 12v.01"/><path d="M11 17v.01"/><path d="M7 14v.01"/></svg>
+                            <span>AI Analytics</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-menu-item">
+                        <a href="/ats" class="sidebar-menu-button">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                            <span>ATS Check</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="sidebar-user">
+                    <div class="sidebar-user-avatar" style="background: linear-gradient(135deg, hsl(var(--primary)), hsl(221.2 83.2% 46%));">
+                        <%= user ? user.charAt(0).toUpperCase() : 'U' %>
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label required">Job Title</label>
-                        <input type="text" name="job_title" class="form-control" required placeholder="e.g., Graduate Software Engineer">
-                    </div>
-                    
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label required">Job Level</label>
-                        <select name="job_level" class="form-select" required>
-                            <option value="">Select...</option>
-                            <option value="Graduate Program">Graduate Program</option>
-                            <option value="Internship">Internship</option>
-                            <option value="Apprenticeship">Apprenticeship</option>
-                            <option value="Junior">Junior (0-2 years)</option>
-                            <option value="Mid-Level">Mid-Level (3-5 years)</option>
-                            <option value="Senior">Senior (5+ years)</option>
-                        </select>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">Required Experience (Years)</label>
-                        <input type="number" name="experience_level" class="form-control" value="0" min="0" max="20">
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">Your Experience (Years)</label>
-                        <input type="number" name="your_experience_years" class="form-control" value="0" min="0" max="20" title="Helps calculate fit score">
+                    <div class="sidebar-user-info">
+                        <span class="sidebar-user-name"><%= user || 'User' %></span>
+                        <span class="sidebar-user-role">Job Seeker</span>
                     </div>
                 </div>
+            </div>
+        </aside>
 
-                <!-- SECTION 2: Links & Contacts -->
-                <div class="section-header"><i class="bi bi-link-45deg"></i> Links & Contact Information</div>
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Company Website</label>
-                        <input type="url" name="company_website" class="form-control" placeholder="https://company.com">
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label required">Job Posting URL</label>
-                        <input type="url" name="job_posting_url" class="form-control" required placeholder="Link to the job ad">
-                    </div>
-                </div>
-
-                <div class="contact-card mb-3">
-                    <h6 class="mb-3 text-muted"><i class="bi bi-person-lines-fill"></i> Hiring Contact (if known)</h6>
-                    <div class="row">
-                        <div class="col-md-4 mb-2">
-                            <input type="text" name="hiring_manager_name" class="form-control form-control-sm" placeholder="Hiring Manager Name">
-                        </div>
-                        <div class="col-md-4 mb-2">
-                            <input type="email" name="hiring_manager_email" class="form-control form-control-sm" placeholder="HM Email">
-                        </div>
-                        <div class="col-md-4 mb-2">
-                            <input type="url" name="hiring_manager_linkedin" class="form-control form-control-sm" placeholder="HM LinkedIn URL">
-                        </div>
-                    </div>
-                    <div class="row mt-2">
-                        <div class="col-md-6 mb-2">
-                            <input type="text" name="recruiter_name" class="form-control form-control-sm" placeholder="Recruiter Name (if external)">
-                        </div>
-                        <div class="col-md-6 mb-2">
-                            <input type="text" name="recruiter_company" class="form-control form-control-sm" placeholder="Recruitment Agency">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- SECTION 3: Categorization -->
-                <div class="section-header"><i class="bi bi-tags"></i> Categorization & Requirements</div>
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Job Domain(s)</label>
-                        <input type="text" name="job_domain" class="form-control" placeholder="e.g., Software Development, Data Analytics">
-                        <small class="text-muted">Separate with commas</small>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Required Skills</label>
-                        <input type="text" name="required_skills" class="form-control" placeholder="e.g., Python, React, AWS">
-                        <small class="text-muted">Separate with commas</small>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">Industry</label>
-                        <input type="text" name="industry" class="form-control" placeholder="e.g., Fintech">
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">Work Arrangement</label>
-                        <select name="work_arrangement" class="form-select">
-                            <option value="On-site">On-site</option>
-                            <option value="Hybrid">Hybrid</option>
-                            <option value="Remote">Remote</option>
-                        </select>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">Required Education</label>
-                        <select name="education_required" class="form-select">
-                            <option value="Diploma">Diploma</option>
-                            <option value="Bachelors">Bachelors</option>
-                            <option value="Honours">Honours</option>
-                            <option value="Masters">Masters</option>
-                            <option value="PhD">PhD</option>
-                            <option value="Bootcamp/Certification">Bootcamp/Certification</option>
-                            <option value="None specified">None Specified</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- SECTION 4: Application Logistics -->
-                <div class="section-header"><i class="bi bi-calendar-event"></i> Application Logistics</div>
-                <div class="row">
-                    <div class="col-md-3 mb-3">
-                        <label class="form-label required">Date Applied</label>
-                        <input type="date" name="date_applied" class="form-control" required value="<%= new Date().toISOString().split('T')[0] %>">
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <label class="form-label">Closing Date</label>
-                        <input type="date" name="closing_date" class="form-control">
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <label class="form-label">Follow-up Date</label>
-                        <input type="date" name="follow_up_date" class="form-control" title="When to next contact them">
-                    </div>
-                    <div class="col-md-3 mb-3">
-                        <label class="form-label">Time Spent (mins)</label>
-                        <input type="number" name="time_spent_minutes" class="form-control" value="15" min="0">
-                    </div>
-
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label required">Application Method</label>
-                        <select name="app_method" id="methodSelect" class="form-select" required onchange="toggleOtherMethod()">
-                            <option value="">Select...</option>
-                            <option value="LinkedIn">LinkedIn Easy Apply</option>
-                            <option value="LinkedIn Manual">LinkedIn (Manual)</option>
-                            <option value="Indeed">Indeed</option>
-                            <option value="Company Website">Company Careers Portal</option>
-                            <option value="Email">Direct Email</option>
-                            <option value="Referral">Employee Referral</option>
-                            <option value="Recruiter">External Recruiter</option>
-                            <option value="Career Fair">Career Fair / Event</option>
-                            <option value="Other">Other</option>
-                        </select>
-                    </div>
-                    <div class="col-md-6 mb-3" id="otherMethodDiv" style="display: none;">
-                        <label class="form-label">Specify Method</label>
-                        <input type="text" name="app_method_other" id="otherMethodInput" class="form-control">
-                    </div>
-
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">Company Size</label>
-                        <select name="company_size" class="form-select">
-                            <option value="Startup">Startup (&lt;50)</option>
-                            <option value="Small">Small (50-200)</option>
-                            <option value="Medium">Medium (200-1000)</option>
-                            <option value="Enterprise">Enterprise (1000+)</option>
-                        </select>
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">Location</label>
-                        <input type="text" name="location" class="form-control" placeholder="City, Country">
-                    </div>
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label">Salary Range</label>
-                        <input type="text" name="salary" class="form-control" placeholder="e.g., R 450,000 - 600,000">
-                    </div>
-                </div>
-
-                <!-- SECTION 5: Application Details -->
-                <div class="section-header"><i class="bi bi-check-square"></i> Application Details</div>
-                <div class="row mb-3">
-                    <div class="col-md-3">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="referral" value="yes" id="referralCheck">
-                            <label class="form-check-label" for="referralCheck">Employee Referral?</label>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="tailored_resume" value="true" id="tailoredCheck">
-                            <label class="form-check-label" for="tailoredCheck">Tailored Resume?</label>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" name="assessment_upfront" value="true" id="assessmentCheck" onchange="toggleAssessmentType()">
-                            <label class="form-check-label" for="assessmentCheck">Assessment Required?</label>
-                        </div>
-                    </div>
-                    <div class="col-md-3" id="assessmentTypeDiv" style="display: none;">
-                        <select name="assessment_type" class="form-select form-select-sm">
-                            <option value="">Type...</option>
-                            <option value="Coding Challenge">Coding Challenge</option>
-                            <option value="Psychometric">Psychometric Test</option>
-                            <option value="Video Interview">Video Interview (One-way)</option>
-                            <option value="Case Study">Case Study</option>
-                            <option value="Technical Test">Technical Test</option>
-                            <option value="Other">Other</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- SECTION 6: Documents -->
-                <div class="section-header"><i class="bi bi-file-earmark-text"></i> Documents & Notes</div>
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <label class="form-label">Resume Used (PDF)</label>
-                        <input type="file" name="resume" class="form-control" accept=".pdf">
-                        <small class="text-muted">Version used for this specific application</small>
-                    </div>
-                    <div class="col-12 mb-3">
-                        <label class="form-label required">Job Description</label>
-                        <textarea name="job_description" class="form-control" rows="6" required placeholder="Paste full job description here..."></textarea>
-                    </div>
-                    <div class="col-12 mb-4">
-                        <label class="form-label">Initial Notes</label>
-                        <textarea name="notes" class="form-control" rows="3" placeholder="Why this role? Any initial thoughts?"></textarea>
-                    </div>
-                </div>
-
-                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                    <a href="/applications/dashboard" class="btn btn-outline-secondary btn-lg">Cancel</a>
-                    <button type="submit" class="btn btn-primary btn-lg fw-bold">
-                        <i class="bi bi-save"></i> Save Application
+        <!-- MAIN CONTENT -->
+        <main class="main-content">
+            <!-- Topbar -->
+            <header class="topbar">
+                <div class="topbar-search">
+                    <button class="mobile-toggle" id="mobileToggle">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M9 3v18"></path></svg>
                     </button>
+                    <div class="search-input-wrapper">
+                        <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+                        <input type="text" class="search-input" placeholder="Search applications...">
+                    </div>
                 </div>
+                <div class="topbar-actions">
+                    <a href="/ats" class="btn btn-outline btn-sm">
+                        <i class="bi bi-shield-check"></i> ATS Check
+                    </a>
+                    <div class="dropdown">
+                        <button class="avatar-button" id="userBtn">
+                            <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background: linear-gradient(135deg, hsl(var(--primary)), hsl(221.2 83.2% 46%)); color: white; font-weight:600; font-size:0.875rem;">
+                                <%= user ? user.charAt(0).toUpperCase() : 'U' %>
+                            </div>
+                        </button>
+                        <div class="dropdown-content" id="userDropdown" style="display: none; position: absolute; right: 0; top: 100%; margin-top: 0.5rem; min-width: 12rem; background-color: hsl(var(--popover)); border: 1px solid hsl(var(--border)); border-radius: var(--radius); box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); z-index: 50; padding: 0.25rem;">
+                            <div style="padding: 0.5rem; font-size: 0.875rem; font-weight: 600;">My Account</div>
+                            <div style="height: 1px; background-color: hsl(var(--border)); margin: 0.25rem 0;"></div>
+                            <a href="/auth/logout" style="display: block; padding: 0.5rem; font-size: 0.875rem; color: hsl(var(--destructive)); text-decoration: none; border-radius: calc(var(--radius) - 4px);">Log out</a>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- PAGE CONTENT -->
+            <div class="page-content">
+                <!-- Header -->
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">Track New Application</h1>
+                        <p class="text-muted" style="margin-top: 0.25rem; font-size: 0.875rem;">Record every detail to maximize your analytics insights</p>
+                    </div>
+                    <a href="/applications/dashboard" class="btn btn-outline">
+                        <i class="bi bi-arrow-left"></i> Back to Dashboard
+                    </a>
+                </div>
+
+                <!-- ATS Suggestion Banner -->
+                <div class="info-box">
+                    <i class="bi bi-lightbulb-fill"></i>
+                    <div>
+                        <strong>Pro Tip:</strong> Not sure if your CV matches this job? 
+                        <a href="/ats" style="color: hsl(var(--primary)); font-weight: 600;">Run an ATS analysis first</a> 
+                        to optimize your resume before applying. This can increase your response rate by up to 3x.
+                    </div>
+                </div>
+
+                <!-- Form -->
+                <form action="/applications/add" method="POST" enctype="multipart/form-data" id="applicationForm" novalidate>
+                    
+                    <!-- Progress Indicator -->
+                    <div class="form-progress">
+                        <div class="progress-step active" id="step1-indicator">
+                            <i class="bi bi-1-circle-fill"></i>
+                            <span>Basic Info</span>
+                        </div>
+                        <div class="progress-divider"></div>
+                        <div class="progress-step" id="step2-indicator">
+                            <i class="bi bi-2-circle"></i>
+                            <span>Details</span>
+                        </div>
+                        <div class="progress-divider"></div>
+                        <div class="progress-step" id="step3-indicator">
+                            <i class="bi bi-3-circle"></i>
+                            <span>Strategy</span>
+                        </div>
+                    </div>
+
+                    <!-- Section 1: Core Information -->
+                    <div class="card" id="section-1">
+                        <div class="card-header">
+                            <h2 class="card-title"><i class="bi bi-briefcase-fill"></i> Core Job Information</h2>
+                        </div>
+                        <div class="card-content">
+                            <div class="form-row form-col-2">
+                                <div>
+                                    <label class="form-label required" for="company_name">Company Name</label>
+                                    <input type="text" id="company_name" name="company_name" class="form-input" required 
+                                           placeholder="e.g., Google" data-tooltip="Enter the exact company name">
+                                    <div class="error-message" id="error-company_name"></div>
+                                </div>
+                                <div>
+                                    <label class="form-label required" for="job_title">Job Title</label>
+                                    <input type="text" id="job_title" name="job_title" class="form-input" required 
+                                           placeholder="e.g., Senior Software Engineer">
+                                    <div class="error-message" id="error-job_title"></div>
+                                </div>
+                            </div>
+
+                            <div class="form-row form-col-3">
+                                <div>
+                                    <label class="form-label required" for="job_level">Job Level</label>
+                                    <select id="job_level" name="job_level" class="form-select" required>
+                                        <option value="">Select level...</option>
+                                        <option value="Internship">Internship</option>
+                                        <option value="Graduate Program">Graduate Program</option>
+                                        <option value="Apprenticeship">Apprenticeship</option>
+                                        <option value="Entry Level">Entry Level (0-2 years)</option>
+                                        <option value="Junior">Junior (1-3 years)</option>
+                                        <option value="Mid-Level">Mid-Level (3-5 years)</option>
+                                        <option value="Senior">Senior (5+ years)</option>
+                                        <option value="Lead">Lead / Principal</option>
+                                        <option value="Manager">Manager</option>
+                                        <option value="Director">Director+</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="form-label" for="experience_level">Required Experience (Years)</label>
+                                    <input type="number" id="experience_level" name="experience_level" class="form-input" 
+                                           value="0" min="0" max="30" step="0.5">
+                                </div>
+                                <div>
+                                    <label class="form-label" for="your_experience_years">Your Experience (Years)</label>
+                                    <input type="number" id="your_experience_years" name="your_experience_years" class="form-input" 
+                                           value="0" min="0" max="50" step="0.5">
+                                </div>
+                            </div>
+
+                            <div class="form-row form-col-2">
+                                <div>
+                                    <label class="form-label" for="company_website">Company Website</label>
+                                    <input type="url" id="company_website" name="company_website" class="form-input" 
+                                           placeholder="https://company.com">
+                                </div>
+                                <div>
+                                    <label class="form-label required" for="job_posting_url">Job Posting URL</label>
+                                    <input type="url" id="job_posting_url" name="job_posting_url" class="form-input" required 
+                                           placeholder="https://careers.company.com/job/123">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 2: Contact & Logistics -->
+                    <div class="card" id="section-2">
+                        <div class="card-header">
+                            <h2 class="card-title"><i class="bi bi-people-fill"></i> Contacts & Logistics</h2>
+                        </div>
+                        <div class="card-content">
+                            <!-- Hiring Contacts -->
+                            <div class="contact-card">
+                                <div class="contact-card-title"><i class="bi bi-person-badge"></i> Hiring Contact (if known)</div>
+                                <div class="form-row form-col-3">
+                                    <div>
+                                        <input type="text" name="hiring_manager_name" class="form-input" placeholder="Hiring Manager Name">
+                                    </div>
+                                    <div>
+                                        <input type="email" name="hiring_manager_email" class="form-input" placeholder="HM Email">
+                                    </div>
+                                    <div>
+                                        <input type="url" name="hiring_manager_linkedin" class="form-input" placeholder="HM LinkedIn URL">
+                                    </div>
+                                </div>
+                                <div class="form-row form-col-2" style="margin-top: 0.75rem;">
+                                    <div>
+                                        <input type="text" name="recruiter_name" class="form-input" placeholder="Recruiter Name (if external)">
+                                    </div>
+                                    <div>
+                                        <input type="text" name="recruiter_company" class="form-input" placeholder="Recruitment Agency">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="section-header"><i class="bi bi-calendar-event"></i> Application Timeline</div>
+                            
+                            <div class="form-row form-col-4">
+                                <div>
+                                    <label class="form-label required" for="date_applied">Date Applied</label>
+                                    <input type="date" id="date_applied" name="date_applied" class="form-input" required 
+                                           value="<%= new Date().toISOString().split('T')[0] %>">
+                                </div>
+                                <div>
+                                    <label class="form-label" for="closing_date">Closing Date</label>
+                                    <input type="date" id="closing_date" name="closing_date" class="form-input">
+                                </div>
+                                <div>
+                                    <label class="form-label" for="follow_up_date">Follow-up Date</label>
+                                    <input type="date" id="follow_up_date" name="follow_up_date" class="form-input">
+                                </div>
+                                <div>
+                                    <label class="form-label" for="time_spent_minutes">Time Spent (mins)</label>
+                                    <input type="number" id="time_spent_minutes" name="time_spent_minutes" class="form-input" 
+                                           value="15" min="0" max="480">
+                                </div>
+                            </div>
+
+                            <div class="form-row form-col-3">
+                                <div>
+                                    <label class="form-label required" for="app_method">Application Method</label>
+                                    <select id="app_method" name="app_method" class="form-select" required onchange="toggleOtherMethod()">
+                                        <option value="">Select method...</option>
+                                        <option value="LinkedIn Easy Apply">LinkedIn Easy Apply</option>
+                                        <option value="LinkedIn Manual">LinkedIn (Manual)</option>
+                                        <option value="Indeed">Indeed</option>
+                                        <option value="Company Website">Company Careers Portal</option>
+                                        <option value="Email">Direct Email</option>
+                                        <option value="Referral">Employee Referral</option>
+                                        <option value="Recruiter">External Recruiter</option>
+                                        <option value="Career Fair">Career Fair / Event</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                                <div id="otherMethodContainer" style="display: none;">
+                                    <label class="form-label" for="app_method_other">Specify Method</label>
+                                    <input type="text" id="app_method_other" name="app_method_other" class="form-input" placeholder="e.g., Twitter, GitHub">
+                                </div>
+                                <div>
+                                    <label class="form-label" for="company_size">Company Size</label>
+                                    <select id="company_size" name="company_size" class="form-select">
+                                        <option value="">Select size...</option>
+                                        <option value="Startup">Startup (&lt;50 employees)</option>
+                                        <option value="Small">Small (50-200)</option>
+                                        <option value="Medium">Medium (200-1000)</option>
+                                        <option value="Enterprise">Enterprise (1000+)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-row form-col-3">
+                                <div>
+                                    <label class="form-label" for="location">Location</label>
+                                    <input type="text" id="location" name="location" class="form-input" placeholder="City, Country">
+                                </div>
+                                <div>
+                                    <label class="form-label" for="work_arrangement">Work Arrangement</label>
+                                    <select id="work_arrangement" name="work_arrangement" class="form-select">
+                                        <option value="On-site">On-site</option>
+                                        <option value="Hybrid">Hybrid</option>
+                                        <option value="Remote">Remote</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="form-label" for="salary">Salary Range</label>
+                                    <input type="text" id="salary" name="salary" class="form-input" placeholder="e.g., R 450,000 - 600,000">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 3: Strategy & Quality -->
+                    <div class="card" id="section-3">
+                        <div class="card-header">
+                            <h2 class="card-title"><i class="bi bi-clipboard-data"></i> Application Strategy</h2>
+                        </div>
+                        <div class="card-content">
+                            
+                            <!-- Referral Section -->
+                            <div class="form-check" style="margin-bottom: 0.75rem;">
+                                <input class="form-check-input" type="checkbox" name="referral" value="true" id="referralCheck" onchange="toggleReferralDetails()">
+                                <label class="form-check-label" for="referralCheck">
+                                    <strong>This is an employee referral</strong> 
+                                    <span class="text-muted">(higher response rates!)</span>
+                                </label>
+                            </div>
+                            
+                            <div id="referralDetails" class="conditional-section">
+                                <div class="form-row form-col-2">
+                                    <div>
+                                        <label class="form-label">Referrer Name</label>
+                                        <input type="text" name="referrer_name" class="form-input" placeholder="Who referred you?">
+                                    </div>
+                                    <div>
+                                        <label class="form-label">Relationship</label>
+                                        <select name="referrer_relationship" class="form-select">
+                                            <option value="">Select relationship...</option>
+                                            <option value="former_colleague">Former Colleague</option>
+                                            <option value="current_colleague">Current Colleague</option>
+                                            <option value="friend">Friend</option>
+                                            <option value="linkedin_connection">LinkedIn Connection</option>
+                                            <option value="alumni">Alumni Network</option>
+                                            <option value="family">Family</option>
+                                            <option value="other">Other</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="section-header"><i class="bi bi-stars"></i> Quality Metrics</div>
+                            
+                            <div class="form-row form-col-4">
+                                <div>
+                                    <label class="form-label" for="company_rating">Your Interest Rating (1-10)</label>
+                                    <div class="rating-input">
+                                        <input type="radio" name="company_rating" value="10" id="star10"><label for="star10"><i class="bi bi-star-fill"></i></label>
+                                        <input type="radio" name="company_rating" value="9" id="star9"><label for="star9"><i class="bi bi-star-fill"></i></label>
+                                        <input type="radio" name="company_rating" value="8" id="star8"><label for="star8"><i class="bi bi-star-fill"></i></label>
+                                        <input type="radio" name="company_rating" value="7" id="star7"><label for="star7"><i class="bi bi-star-fill"></i></label>
+                                        <input type="radio" name="company_rating" value="6" id="star6"><label for="star6"><i class="bi bi-star-fill"></i></label>
+                                        <input type="radio" name="company_rating" value="5" id="star5" checked><label for="star5"><i class="bi bi-star-fill"></i></label>
+                                        <input type="radio" name="company_rating" value="4" id="star4"><label for="star4"><i class="bi bi-star-fill"></i></label>
+                                        <input type="radio" name="company_rating" value="3" id="star3"><label for="star3"><i class="bi bi-star-fill"></i></label>
+                                        <input type="radio" name="company_rating" value="2" id="star2"><label for="star2"><i class="bi bi-star-fill"></i></label>
+                                        <input type="radio" name="company_rating" value="1" id="star1"><label for="star1"><i class="bi bi-star-fill"></i></label>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="form-label" for="resume_version_used">Resume Version Used</label>
+                                    <select id="resume_version_used" name="resume_version_used" class="form-select">
+                                        <option value="standard">Standard</option>
+                                        <option value="technical">Technical Focus</option>
+                                        <option value="product">Product Focus</option>
+                                        <option value="creative">Creative/Design</option>
+                                        <option value="executive">Executive</option>
+                                        <option value="academic">Academic/Research</option>
+                                    </select>
+                                </div>
+                                <div style="display: flex; flex-direction: column; gap: 0.5rem; justify-content: flex-end;">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="tailored_resume" value="true" id="tailoredCheck">
+                                        <label class="form-check-label" for="tailoredCheck">Tailored Resume?</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="cover_letter_used" value="true" id="coverLetterCheck">
+                                        <label class="form-check-label" for="coverLetterCheck">Cover Letter?</label>
+                                    </div>
+                                </div>
+                                <div style="display: flex; flex-direction: column; gap: 0.5rem; justify-content: flex-end;">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="salary_transparent" value="true" id="salaryTransparent">
+                                        <label class="form-check-label" for="salaryTransparent">Salary Listed?</label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="assessment_upfront" value="true" id="assessmentCheck" onchange="toggleAssessmentType()">
+                                        <label class="form-check-label" for="assessmentCheck">Assessment Required?</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="assessmentTypeContainer" class="conditional-section">
+                                <label class="form-label">Assessment Type</label>
+                                <select name="assessment_type" class="form-select">
+                                    <option value="">Select type...</option>
+                                    <option value="Coding Challenge">Coding Challenge</option>
+                                    <option value="Psychometric">Psychometric Test</option>
+                                    <option value="Video Interview">Video Interview (One-way)</option>
+                                    <option value="Case Study">Case Study</option>
+                                    <option value="Technical Test">Technical Test</option>
+                                    <option value="Portfolio Review">Portfolio Review</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+
+                            <div class="section-header"><i class="bi bi-tags"></i> Skills & Categorization</div>
+                            
+                            <div class="form-row form-col-2">
+                                <div>
+                                    <label class="form-label">Job Domain(s)</label>
+                                    <div class="tags-input" id="domainTags">
+                                        <input type="text" id="domainInput" placeholder="Type and press Enter...">
+                                    </div>
+                                    <input type="hidden" name="job_domain" id="job_domain">
+                                    <small class="text-muted">e.g., Software Development, Data Analytics, Product Management</small>
+                                </div>
+                                <div>
+                                    <label class="form-label">Required Skills</label>
+                                    <div class="tags-input" id="skillsTags">
+                                        <input type="text" id="skillsInput" placeholder="Type and press Enter...">
+                                    </div>
+                                    <input type="hidden" name="required_skills" id="required_skills">
+                                    <small class="text-muted">e.g., Python, React, AWS, Leadership</small>
+                                </div>
+                            </div>
+
+                            <div class="form-row form-col-2">
+                                <div>
+                                    <label class="form-label">Industry</label>
+                                    <input type="text" name="industry" class="form-input" placeholder="e.g., Fintech, Healthcare, E-commerce">
+                                </div>
+                                <div>
+                                    <label class="form-label">Required Education</label>
+                                    <select name="education_required" class="form-select">
+                                        <option value="None specified">None Specified</option>
+                                        <option value="Matric">Matric (Grade 12)</option>
+                                        <option value="Diploma">Diploma</option>
+                                        <option value="Bachelors">Bachelors Degree</option>
+                                        <option value="Honours">Honours</option>
+                                        <option value="Masters">Masters Degree</option>
+                                        <option value="PhD">PhD</option>
+                                        <option value="Bootcamp/Certification">Bootcamp/Certification</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="section-header"><i class="bi bi-file-earmark-text"></i> Documents & Notes</div>
+                            
+                            <div class="form-row">
+                                <div>
+                                    <label class="file-upload" id="fileUploadLabel">
+                                        <i class="bi bi-cloud-arrow-up"></i>
+                                        <div class="file-upload-text">
+                                            <strong>Click to upload resume</strong><br>
+                                            <span style="font-size: 0.8rem;">PDF, DOC, or DOCX (max 10MB)</span>
+                                        </div>
+                                        <input type="file" name="resume" id="resumeFile" accept=".pdf,.doc,.docx" onchange="handleFileSelect(this)">
+                                    </label>
+                                    <div id="fileName" style="margin-top: 0.5rem; font-size: 0.875rem; color: hsl(var(--success)); display: none;">
+                                        <i class="bi bi-check-circle-fill"></i> <span></span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="info-box success" id="cvAnalysisInfo" style="display: none;">
+                                <i class="bi bi-robot"></i>
+                                <div>
+                                    <strong>CV Analysis Enabled:</strong> We'll automatically extract skills from your CV 
+                                    and compare them against the job requirements when you save.
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div>
+                                    <label class="form-label required" for="job_description">Job Description</label>
+                                    <textarea id="job_description" name="job_description" rows="6" required 
+                                              placeholder="Paste the FULL job description here. This helps with ATS analysis and interview prep."></textarea>
+                                    <small class="text-muted">Tip: Include requirements, responsibilities, and company info</small>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <div>
+                                    <label class="form-label" for="notes">Initial Notes / Strategy</label>
+                                    <textarea id="notes" name="notes" rows="3" 
+                                              placeholder="Why this role? What excites you? Any concerns? Networking efforts?"></textarea>
+                                </div>
+                            </div>
+
+                            <!-- Networking Effort -->
+                            <div class="form-row">
+                                <div>
+                                    <label class="form-label">Networking Effort</label>
+                                    <input type="text" name="networking_effort" class="form-input" 
+                                           placeholder="e.g., Coffee chat with employee, Informational interview, LinkedIn outreach">
+                                    <small class="text-muted">Document any pre-application networking (helps track what works)</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submit Actions -->
+                    <div style="display: flex; justify-content: space-between; align-items: center; padding: 1rem 0;">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="auto_follow_up_enabled" value="true" id="autoFollowUp">
+                            <label class="form-check-label" for="autoFollowUp">
+                                Enable auto follow-up reminders
+                            </label>
+                        </div>
+                        <div style="display: flex; gap: 1rem;">
+                            <a href="/applications/dashboard" class="btn btn-outline btn-lg">Cancel</a>
+                            <button type="submit" class="btn btn-primary btn-lg" id="submitBtn">
+                                <i class="bi bi-save"></i> Save Application
+                            </button>
+                        </div>
+                    </div>
+                </form>
             </div>
-        </form>
+        </main>
     </div>
 
-    <script>
-        function toggleOtherMethod() {
-            const select = document.getElementById('methodSelect');
-            const otherDiv = document.getElementById('otherMethodDiv');
-            otherDiv.style.display = select.value === 'Other' ? 'block' : 'none';
+        <script>
+        // Mobile sidebar toggle
+        const mobileToggle = document.getElementById('mobileToggle');
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        
+        if (mobileToggle) {
+            mobileToggle.addEventListener('click', () => {
+                sidebar.classList.toggle('open');
+                overlay.classList.toggle('show');
+            });
         }
+        if (overlay) {
+            overlay.addEventListener('click', () => {
+                sidebar.classList.remove('open');
+                overlay.classList.remove('show');
+            });
+        }
+
+        // User dropdown
+        const userBtn = document.getElementById('userBtn');
+        const userDropdown = document.getElementById('userDropdown');
+        if (userBtn && userDropdown) {
+            userBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                userDropdown.style.display = userDropdown.style.display === 'block' ? 'none' : 'block';
+            });
+            document.addEventListener('click', () => {
+                userDropdown.style.display = 'none';
+            });
+        }
+
+        // Toggle functions
+        function toggleOtherMethod() {
+            const select = document.getElementById('app_method');
+            const container = document.getElementById('otherMethodContainer');
+            container.style.display = select.value === 'Other' ? 'block' : 'none';
+        }
+
+        function toggleReferralDetails() {
+            const check = document.getElementById('referralCheck');
+            const details = document.getElementById('referralDetails');
+            details.classList.toggle('show', check.checked);
+        }
+
         function toggleAssessmentType() {
             const check = document.getElementById('assessmentCheck');
-            const typeDiv = document.getElementById('assessmentTypeDiv');
-            typeDiv.style.display = check.checked ? 'block' : 'none';
+            const container = document.getElementById('assessmentTypeContainer');
+            container.classList.toggle('show', check.checked);
         }
+
+        // File upload handling
+        function handleFileSelect(input) {
+            const label = document.getElementById('fileUploadLabel');
+            const fileNameDiv = document.getElementById('fileName');
+            
+            if (input.files && input.files[0]) {
+                label.classList.add('has-file');
+                fileNameDiv.style.display = 'block';
+                fileNameDiv.querySelector('span').textContent = input.files[0].name;
+            } else {
+                label.classList.remove('has-file');
+                fileNameDiv.style.display = 'none';
+            }
+        }
+
+        // Tags input handling
+        function setupTagsInput(containerId, inputId, hiddenId) {
+            const container = document.getElementById(containerId);
+            const input = document.getElementById(inputId);
+            const hidden = document.getElementById(hiddenId);
+            const tags = new Set();
+
+            function updateHidden() {
+                hidden.value = Array.from(tags).join(',');
+            }
+
+            function createTag(text) {
+                const tag = document.createElement('span');
+                tag.className = 'tag';
+                tag.innerHTML = `${text} <i class="bi bi-x-circle tag-remove"></i>`;
+                tag.querySelector('.tag-remove').addEventListener('click', () => {
+                    tags.delete(text);
+                    tag.remove();
+                    updateHidden();
+                });
+                return tag;
+            }
+
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ',') {
+                    e.preventDefault();
+                    const value = input.value.trim();
+                    if (value && !tags.has(value)) {
+                        tags.add(value);
+                        container.insertBefore(createTag(value), input);
+                        input.value = '';
+                        updateHidden();
+                    }
+                }
+                if (e.key === 'Backspace' && !input.value && tags.size > 0) {
+                    const lastTag = Array.from(tags).pop();
+                    tags.delete(lastTag);
+                    container.removeChild(container.children[container.children.length - 2]);
+                    updateHidden();
+                }
+            });
+        }
+
+        setupTagsInput('domainTags', 'domainInput', 'job_domain');
+        setupTagsInput('skillsTags', 'skillsInput', 'required_skills');
+
+        // Form validation
+        const form = document.getElementById('applicationForm');
+        const submitBtn = document.getElementById('submitBtn');
+
+        form.addEventListener('submit', (e) => {
+            let isValid = true;
+            
+            // Clear previous errors
+            document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
+            document.querySelectorAll('.form-input').forEach(el => el.classList.remove('error'));
+
+            // Validate required fields
+            const requiredFields = ['company_name', 'job_title', 'job_level', 'date_applied', 'app_method', 'job_description'];
+            
+            requiredFields.forEach(fieldId => {
+                const field = document.getElementById(fieldId);
+                if (!field.value.trim()) {
+                    isValid = false;
+                    field.classList.add('error');
+                    const errorDiv = document.getElementById(`error-${fieldId}`);
+                    if (errorDiv) errorDiv.textContent = 'This field is required';
+                }
+            });
+
+            // Validate URL fields
+            const urlFields = ['company_website', 'job_posting_url', 'hiring_manager_linkedin'];
+            urlFields.forEach(fieldId => {
+                const field = document.getElementById(fieldId);
+                if (field && field.value) {
+                    try {
+                        new URL(field.value);
+                    } catch {
+                        if (fieldId === 'job_posting_url') {
+                            isValid = false;
+                            field.classList.add('error');
+                        }
+                    }
+                }
+            });
+
+            if (!isValid) {
+                e.preventDefault();
+                // Scroll to first error
+                const firstError = document.querySelector('.error');
+                if (firstError) {
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            } else {
+                // Show loading state
+                submitBtn.classList.add('btn-loading');
+                submitBtn.disabled = true;
+            }
+        });
+
+        // Auto-calculate follow-up date if not set
+        const dateAppliedInput = document.getElementById('date_applied');
+        const followUpInput = document.getElementById('follow_up_date');
+        
+        dateAppliedInput.addEventListener('change', () => {
+            if (!followUpInput.value && dateAppliedInput.value) {
+                const applied = new Date(dateAppliedInput.value);
+                const followUp = new Date(applied);
+                followUp.setDate(followUp.getDate() + 14); // 2 weeks later
+                followUpInput.value = followUp.toISOString().split('T')[0];
+            }
+        });
+
+        // Progress indicator update on scroll
+        const sections = ['section-1', 'section-2', 'section-3'];
+        const indicators = ['step1-indicator', 'step2-indicator', 'step3-indicator'];
+        
+        const observerOptions = {
+            root: null,
+            rootMargin: '-20% 0px -80% 0px',
+            threshold: 0
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const index = sections.indexOf(entry.target.id);
+                    indicators.forEach((id, i) => {
+                        const el = document.getElementById(id);
+                        if (i < index) {
+                            el.classList.add('completed');
+                            el.classList.remove('active');
+                            el.innerHTML = '<i class="bi bi-check-circle-fill"></i><span>' + el.querySelector('span').textContent + '</span>';
+                        } else if (i === index) {
+                            el.classList.add('active');
+                            el.classList.remove('completed');
+                        } else {
+                            el.classList.remove('active', 'completed');
+                        }
+                    });
+                }
+            });
+        }, observerOptions);
+
+        sections.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) observer.observe(el);
+        });
+
+        // ========== ADD THIS NEW CODE HERE ==========
+        // CV Analysis indicator
+        const resumeFile = document.getElementById('resumeFile');
+        const skillsInput = document.getElementById('skillsInput');
+        const cvAnalysisInfo = document.getElementById('cvAnalysisInfo');
+
+        function checkCvAnalysis() {
+            const hasFile = resumeFile.files && resumeFile.files[0];
+            const hasSkills = document.getElementById('required_skills').value.length > 0;
+            if (cvAnalysisInfo) {
+                cvAnalysisInfo.style.display = (hasFile && hasSkills) ? 'flex' : 'none';
+            }
+        }
+
+        if (resumeFile) {
+            resumeFile.addEventListener('change', checkCvAnalysis);
+        }
+        
+        if (skillsInput) {
+            skillsInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ',') {
+                    setTimeout(checkCvAnalysis, 100);
+                }
+            });
+            // Also check when removing tags (click on x)
+            skillsInput.addEventListener('click', () => {
+                setTimeout(checkCvAnalysis, 100);
+            });
+        }
+
+        // Initial check
+        checkCvAnalysis();
+        // ========== END OF NEW CODE ==========
+
     </script>
 </body>
 </html>
