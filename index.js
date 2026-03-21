@@ -6,6 +6,9 @@ require('dotenv').config();
 
 const app = express();
 
+app.use(express.json()); 
+app.use(express.urlencoded({ extended: true }));
+
 const uploadDir = path.join(__dirname, 'public', 'uploads');
 if (!fs.existsSync(uploadDir)){
     fs.mkdirSync(uploadDir, { recursive: true });
@@ -36,6 +39,7 @@ function checkAuth(req, res, next) {
 app.use('/auth', require('./routes/auth'));
 app.use('/ats', checkAuth, require('./routes/ats'));
 app.use('/applications', checkAuth, require('./routes/applications'));
+app.use('/smart-ats', checkAuth, require('./routes/smartAts'));
 
 app.get('/', (req, res) => {
     res.render('index'); 

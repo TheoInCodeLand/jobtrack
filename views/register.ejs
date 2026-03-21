@@ -1,66 +1,797 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Register - Job Tracker</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jobtrack - Login</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap" rel="stylesheet">
+  <style>
+    /* CSS Reset & Base Styles */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --primary: #3F3FF3;
+      --primary-hover: #3535d6;
+      --foreground: #171717;
+      --muted-foreground: #737373;
+      --border: #e5e5e5;
+      --background: #ffffff;
+      --input-bg: #ffffff;
+      --radius: 8px;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 16px;
+      line-height: 1.5;
+      color: var(--foreground);
+      background-color: var(--background);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* Layout Container */
+    .container {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Left Panel - Branding */
+    .left-panel {
+      display: none;
+      width: 50%;
+      position: relative;
+      overflow: hidden;
+      background-color: var(--primary);
+    }
+
+    @media (min-width: 1024px) {
+      .left-panel {
+        display: flex;
+      }
+    }
+
+    .left-content {
+      position: relative;
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      width: 100%;
+      padding: 48px;
+    }
+
+    /* Logo */
+    .logo {
+      display: flex;
+      align-items: center;
+    }
+
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      background-color: #ffffff;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-right: 12px;
+    }
+
+    .logo-icon-inner {
+      width: 16px;
+      height: 16px;
+      background-color: var(--primary);
+      border-radius: 4px;
+    }
+
+    .logo-text {
+      font-size: 20px;
+      font-weight: 600;
+      color: #ffffff;
+    }
+
+    /* Hero Content */
+    .hero-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .hero-title {
+      font-size: 36px;
+      font-weight: 400;
+      color: #ffffff;
+      margin-bottom: 24px;
+      line-height: 1.2;
+    }
+
+    .hero-description {
+      font-size: 18px;
+      color: rgba(255, 255, 255, 0.9);
+      line-height: 1.6;
+    }
+
+    /* Footer */
+    .left-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.7);
+    }
+
+    .privacy-link {
+      color: rgba(255, 255, 255, 0.7);
+      text-decoration: none;
+      cursor: pointer;
+      transition: color 0.2s ease;
+    }
+
+    .privacy-link:hover {
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    /* Right Panel - Form */
+    .right-panel {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px;
+      background-color: #ffffff;
+    }
+
+    @media (min-width: 1024px) {
+      .right-panel {
+        width: 50%;
+      }
+    }
+
+    .form-container {
+      width: 100%;
+      max-width: 400px;
+      position: relative;
+    }
+
+    /* Mobile Logo */
+    .mobile-logo {
+      display: block;
+      text-align: center;
+      margin-bottom: 32px;
+    }
+
+    @media (min-width: 1024px) {
+      .mobile-logo {
+        display: none;
+      }
+    }
+
+    .mobile-logo-icon {
+      width: 32px;
+      height: 32px;
+      background-color: var(--primary);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 12px;
+    }
+
+    .mobile-logo-icon-inner {
+      width: 16px;
+      height: 16px;
+      background-color: #ffffff;
+      border-radius: 4px;
+    }
+
+    .mobile-logo-text {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--foreground);
+    }
+
+    /* Back Button */
+    .back-button {
+      position: absolute;
+      left: 0;
+      top: -60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 40px;
+      height: 40px;
+      background: transparent;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateX(-10px);
+      transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease, background-color 0.2s ease;
+    }
+
+    .back-button.visible {
+      opacity: 1;
+      visibility: visible;
+      transform: translateX(0);
+    }
+
+    .back-button:hover {
+      background-color: #f5f5f5;
+    }
+
+    .back-button svg {
+      width: 16px;
+      height: 16px;
+      color: var(--foreground);
+    }
+
+    /* Form Header */
+    .form-header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .form-title {
+      font-size: 30px;
+      font-weight: 400;
+      color: var(--foreground);
+      margin-bottom: 8px;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .form-subtitle {
+      font-size: 14px;
+      color: var(--muted-foreground);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    /* View Container for Animations */
+    .view-container {
+      position: relative;
+    }
+
+    .view {
+      opacity: 1;
+      transform: translateY(0);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .view.fade-in {
+      animation: fadeIn 0.3s ease forwards;
+    }
+
+    .view.fade-out {
+      animation: fadeOut 0.2s ease forwards;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @keyframes fadeOut {
+      from {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      to {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+    }
+
+    /* Form Fields */
+    .form-fields {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .field-label {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--foreground);
+    }
+
+    .field-input {
+      height: 48px;
+      width: 100%;
+      padding: 0 16px;
+      font-size: 14px;
+      font-family: inherit;
+      color: var(--foreground);
+      background-color: var(--input-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      outline: none;
+      transition: border-color 0.2s ease;
+    }
+
+    .field-input::placeholder {
+      color: var(--muted-foreground);
+    }
+
+    .field-input:focus {
+      border-color: var(--primary);
+    }
+
+    /* Password Field */
+    .password-field {
+      position: relative;
+    }
+
+    .password-field .field-input {
+      padding-right: 48px;
+    }
+
+    .password-toggle {
+      position: absolute;
+      right: 0;
+      top: 0;
+      height: 100%;
+      width: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      color: var(--muted-foreground);
+      transition: color 0.2s ease;
+    }
+
+    .password-toggle:hover {
+      color: var(--foreground);
+    }
+
+    .password-toggle svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    /* Remember Me Row */
+    .remember-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .remember-checkbox {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+
+    .remember-checkbox input {
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+      accent-color: var(--primary);
+    }
+
+    .remember-checkbox span {
+      font-size: 14px;
+      color: var(--muted-foreground);
+    }
+
+    .forgot-link {
+      font-size: 14px;
+      color: var(--primary);
+      text-decoration: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      padding: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .forgot-link:hover {
+      opacity: 0.8;
+    }
+
+    /* Primary Button */
+    .btn-primary {
+      width: 100%;
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      font-weight: 500;
+      font-family: inherit;
+      color: #ffffff;
+      background-color: var(--primary);
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: opacity 0.2s ease, transform 0.1s ease;
+    }
+
+    .btn-primary:hover {
+      opacity: 0.9;
+    }
+
+    .btn-primary:active {
+      transform: scale(0.99);
+    }
+
+    /* Separator */
+    .separator {
+      display: flex;
+      align-items: center;
+      margin: 24px 0;
+    }
+
+    .separator-line {
+      flex: 1;
+      height: 1px;
+      background-color: var(--border);
+    }
+
+    .separator-text {
+      padding: 0 8px;
+      font-size: 12px;
+      text-transform: uppercase;
+      color: var(--muted-foreground);
+      background-color: #ffffff;
+    }
+
+    /* Social Buttons */
+    .social-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .btn-social {
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      font-size: 14px;
+      font-weight: 400;
+      font-family: inherit;
+      color: var(--foreground);
+      background-color: #ffffff;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: background-color 0.2s ease;
+    }
+
+    .btn-social:hover {
+      background-color: #f9f9f9;
+    }
+
+    .btn-social svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    /* Footer Links */
+    .form-footer {
+      text-align: center;
+      font-size: 14px;
+      color: var(--muted-foreground);
+    }
+
+    .form-footer button {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--primary);
+      text-decoration: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      padding: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .form-footer button:hover {
+      opacity: 0.8;
+    }
+
+    /* Animations for field appearance */
+    .field-animate {
+      animation: fieldFadeIn 0.3s ease forwards;
+    }
+
+    @keyframes fieldFadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Focus styles */
+    .field-input:focus-visible {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 1px var(--primary);
+    }
+
+    /* Button focus */
+    button:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }
+  </style>
 </head>
-<body class="bg-light d-flex align-items-center py-5" style="min-height: 100vh;">
-    <div class="container">
-        <div class="row justify-content-center">
-            <div class="col-md-7">
-                <div class="card shadow-sm border-0">
-                    <div class="card-body p-5">
-                        <h2 class="text-center mb-4 text-success">Create an Account</h2>
-                        
-                        <% if (locals.error) { %>
-                            <div class="alert alert-danger" role="alert">
-                                <%= error %>
-                            </div>
-                        <% } %>
-
-                        <form action="/auth/register" method="POST">
-                            <div class="row">
-                                <div class="col-md-12 mb-3">
-                                    <label class="form-label fw-bold">Full Name</label>
-                                    <input type="text" name="full_name" class="form-control p-2" required placeholder="John Doe">
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label fw-bold">Email Address</label>
-                                    <input type="email" name="email" class="form-control p-2" required placeholder="name@example.com">
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label fw-bold">Password</label>
-                                    <input type="password" name="password" class="form-control p-2" required placeholder="••••••••">
-                                </div>
-                                
-                                <hr class="my-4 text-muted">
-                                <h5 class="mb-3 text-secondary">Professional Profile</h5>
-
-                                <div class="col-md-12 mb-3">
-                                    <label class="form-label fw-bold">Career Goal / Target Role</label>
-                                    <input type="text" name="career_goal" class="form-control p-2" placeholder="e.g., Full Stack Developer">
-                                </div>
-                                <div class="col-md-8 mb-3">
-                                    <label class="form-label fw-bold">Institution (University/College)</label>
-                                    <input type="text" name="institution" class="form-control p-2" placeholder="e.g., University of Mpumalanga">
-                                </div>
-                                <div class="col-md-4 mb-3">
-                                    <label class="form-label fw-bold">Graduation Year</label>
-                                    <input type="number" name="graduation_year" class="form-control p-2" min="1900" max="2100" placeholder="2026">
-                                </div>
-                            </div>
-                            
-                            <button type="submit" class="btn btn-success w-100 p-2 mt-3 fw-bold">Register & Continue</button>
-                        </form>
-                        
-                        <div class="text-center mt-4">
-                            <p class="text-muted">Already have an account? <a href="/auth/login" class="text-decoration-none">Login here</a></p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+<body>
+  <div class="container">
+    <!-- Left Panel - Branding -->
+    <div class="left-panel">
+      <div class="left-content">
+        <!-- Logo -->
+        <div class="logo">
+          <div class="logo-icon">
+            <div class="logo-icon-inner"></div>
+          </div>
+          <span class="logo-text">.Jobtrack</span>
         </div>
+
+        <!-- Hero Content -->
+        <div class="hero-content">
+          <h2 class="hero-title">Effortlessly manage job applications.</h2>
+          <p class="hero-description">Log in to access your dashboard and manage your applications with ease.</p>
+        </div>
+
+        <!-- Footer -->
+        <div class="left-footer">
+          <span>Copyright &copy; 2026 Jobtrack (pty) ltd.</span>
+          <a href="#" class="privacy-link">Privacy Policy</a>
+        </div>
+      </div>
     </div>
+
+    <!-- Right Panel - Form -->
+    <div class="right-panel">
+      <div class="form-container">
+        <!-- Back Button (shown on forgot password) -->
+        <button class="back-button" id="backButton" aria-label="Go back">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m12 19-7-7 7-7"/>
+            <path d="M19 12H5"/>
+          </svg>
+        </button>
+
+        <!-- Mobile Logo -->
+        <div class="mobile-logo">
+          <div class="mobile-logo-icon">
+            <div class="mobile-logo-icon-inner"></div>
+          </div>
+          <span class="mobile-logo-text">.Jobtrack</span>
+        </div>
+
+        <!-- Form Header -->
+        <div class="form-header">
+          <p class="form-subtitle">Start you career journey with us.</p>
+            <% if (locals.error) { %>
+                <p class="form-subtitle" style="color: red;"><%= error %></p>
+            <% } %>
+        </div>
+
+        <div class="view-container">
+          
+          <!-- Register View -->
+          <div class="view hidden" id="registerView">
+            <form action="/auth/register" method="POST">
+              <div class="form-fields">
+                <div class="field-group">
+                  <label class="field-label" for="registerName">Full Name</label>
+                  <input 
+                    type="text" 
+                    id="registerName" 
+                    class="field-input" 
+                    name="full_name"
+                    placeholder="John Doe"
+                    autocomplete="name"
+                    required
+                  >
+                </div>
+
+                <div class="field-group">
+                  <label class="field-label" for="registerEmail">Email</label>
+                  <input 
+                    type="email" 
+                    id="registerEmail" 
+                    name="email"
+                    class="field-input" 
+                    placeholder="name@example.com"
+                    autocomplete="email"
+                    required
+                  >
+                </div>
+
+                <div class="field-group">
+                  <label class="field-label" for="registerPassword">Password</label>
+                  <div class="password-field">
+                    <input 
+                      type="password" 
+                      id="registerPassword" 
+                      class="field-input"
+                      name="password" 
+                      placeholder="Enter password"
+                      autocomplete="new-password"
+                      required
+                    >
+                    <button type="button" class="password-toggle" data-target="registerPassword" aria-label="Toggle password visibility">
+                      <svg class="eye-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/>
+                        <circle cx="12" cy="12" r="3"/>
+                      </svg>
+                      <svg class="eye-off-icon" style="display:none;" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/>
+                        <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/>
+                        <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/>
+                        <line x1="2" x2="22" y1="2" y2="22"/>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="field-group">
+                  <label class="field-label" for="registerName">Career Goal (role)</label>
+                  <input 
+                    type="text" 
+                    class="field-input" 
+                    name="career_goal"
+                    placeholder="e.g., Full Stack Developer"
+                    autocomplete="career_goal"
+                    required
+                  >
+                </div>
+
+                <div class="field-group" style="display: flex; flex-direction: row;">
+                    <div style="flex: 2;">
+                        <label class="field-label" for="registerName">Institution Name</label>
+                        <input 
+                            type="text" 
+                            class="field-input" 
+                            name="institution"
+                            placeholder="e.g., University of Mpumalanga"
+                            autocomplete="career_goal"
+                            required
+                        >
+                    </div>
+                    <div style="flex: 1;">
+                        <label class="field-label" for="registerName">Graduation</label>
+                        <input 
+                            type="number" 
+                            class="field-input" 
+                            name="graduation_year"
+                            placeholder="e.g. 2026"
+                            autocomplete="career_goal"
+                            required
+                        >
+                    </div>
+                  
+                </div>
+
+              </div>
+
+              <button type="submit" class="btn-primary" style="margin-top: 8px;">Create Account</button>
+            </form>
+
+            <div class="separator">
+              <div class="separator-line"></div>
+              <span class="separator-text">Or Sign Up With</span>
+              <div class="separator-line"></div>
+            </div>
+
+            <div class="social-buttons">
+              <button type="button" class="btn-social">
+                <svg viewBox="0 0 24 24">
+                  <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                  <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                  <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                  <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                </svg>
+                Google
+              </button>
+              <button type="button" class="btn-social">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-.96 3.64-.82 1.57.06 2.75.63 3.54 1.51-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+                </svg>
+                Apple
+              </button>
+            </div>
+
+            <div class="form-footer">
+              Already Have An Account? <a href="/auth/login" type="button" id="signInBtn" style="text-decoration: none;">Sign In.</a>
+            </div>
+          </div>
+
+          <!-- Forgot Password View -->
+          <!-- <div class="view hidden" id="forgotView">
+            <form id="forgotForm">
+              <div class="form-fields">
+                <div class="field-group">
+                  <label class="field-label" for="forgotEmail">Email</label>
+                  <input 
+                    type="email" 
+                    id="forgotEmail" 
+                    class="field-input" 
+                    placeholder="user@company.com"
+                    autocomplete="email"
+                  >
+                </div>
+              </div>
+
+              <button type="submit" class="btn-primary" style="margin-top: 8px;">Send Reset Link</button>
+            </form>
+
+            <div class="form-footer" style="margin-top: 24px;">
+              Remember Your Password? <button type="button" id="backToLoginBtn">Back to Login.</button>
+            </div>
+          </div> -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      // Password Toggle Buttons
+      const passwordToggles = document.querySelectorAll('.password-toggle');
+
+      // Password Toggle Function
+      function togglePassword(button) {
+        const targetId = button.getAttribute('data-target');
+        const input = document.getElementById(targetId);
+        const eyeIcon = button.querySelector('.eye-icon');
+        const eyeOffIcon = button.querySelector('.eye-off-icon');
+
+        if (input.type === 'password') {
+          input.type = 'text';
+          eyeIcon.style.display = 'none';
+          eyeOffIcon.style.display = 'block';
+        } else {
+          input.type = 'password';
+          eyeIcon.style.display = 'block';
+          eyeOffIcon.style.display = 'none';
+        }
+      }
+
+      // Event Listeners - Password Toggles
+      passwordToggles.forEach(button => {
+        button.addEventListener('click', () => togglePassword(button));
+      });
+    })();
+  </script>
 </body>
 </html>

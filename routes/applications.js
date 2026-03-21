@@ -20,7 +20,7 @@ const storage = multer.diskStorage({
     cb(null, 'resume-' + Date.now() + path.extname(file.originalname));
   }
 });
-
+ 
 const upload = multer({ 
   storage: storage,
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
@@ -333,7 +333,7 @@ router.post('/update-status/:id', async (req, res) => {
             VALUES ($1, 'status_change', 'system', $2, CURRENT_TIMESTAMP)
         `, [id, `Status updated to: ${status}`]);
         
-        res.redirect('/applications/dashboard');
+        res.redirect(`/applications/view/${id}`);
         
     } catch (err) {
         console.error('Error updating status:', err);
@@ -616,7 +616,7 @@ router.get('/ai-analytics', async (req, res) => {
         let aiConnected = false;
         
         try {
-            const response = await axios.post('/analytics/api/analyze', {
+            const response = await axios.post('http://127.0.0.1:8000/api/analyze', {
                 user_id: req.session.userId,
                 applications: applications
             }, { timeout: 5000 });

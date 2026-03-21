@@ -120,7 +120,7 @@ router.post('/analyze', upload.single('cv'), async (req, res) => {
             console.error('Python service error:', pythonError.message);
             
             // Fallback: Use Node.js implementation if available
-            // Or show error
+            // Or show error 
             return res.render('ats-analyzer', {
                 user: req.session.userName,
                 result: null,

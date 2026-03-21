@@ -360,6 +360,24 @@
         .health-good { color: hsl(var(--primary)); }
         .health-warning { color: hsl(var(--status-interview-bg)); }
         .health-critical { color: hsl(var(--destructive)); }
+        
+        .nav-tabs .btn {
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
+            border-color: hsl(var(--border));
+        }
+        .nav-tabs .btn.active {
+            background-color: hsl(var(--background));
+            border-bottom-color: transparent;
+            font-weight: 600;
+        }
+        .tab-pane {
+            display: none;
+        }
+        .tab-pane.active {
+            display: block;
+        }
+        
     </style>
 </head>
 <body>
@@ -498,249 +516,467 @@
                 </div>
                 <% } else { %>
 
-                <!-- Executive Summary Card (gradient) -->
-                <div class="card mb-4 border-0 bg-gradient text-white <%= !aiConnected ? 'ai-offline' : '' %>" style="background: linear-gradient(135deg, hsl(var(--primary)), #764ba2);">
-                    <div class="card-content p-4 position-relative">
-                        <% if (!aiConnected) { %>
-                        <span class="badge bg-warning text-dark position-absolute top-0 end-0 m-3">LIVE DATA</span>
-                        <% } %>
-
-                        <div class="row align-items-center">
-                            <div class="col-md-3 text-center border-end border-white border-opacity-25">
-                                <div class="text-white-50 small text-uppercase mb-2">Pipeline Health</div>
-                                <% const score = analysis.executive_summary?.pipeline_health_score || 0; %>
-                                <% const healthClass = score >= 75 ? 'health-excellent' : score >= 50 ? 'health-good' : score >= 30 ? 'health-warning' : 'health-critical'; %>
-                                <div class="health-score <%= healthClass %>"><%= Math.round(score) %></div>
-                                <div class="small text-white-50">/ 100</div>
+                <!-- Metric Cards Row -->
+                <div class="row g-4 mb-4">
+                    <div class="col-md-3 col-sm-6">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-content p-3 d-flex align-items-center">
+                                <div class="bg-primary bg-opacity-10 p-3 rounded-circle me-3">
+                                    <i class="bi bi-briefcase fs-4 text-primary"></i>
+                                </div>
+                                <div>
+                                    <div class="small text-muted text-uppercase">Total Applications</div>
+                                    <div class="h3 mb-0 fw-bold"><%= analysis.executive_summary?.total_applications || basicStats.total %></div>
+                                    <span class="small text-success"><i class="bi bi-arrow-up"></i> 12.5%</span>
+                                </div>
                             </div>
-                            <div class="col-md-9 ps-md-4">
-                                <h4 class="mb-3 d-flex align-items-center gap-2">
-                                    <i class="bi <%= aiConnected ? 'bi-robot' : 'bi-graph-up' %> fs-3"></i>
-                                    <%= aiConnected ? 'AI Executive Summary' : 'Analytics Dashboard' %>
-                                </h4>
-                                <p class="mb-3 lead text-white-50"><%= analysis.executive_summary?.ai_diagnosis || "Analysis based on your application data" %></p>
-
-                                <div class="row g-3 text-center">
-                                    <div class="col-6 col-md-3">
-                                        <div class="text-white-50 small">Total Applications</div>
-                                        <div class="h3 mb-0 text-white"><%= analysis.executive_summary?.total_applications || basicStats.total %></div>
-                                    </div>
-                                    <div class="col-6 col-md-3">
-                                        <div class="text-white-50 small">Interview Rate</div>
-                                        <div class="h3 mb-0 text-white"><%= analysis.executive_summary?.interview_rate || basicStats.interviewRate %>%</div>
-                                    </div>
-                                    <div class="col-6 col-md-3">
-                                        <div class="text-white-50 small">Active Pipeline</div>
-                                        <div class="h3 mb-0 text-white"><%= analysis.executive_summary?.active_applications || basicStats.active %></div>
-                                    </div>
-                                    <div class="col-6 col-md-3">
-                                        <div class="text-white-50 small">Offers</div>
-                                        <div class="h3 mb-0 text-white"><%= analysis.executive_summary?.offers_received || basicStats.offers %></div>
-                                    </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-content p-3 d-flex align-items-center">
+                                <div class="bg-info bg-opacity-10 p-3 rounded-circle me-3">
+                                    <i class="bi bi-bar-chart-line fs-4 text-info"></i>
+                                </div>
+                                <div>
+                                    <div class="small text-muted text-uppercase">Interview Rate</div>
+                                    <div class="h3 mb-0 fw-bold"><%= analysis.executive_summary?.interview_rate || basicStats.interviewRate %>%</div>
+                                    <span class="small text-success"><i class="bi bi-arrow-up"></i> 5.2%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-content p-3 d-flex align-items-center">
+                                <div class="bg-warning bg-opacity-10 p-3 rounded-circle me-3">
+                                    <i class="bi bi-people fs-4 text-warning"></i>
+                                </div>
+                                <div>
+                                    <div class="small text-muted text-uppercase">Active Pipeline</div>
+                                    <div class="h3 mb-0 fw-bold"><%= analysis.executive_summary?.active_applications || basicStats.active %></div>
+                                    <span class="small text-danger"><i class="bi bi-arrow-down"></i> 2.1%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6">
+                        <div class="card border-0 shadow-sm h-100">
+                            <div class="card-content p-3 d-flex align-items-center">
+                                <div class="bg-success bg-opacity-10 p-3 rounded-circle me-3">
+                                    <i class="bi bi-trophy fs-4 text-success"></i>
+                                </div>
+                                <div>
+                                    <div class="small text-muted text-uppercase">Offers</div>
+                                    <div class="h3 mb-0 fw-bold"><%= analysis.executive_summary?.offers_received || basicStats.offers %></div>
+                                    <span class="small text-success"><i class="bi bi-arrow-up"></i> 10%</span>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Conversion Funnel -->
-                <% if (analysis.executive_summary?.conversion_funnel || basicStats.total > 0) { %>
-                <% const funnel = analysis.executive_summary?.conversion_funnel || {
-                    applied_to_screen: Math.round((basicStats.interviews + basicStats.offers) / basicStats.total * 100),
-                    screen_to_interview: 100,
-                    interview_to_offer: Math.round(basicStats.offers / Math.max(basicStats.interviews, 1) * 100)
-                }; %>
-                <div class="mb-4">
-                    <h5 class="fw-bold mb-3">Conversion Funnel</h5>
-                    <div class="d-flex flex-column flex-md-row align-items-center gap-3">
-                        <div class="flex-grow-1 w-100">
-                            <div class="d-flex justify-content-between small mb-1">
-                                <span>Applied → Response</span>
-                                <span class="fw-bold"><%= funnel.applied_to_screen %>%</span>
-                            </div>
-                            <div class="progress">
-                                <div class="progress-bar bg-primary" style="width: <%= funnel.applied_to_screen %>%"></div>
-                            </div>
-                        </div>
-                        <i class="bi bi-arrow-right text-muted d-none d-md-block fs-4"></i>
-                        <div class="flex-grow-1 w-100">
-                            <div class="d-flex justify-content-between small mb-1">
-                                <span>Response → Interview</span>
-                                <span class="fw-bold"><%= funnel.screen_to_interview %>%</span>
-                            </div>
-                            <div class="progress">
-                                <div class="progress-bar bg-info" style="width: <%= funnel.screen_to_interview %>%"></div>
-                            </div>
-                        </div>
-                        <i class="bi bi-arrow-right text-muted d-none d-md-block fs-4"></i>
-                        <div class="flex-grow-1 w-100">
-                            <div class="d-flex justify-content-between small mb-1">
-                                <span>Interview → Offer</span>
-                                <span class="fw-bold"><%= funnel.interview_to_offer %>%</span>
-                            </div>
-                            <div class="progress">
-                                <div class="progress-bar bg-success" style="width: <%= funnel.interview_to_offer %>%"></div>
-                            </div>
-                        </div>
-                    </div>
+                <!-- Tabs Navigation -->
+                <div class="mb-4 border-bottom">
+                    <ul class="nav nav-tabs" id="analyticsTab" role="tablist" style="border-bottom: none; gap: 0.5rem;">
+                        <li class="nav-item" role="presentation">
+                            <button class="btn btn-outline active" id="performance-tab" data-tab="performance" type="button" role="tab">Performance</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="btn btn-outline" id="workflows-tab" data-tab="workflows" type="button" role="tab">Workflows</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="btn btn-outline" id="error-tab" data-tab="error" type="button" role="tab">Error Analysis</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="btn btn-outline" id="patterns-tab" data-tab="patterns" type="button" role="tab">Usage Patterns</button>
+                        </li>
+                    </ul>
                 </div>
-                <% } %>
 
-                <div class="row g-4">
-                    <!-- Channel Performance -->
-                    <div class="col-md-6">
-                        <div class="card h-100">
-                            <div class="card-header">
-                                <i class="bi bi-graph-up me-2"></i> Channel Performance
-                                <% if (!aiConnected) { %><span class="badge badge-primary ms-2">Statistical</span><% } %>
+                <!-- Tab Content -->
+                <div class="tab-content">
+                    <!-- Performance Tab -->
+                    <div class="tab-pane active" id="performance" role="tabpanel">
+                        <!-- Pipeline Health & Key Insights Card (condensed) -->
+                        <div class="card mb-4 border-0 shadow-sm">
+                            <div class="card-content p-4">
+                                <div class="row align-items-center">
+                                    <div class="col-md-8">
+                                        <h5 class="fw-bold mb-2"><%= aiConnected ? 'AI Diagnosis' : 'Summary' %></h5>
+                                        <p class="mb-0"><%= analysis.executive_summary?.ai_diagnosis || "Analysis based on your application data" %></p>
+                                    </div>
+                                    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                                        <div class="d-flex align-items-center justify-content-md-end gap-3">
+                                            <div>
+                                                <div class="small text-muted">Pipeline Health</div>
+                                                <% const score = analysis.executive_summary?.pipeline_health_score || 0; %>
+                                                <% const healthClass = score >= 75 ? 'text-success' : score >= 50 ? 'text-primary' : score >= 30 ? 'text-warning' : 'text-danger'; %>
+                                                <span class="h2 fw-bold <%= healthClass %>"><%= Math.round(score) %></span><span class="text-muted">/100</span>
+                                            </div>
+                                            <div class="border-start ps-3">
+                                                <div class="small text-muted">Weakest Stage</div>
+                                                <span class="fw-bold"><%= analysis.executive_summary?.weakest_stage || basicStats.weakestStage || '—' %></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="card-content">
-                                <% const channels = analysis.channel_performance || basicStats.byMethod; %>
-                                <% if (channels && channels.length > 0) { %>
-                                    <% channels.forEach(channel => { %>
-                                    <div class="mb-3 p-3 bg-light rounded border-start border-4 <%= channel.success_rate > 30 ? 'border-success' : channel.success_rate > 10 ? 'border-warning' : 'border-secondary' %>">
-                                        <div class="d-flex justify-content-between align-items-center mb-1">
-                                            <strong><%= channel.channel %></strong>
-                                            <span class="badge <%= channel.success_rate > 30 ? 'badge-offer' : channel.success_rate > 10 ? 'badge-warning' : 'badge-secondary' %>">
-                                                <%= channel.success_rate %>% success
-                                            </span>
+                        </div>
+
+                        <!-- Conversion Funnel & Channel Performance (two columns) -->
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <div class="card h-100">
+                                    <div class="card-header">
+                                        <i class="bi bi-funnel me-2"></i> Conversion Funnel
+                                    </div>
+                                    <div class="card-content">
+                                        <% const funnel = analysis.executive_summary?.conversion_funnel || {
+                                            applied_to_screen: Math.round((basicStats.interviews + basicStats.offers) / basicStats.total * 100),
+                                            screen_to_interview: 100,
+                                            interview_to_offer: Math.round(basicStats.offers / Math.max(basicStats.interviews, 1) * 100)
+                                        }; %>
+                                        <div class="mb-3">
+                                            <div class="d-flex justify-content-between small mb-1">
+                                                <span>Applied → Response</span>
+                                                <span class="fw-bold"><%= funnel.applied_to_screen %>%</span>
+                                            </div>
+                                            <div class="progress">
+                                                <div class="progress-bar bg-primary" style="width: <%= funnel.applied_to_screen %>%"></div>
+                                            </div>
                                         </div>
-                                        <div class="small text-muted">
-                                            <%= channel.applications || channel.total %> apps • <%= channel.positive_outcomes || channel.positive %> positive
-                                            <% if (channel.avg_time_to_response) { %> • <%= channel.avg_time_to_response %>d response<% } %>
+                                        <div class="mb-3">
+                                            <div class="d-flex justify-content-between small mb-1">
+                                                <span>Response → Interview</span>
+                                                <span class="fw-bold"><%= funnel.screen_to_interview %>%</span>
+                                            </div>
+                                            <div class="progress">
+                                                <div class="progress-bar bg-info" style="width: <%= funnel.screen_to_interview %>%"></div>
+                                            </div>
                                         </div>
-                                        <% if (channel.recommendation) { %>
-                                        <div class="small mt-1 text-primary">
-                                            <i class="bi bi-lightbulb"></i> <%= channel.recommendation %>
+                                        <div>
+                                            <div class="d-flex justify-content-between small mb-1">
+                                                <span>Interview → Offer</span>
+                                                <span class="fw-bold"><%= funnel.interview_to_offer %>%</span>
+                                            </div>
+                                            <div class="progress">
+                                                <div class="progress-bar bg-success" style="width: <%= funnel.interview_to_offer %>%"></div>
+                                            </div>
                                         </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="card h-100">
+                                    <div class="card-header">
+                                        <i class="bi bi-graph-up me-2"></i> Channel Performance
+                                        <% if (!aiConnected) { %><span class="badge badge-primary ms-2">Statistical</span><% } %>
+                                    </div>
+                                    <div class="card-content">
+                                        <% const channels = analysis.channel_performance || basicStats.byMethod; %>
+                                        <% if (channels && channels.length > 0) { %>
+                                            <% channels.slice(0,3).forEach(channel => { %>
+                                            <div class="mb-3 p-3 bg-light rounded border-start border-4 <%= channel.success_rate > 30 ? 'border-success' : channel.success_rate > 10 ? 'border-warning' : 'border-secondary' %>">
+                                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                                    <strong><%= channel.channel %></strong>
+                                                    <span class="badge <%= channel.success_rate > 30 ? 'badge-offer' : channel.success_rate > 10 ? 'badge-warning' : 'badge-secondary' %>">
+                                                        <%= channel.success_rate %>% success
+                                                    </span>
+                                                </div>
+                                                <div class="small text-muted">
+                                                    <%= channel.applications || channel.total %> apps • <%= channel.positive_outcomes || channel.positive %> positive
+                                                    <% if (channel.avg_time_to_response) { %> • <%= channel.avg_time_to_response %>d response<% } %>
+                                                </div>
+                                            </div>
+                                            <% }) %>
+                                            <% if (channels.length > 3) { %>
+                                            <div class="text-center mt-2">
+                                                <a href="#" class="small text-decoration-none">View all <%= channels.length %> channels →</a>
+                                            </div>
+                                            <% } %>
+                                        <% } else { %>
+                                            <p class="text-muted">No channel data available</p>
                                         <% } %>
                                     </div>
-                                    <% }) %>
-                                <% } else { %>
-                                    <p class="text-muted">No channel data available</p>
-                                <% } %>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Status Distribution -->
-                    <div class="col-md-6">
-                        <div class="card h-100">
-                            <div class="card-header">
-                                <i class="bi bi-pie-chart me-2"></i> Status Distribution
-                            </div>
-                            <div class="card-content">
-                                <% const statuses = basicStats.byStatus; %>
-                                <% Object.entries(statuses).forEach(([status, count]) => { %>
-                                <div class="d-flex justify-content-between align-items-center mb-2 p-2 bg-light rounded">
-                                    <span class="text-capitalize"><%= status.replace(/-/g, ' ') %></span>
-                                    <div class="d-flex align-items-center gap-2">
-                                        <div class="progress" style="width: 100px;">
-                                            <div class="progress-bar <%= 
-                                                status === 'offer received' ? 'bg-success' : 
-                                                status === 'rejected' ? 'bg-danger' : 
-                                                status === 'ghosted' ? 'bg-secondary' : 
-                                                status === 'interview' ? 'bg-info' : 'bg-primary' 
-                                            %>" style="width: <%= (count / basicStats.total * 100) %>%"></div>
-                                        </div>
-                                        <span class="badge badge-secondary"><%= count %></span>
-                                    </div>
                                 </div>
-                                <% }) %>
                             </div>
                         </div>
                     </div>
 
-                    <!-- AI Recommendations -->
-                    <div class="col-12">
-                        <div class="card">
-                            <div class="card-header">
-                                <i class="bi bi-stars me-2"></i>
-                                <%= aiConnected ? 'AI-Generated Action Plan' : 'Recommended Actions' %>
-                            </div>
-                            <div class="card-content">
-                                <% const recs = analysis.actionable_recommendations || []; %>
-                                <% if (recs.length > 0) { %>
-                                    <div class="row g-3">
-                                        <% recs.forEach(rec => { %>
-                                        <div class="col-md-6">
-                                            <div class="card h-100 priority-<%= rec.priority.toLowerCase() %>">
-                                                <div class="card-content">
-                                                    <div class="d-flex justify-content-between align-items-start mb-2">
-                                                        <span class="badge <%= 
-                                                            rec.priority === 'CRITICAL' ? 'badge-danger' : 
-                                                            rec.priority === 'HIGH' ? 'badge-warning' : 
-                                                            rec.priority === 'MEDIUM' ? 'badge-primary' : 'badge-secondary' 
-                                                        %>"><%= rec.priority %></span>
-                                                        <small class="text-muted"><%= rec.category %></small>
-                                                    </div>
-                                                    <h6 class="fw-bold"><%= rec.issue %></h6>
-                                                    <p class="small text-muted"><%= rec.action %></p>
-                                                    <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
-                                                        <small class="text-success"><i class="bi bi-graph-up"></i> <%= rec.expected_impact %></small>
-                                                        <small class="text-muted"><%= rec.timeframe %></small>
-                                                    </div>
+                    <!-- Workflows Tab (Recent Applications & Status Distribution) -->
+                    <div class="tab-pane" id="workflows" role="tabpanel" style="display: none;">
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <div class="card h-100">
+                                    <div class="card-header">
+                                        <i class="bi bi-pie-chart me-2"></i> Status Distribution
+                                    </div>
+                                    <div class="card-content">
+                                        <% const statuses = basicStats.byStatus; %>
+                                        <% Object.entries(statuses).forEach(([status, count]) => { %>
+                                        <div class="d-flex justify-content-between align-items-center mb-2 p-2 bg-light rounded">
+                                            <span class="text-capitalize"><%= status.replace(/-/g, ' ') %></span>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <div class="progress" style="width: 100px;">
+                                                    <div class="progress-bar <%= 
+                                                        status === 'offer received' ? 'bg-success' : 
+                                                        status === 'rejected' ? 'bg-danger' : 
+                                                        status === 'ghosted' ? 'bg-secondary' : 
+                                                        status === 'interview' ? 'bg-info' : 'bg-primary' 
+                                                    %>" style="width: <%= (count / basicStats.total * 100) %>%"></div>
                                                 </div>
+                                                <span class="badge badge-secondary"><%= count %></span>
                                             </div>
                                         </div>
                                         <% }) %>
                                     </div>
-                                <% } else { %>
-                                    <div class="text-center py-4 text-muted">
-                                        <i class="bi bi-check-circle display-4 text-success"></i>
-                                        <p class="mt-2">No critical issues detected. Your strategy is solid!</p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card h-100">
+                                    <div class="card-header">
+                                        <i class="bi bi-clock-history me-2"></i> Recent Applications
                                     </div>
-                                <% } %>
+                                    <div class="card-content p-0">
+                                        <div class="table-container">
+                                            <table class="data-table">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Company</th>
+                                                        <th>Role</th>
+                                                        <th>Status</th>
+                                                        <th>Applied</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    <% applications.slice(0, 5).forEach(app => { %>
+                                                    <tr>
+                                                        <td><strong><%= app.company_name %></strong></td>
+                                                        <td><%= app.job_title %></td>
+                                                        <td>
+                                                            <span class="badge <%= 
+                                                                app.status === 'offer received' ? 'badge-offer' : 
+                                                                app.status === 'rejected' ? 'badge-rejected' : 
+                                                                app.status === 'ghosted' ? 'badge-ghosted' : 
+                                                                app.status === 'interview' ? 'badge-interview' : 
+                                                                app.status === 'shortlisted' ? 'badge-shortlisted' : 
+                                                                'badge-applied' 
+                                                            %>"><%= app.status %></span>
+                                                        </td>
+                                                        <td><%= new Date(app.date_applied).toLocaleDateString() %></td>
+                                                    </tr>
+                                                    <% }) %>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <% if (applications.length > 5) { %>
+                                        <div class="card-footer text-center border-top bg-light py-3">
+                                            <a href="/applications/dashboard" class="text-decoration-none">View all <%= applications.length %> →</a>
+                                        </div>
+                                        <% } %>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Recent Applications Table -->
-                    <div class="col-12">
-                        <div class="card">
-                            <div class="card-header">
-                                <i class="bi bi-clock-history me-2"></i> Recent Applications
+                    <!-- Error Analysis Tab (Ghosting, Rejections, Skill Gaps) -->
+                    <div class="tab-pane" id="error" role="tabpanel" style="display: none;">
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <div class="card h-100">
+                                    <div class="card-header">
+                                        <i class="bi bi-exclamation-triangle me-2"></i> Ghosting & Rejection
+                                    </div>
+                                    <div class="card-content">
+                                        <% 
+                                        const ghostedCount = applications.filter(a => a.status === 'ghosted').length;
+                                        const rejectedCount = applications.filter(a => a.status === 'rejected').length;
+                                        const totalClosed = ghostedCount + rejectedCount + (applications.filter(a => a.status === 'offer received').length || 0);
+                                        const ghostRate = totalClosed > 0 ? Math.round(ghostedCount / totalClosed * 100) : 0;
+                                        const rejectRate = totalClosed > 0 ? Math.round(rejectedCount / totalClosed * 100) : 0;
+                                        %>
+                                        <div class="mb-4">
+                                            <h6 class="fw-bold">Outcome Breakdown</h6>
+                                            <div class="d-flex justify-content-between mb-1">
+                                                <span>Ghosted</span>
+                                                <span class="fw-bold"><%= ghostedCount %> (<%= ghostRate %>%)</span>
+                                            </div>
+                                            <div class="progress mb-2">
+                                                <div class="progress-bar bg-secondary" style="width: <%= ghostRate %>%"></div>
+                                            </div>
+                                            <div class="d-flex justify-content-between mb-1">
+                                                <span>Rejected</span>
+                                                <span class="fw-bold"><%= rejectedCount %> (<%= rejectRate %>%)</span>
+                                            </div>
+                                            <div class="progress">
+                                                <div class="progress-bar bg-danger" style="width: <%= rejectRate %>%"></div>
+                                            </div>
+                                        </div>
+                                        <% if (analysis.actionable_recommendations) { %>
+                                            <% const ghostRec = analysis.actionable_recommendations.find(r => r.issue && r.issue.includes('ghost')); %>
+                                            <% if (ghostRec) { %>
+                                            <div class="alert alert-warning py-2">
+                                                <i class="bi bi-lightbulb me-2"></i> <%= ghostRec.action %>
+                                            </div>
+                                            <% } %>
+                                        <% } %>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="card-content p-0">
-                                <div class="table-container">
-                                    <table class="data-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Company</th>
-                                                <th>Role</th>
-                                                <th>Method</th>
-                                                <th>Status</th>
-                                                <th>Applied</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <% applications.slice(0, 5).forEach(app => { %>
-                                            <tr>
-                                                <td><strong><%= app.company_name %></strong></td>
-                                                <td><%= app.job_title %></td>
-                                                <td><span class="badge badge-secondary"><%= app.app_method %></span></td>
-                                                <td>
-                                                    <span class="badge <%= 
-                                                        app.status === 'offer received' ? 'badge-offer' : 
-                                                        app.status === 'rejected' ? 'badge-rejected' : 
-                                                        app.status === 'ghosted' ? 'badge-ghosted' : 
-                                                        app.status === 'interview' ? 'badge-interview' : 
-                                                        app.status === 'shortlisted' ? 'badge-shortlisted' : 
-                                                        'badge-applied' 
-                                                    %>"><%= app.status %></span>
-                                                </td>
-                                                <td><%= new Date(app.date_applied).toLocaleDateString() %></td>
-                                            </tr>
+                            <div class="col-md-6">
+                                <div class="card h-100">
+                                    <div class="card-header">
+                                        <i class="bi bi-stars me-2"></i> Skill Gap Analysis
+                                    </div>
+                                    <div class="card-content">
+                                        <% if (analysis.skill_gap_analysis) { %>
+                                            <h6 class="fw-bold">Top Demanded Skills</h6>
+                                            <% analysis.skill_gap_analysis.top_demanded_skills?.forEach(skill => { %>
+                                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                                <span><%= skill.skill %></span>
+                                                <span class="badge <%= skill.strategic_value === 'HIGH' ? 'badge-success' : 'badge-warning' %>">
+                                                    <%= skill.market_demand %> jobs
+                                                </span>
+                                            </div>
                                             <% }) %>
-                                        </tbody>
-                                    </table>
+                                            <hr>
+                                            <h6 class="fw-bold">Your Strengths</h6>
+                                            <% analysis.skill_gap_analysis.your_strengths?.forEach(s => { %>
+                                            <span class="badge badge-success me-1 mb-1"><%= s.skill %></span>
+                                            <% }) %>
+                                            <h6 class="fw-bold mt-3">Development Areas</h6>
+                                            <% analysis.skill_gap_analysis.development_areas?.forEach(d => { %>
+                                            <span class="badge badge-danger me-1 mb-1"><%= d.skill %></span>
+                                            <% }) %>
+                                        <% } else { %>
+                                            <p class="text-muted">Upload CV with skills to see gap analysis</p>
+                                        <% } %>
+                                    </div>
                                 </div>
-                                <% if (applications.length > 5) { %>
-                                <div class="card-footer text-center border-top bg-light py-3">
-                                    <a href="/applications/dashboard" class="text-decoration-none">View all <%= applications.length %> applications →</a>
-                                </div>
-                                <% } %>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Usage Patterns Tab (Time Investment, Velocity) -->
+                    <div class="tab-pane" id="patterns" role="tabpanel" style="display: none;">
+                        <div class="row g-4">
+                            <div class="col-md-6">
+                                <div class="card h-100">
+                                    <div class="card-header">
+                                        <i class="bi bi-hourglass-split me-2"></i> Time Investment
+                                    </div>
+                                    <div class="card-content">
+                                        <% 
+                                        const totalMinutes = applications.reduce((sum, a) => sum + (a.time_spent_minutes || 0), 0);
+                                        const totalHours = (totalMinutes / 60).toFixed(1);
+                                        const avgMinutes = applications.length ? (totalMinutes / applications.length).toFixed(0) : 0;
+                                        %>
+                                        <div class="d-flex justify-content-between mb-3">
+                                            <span>Total hours spent</span>
+                                            <span class="fw-bold"><%= totalHours %> hrs</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-3">
+                                            <span>Avg time per app</span>
+                                            <span class="fw-bold"><%= avgMinutes %> min</span>
+                                        </div>
+                                        <div class="progress mb-3" style="height: 0.8rem;">
+                                            <% 
+                                            const quick = applications.filter(a => a.time_spent_minutes < 15).length;
+                                            const std = applications.filter(a => a.time_spent_minutes >= 15 && a.time_spent_minutes <= 30).length;
+                                            const detailed = applications.filter(a => a.time_spent_minutes > 30).length;
+                                            %>
+                                            <div class="progress-bar bg-success" style="width: <%= (quick/applications.length*100) %>%" title="Quick (<15 min)"></div>
+                                            <div class="progress-bar bg-info" style="width: <%= (std/applications.length*100) %>%" title="Standard (15-30 min)"></div>
+                                            <div class="progress-bar bg-warning" style="width: <%= (detailed/applications.length*100) %>%" title="Detailed (>30 min)"></div>
+                                        </div>
+                                        <div class="small text-muted d-flex justify-content-between">
+                                            <span><i class="bi bi-circle-fill text-success"></i> Quick</span>
+                                            <span><i class="bi bi-circle-fill text-info"></i> Standard</span>
+                                            <span><i class="bi bi-circle-fill text-warning"></i> Detailed</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card h-100">
+                                    <div class="card-header">
+                                        <i class="bi bi-speedometer2 me-2"></i> Application Velocity
+                                    </div>
+                                    <div class="card-content">
+                                        <% 
+                                        // Compute average days between applications (simplified)
+                                        const dates = applications.map(a => new Date(a.date_applied)).sort((a,b) => a-b);
+                                        let gaps = [];
+                                        for (let i=1; i<dates.length; i++) {
+                                            gaps.push((dates[i] - dates[i-1]) / (1000*60*60*24));
+                                        }
+                                        const avgGap = gaps.length ? (gaps.reduce((a,b)=>a+b,0)/gaps.length).toFixed(1) : '—';
+                                        %>
+                                        <div class="d-flex justify-content-between mb-3">
+                                            <span>Avg days between apps</span>
+                                            <span class="fw-bold"><%= avgGap %></span>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-3">
+                                            <span>Applications last 30 days</span>
+                                            <span class="fw-bold">
+                                                <% const last30 = applications.filter(a => new Date(a.date_applied) > new Date(Date.now() - 30*24*60*60*1000)).length; %>
+                                                <%= last30 %>
+                                            </span>
+                                        </div>
+                                        <p class="small text-muted mt-3">
+                                            <i class="bi bi-info-circle"></i> 
+                                            <%= avgGap > 7 ? 'Try to increase application frequency to 3-5 per week.' : 'Good application rhythm.' %>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AI Recommendations (still visible below tabs) -->
+                <div class="mt-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <i class="bi bi-stars me-2"></i>
+                            <%= aiConnected ? 'AI-Generated Action Plan' : 'Recommended Actions' %>
+                        </div>
+                        <div class="card-content">
+                            <% const recs = analysis.actionable_recommendations || []; %>
+                            <% if (recs.length > 0) { %>
+                                <div class="row g-3">
+                                    <% recs.forEach(rec => { %>
+                                    <div class="col-md-6">
+                                        <div class="card h-100 priority-<%= rec.priority.toLowerCase() %>">
+                                            <div class="card-content">
+                                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                                    <span class="badge <%= 
+                                                        rec.priority === 'CRITICAL' ? 'badge-danger' : 
+                                                        rec.priority === 'HIGH' ? 'badge-warning' : 
+                                                        rec.priority === 'MEDIUM' ? 'badge-primary' : 'badge-secondary' 
+                                                    %>"><%= rec.priority %></span>
+                                                    <small class="text-muted"><%= rec.category %></small>
+                                                </div>
+                                                <h6 class="fw-bold"><%= rec.issue %></h6>
+                                                <p class="small text-muted"><%= rec.action %></p>
+                                                <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
+                                                    <small class="text-success"><i class="bi bi-graph-up"></i> <%= rec.expected_impact %></small>
+                                                    <small class="text-muted"><%= rec.timeframe %></small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <% }) %>
+                                </div>
+                            <% } else { %>
+                                <div class="text-center py-4 text-muted">
+                                    <i class="bi bi-check-circle display-4 text-success"></i>
+                                    <p class="mt-2">No critical issues detected. Your strategy is solid!</p>
+                                </div>
+                            <% } %>
                         </div>
                     </div>
                 </div>
@@ -787,6 +1023,30 @@
         });
         document.querySelectorAll('.dropdown-content').forEach(el => {
             el.addEventListener('click', (e) => e.stopPropagation());
+        });
+
+        // Tab switching
+        const tabButtons = document.querySelectorAll('[data-tab]');
+        const tabPanes = document.querySelectorAll('.tab-pane');
+
+        tabButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const targetTab = btn.getAttribute('data-tab');
+
+                // Update button active states
+                tabButtons.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                // Show corresponding pane, hide others
+                tabPanes.forEach(pane => {
+                    if (pane.id === targetTab) {
+                        pane.style.display = 'block';
+                    } else {
+                        pane.style.display = 'none';
+                    }
+                });
+            });
         });
     </script>
 </body>
