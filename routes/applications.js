@@ -6,6 +6,7 @@ const path = require('path');
 const axios = require('axios');
 const fs = require('fs');
 const { analyzeCvSkills } = require('../utils/atsScanner');
+const { sendApplicationConfirmation } = require('../services/emailService');
 
 // Configure multer for resume uploads
 const storage = multer.diskStorage({
@@ -56,7 +57,9 @@ router.post('/add', upload.single('resume'), async (req, res) => {
             // NEW FIELDS
             referrer_name, referrer_relationship, company_rating,
             resume_version_used, cover_letter_used, salary_transparent,
-            networking_effort
+            networking_effort,
+            // EMAIL FIELDS
+            auto_follow_up_enabled
         } = req.body;
 
         const finalMethod = app_method === 'Other' ? app_method_other : app_method;
@@ -72,6 +75,7 @@ router.post('/add', upload.single('resume'), async (req, res) => {
         const isReferral = referral === 'yes' || referral === 'true' || referral === 'on';
         const isSalaryTransparent = salary_transparent === 'true' || salary_transparent === 'on';
         const hasCoverLetter = cover_letter_used === 'true' || cover_letter_used === 'on';
+        const autoFollowUp = auto_follow_up_enabled === 'true' || auto_follow_up_enabled === 'on';
         
         // Calculate initial response time if last_contact_date provided
         let responseTimeDays = null;
@@ -130,12 +134,13 @@ router.post('/add', upload.single('resume'), async (req, res) => {
                 resume_version_used, cover_letter_used, salary_transparent,
                 networking_effort, response_time_days, skills_you_have, 
                 skills_you_lack, cv_extracted_skills, skills_match_percentage,
+                auto_follow_up_enabled, last_reminder_sent,
                 created_at
             ) VALUES (
                 $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 
                 $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23,
                 $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34,
-                $35, $36, $37, $38, $39, $40, $41, $42, $43, $44, $45, $46, CURRENT_TIMESTAMP
+                $35, $36, $37, $38, $39, $40, $41, $42, $43, $44, $45, $46, $47, $48, CURRENT_TIMESTAMP
             ) RETURNING id
         `;
 
@@ -156,13 +161,67 @@ router.post('/add', upload.single('resume'), async (req, res) => {
             skillsYouHave,      // $42 - skills found in CV that match requirements
             skillsYouLack,      // $43 - skills required but not found in CV
             cvExtractedSkills,  // $44 - all skills extracted from CV
-            skillsMatchPercentage // $45 - calculated match percentage
+            skillsMatchPercentage, // $45 - calculated match percentage
+            autoFollowUp,       // $46 - auto follow-up enabled
+            null                // $47 - last_reminder_sent (null initially)
         ];
 
         const result = await db.query(queryText, values);
-        
+        const newApplicationId = result.rows[0].id;
+
+        // ========== SEND CONFIRMATION EMAIL ==========
+        try {
+            // Get user email
+            const userResult = await db.query(
+                'SELECT email, full_name FROM users WHERE id = $1',
+                [req.session.userId]
+            );
+            
+            const userEmail = userResult.rows[0]?.email;
+            
+            if (userEmail) {
+                const { sendApplicationConfirmation } = require('../services/emailService');
+                
+                const appDataForEmail = {
+                    id: newApplicationId,
+                    company_name,
+                    job_title,
+                    job_level,
+                    location,
+                    salary,
+                    app_method: finalMethod,
+                    date_applied: date_applied || new Date(),
+                    follow_up_date: follow_up_date || null,
+                    company_rating: company_rating || 5,
+                    tailored_resume: isTailored,
+                    referral: isReferral,
+                    skills_match_percentage: skillsMatchPercentage || 0,
+                    auto_follow_up_enabled: autoFollowUp
+                };
+
+                // Send email asynchronously (don't block response)
+                sendApplicationConfirmation(userEmail, appDataForEmail)
+                    .then(emailResult => {
+                        if (emailResult.success) {
+                            console.log(`✅ Confirmation email sent to ${userEmail} for application ${newApplicationId}`);
+                        } else {
+                            console.error('❌ Failed to send confirmation email:', emailResult.error);
+                        }
+                    })
+                    .catch(err => {
+                        console.error('❌ Error sending confirmation email:', err.message);
+                    });
+            } else {
+                console.log('⚠️ No email found for user, skipping confirmation email');
+            }
+        } catch (emailErr) {
+            // Log error but don't block the application creation
+            console.error('❌ Error preparing confirmation email:', emailErr.message);
+        }
+        // ==============================================
+
         // Redirect to view page
-        res.redirect(`/applications/view/${result.rows[0].id}`);
+        res.redirect(`/applications/view/${newApplicationId}`);
         
     } catch (err) {
         console.error('Error saving application:', err);
@@ -171,6 +230,7 @@ router.post('/add', upload.single('resume'), async (req, res) => {
         });
     }
 });
+
 
 // GET: Dashboard with enhanced filtering and stats
 router.get('/dashboard', async (req, res) => {

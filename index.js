@@ -3,6 +3,9 @@ const path = require('path');
 const fs = require('fs');
 const session = require('express-session');
 require('dotenv').config();
+const { initFollowUpScheduler } = require('./services/scheduler');
+
+initFollowUpScheduler();
 
 const app = express();
 
