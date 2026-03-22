@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings | Optimus Tracker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --background: 0 0% 100%;
+            --foreground: 222.2 84% 4.9%;
+            --card: 0 0% 100%;
+            --card-foreground: 222.2 84% 4.9%;
+            --primary: 221.2 83.2% 53.3%;
+            --primary-foreground: 210 40% 98%;
+            --secondary: 210 40% 96%;
+            --secondary-foreground: 222.2 84% 4.9%;
+            --muted: 210 40% 96%;
+            --muted-foreground: 215.4 16.3% 46.9%;
+            --border: 214.3 31.8% 91.4%;
+            --input: 214.3 31.8% 91.4%;
+            --ring: 221.2 83.2% 53.3%;
+            --radius: 0.75rem;
+            --sidebar-background: 0 0% 98%;
+            --sidebar-foreground: 240 5.3% 26.1%;
+            --sidebar-accent: 240 4.8% 95.9%;
+            --sidebar-accent-foreground: 240 5.9% 10%;
+            --sidebar-border: 220 13% 91%;
+            --success: 142 76% 36%;
+            --danger: 0 84.2% 60.2%;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        
+        body {
+            background-color: hsl(var(--background));
+            color: hsl(var(--foreground));
+            line-height: 1.5;
+        }
+
+        .app-wrapper { display: flex; min-height: 100vh; }
+        
+        .sidebar {
+            position: fixed;
+            left: 0; top: 0; width: 16rem; height: 100vh;
+            background-color: hsl(var(--sidebar-background));
+            border-right: 1px solid hsl(var(--sidebar-border));
+            display: flex; flex-direction: column; z-index: 40;
+        }
+
+        .sidebar-header { padding: 1.5rem; border-bottom: 1px solid hsl(var(--sidebar-border)); }
+        
+        .sidebar-logo {
+            display: flex; align-items: center; gap: 0.75rem;
+            text-decoration: none; color: hsl(var(--sidebar-foreground));
+        }
+
+        .sidebar-logo-icon {
+            width: 2rem; height: 2rem;
+            background: linear-gradient(135deg, hsl(var(--primary)), hsl(221.2 83.2% 46%));
+            border-radius: var(--radius); display: flex; align-items: center; justify-content: center; color: white;
+        }
+
+        .sidebar-logo-text { font-weight: 700; font-size: 1.125rem; letter-spacing: -0.025em; }
+        
+        .sidebar-content { flex: 1; padding: 1rem; overflow-y: auto; }
+        
+        .sidebar-menu { list-style: none; display: flex; flex-direction: column; gap: 0.25rem; }
+        
+        .sidebar-menu-button {
+            display: flex; align-items: center; gap: 0.75rem; width: 100%;
+            padding: 0.625rem 0.75rem; font-size: 0.875rem; font-weight: 500;
+            color: hsl(var(--sidebar-foreground)); text-decoration: none;
+            border-radius: calc(var(--radius) - 2px); transition: background-color 0.15s; border: none; background: transparent; cursor: pointer;
+        }
+
+        .sidebar-menu-button:hover { background-color: hsl(var(--sidebar-accent)); }
+        .sidebar-menu-button.active { background-color: hsl(var(--sidebar-accent)); font-weight: 600; }
+        
+        .sidebar-footer { padding: 1rem; border-top: 1px solid hsl(var(--sidebar-border)); }
+        
+        .sidebar-user {
+            display: flex; align-items: center; gap: 0.75rem;
+            padding: 0.75rem; border-radius: calc(var(--radius) - 2px);
+            background-color: hsl(var(--sidebar-accent) / 0.5);
+        }
+
+        .sidebar-user-avatar {
+            width: 2rem; height: 2rem; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            background: linear-gradient(135deg, hsl(var(--primary)), hsl(221.2 83.2% 46%));
+            color: white; font-weight: 600; font-size: 0.875rem;
+        }
+
+        .main-content { flex: 1; margin-left: 16rem; display: flex; flex-direction: column; min-height: 100vh; }
+        
+        .topbar {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 1rem 1.5rem; border-bottom: 1px solid hsl(var(--border));
+            background-color: hsl(var(--background)); position: sticky; top: 0; z-index: 30;
+        }
+
+        .page-content {
+            flex: 1; padding: 1.5rem 2rem 2rem; max-width: 800px; width: 100%; margin: 0 auto;
+        }
+
+        .page-title { font-size: 1.875rem; font-weight: 700; margin-bottom: 1.5rem; }
+
+        .card {
+            border-radius: var(--radius); border: 1px solid hsl(var(--border));
+            background-color: hsl(var(--card)); margin-bottom: 1.5rem; overflow: hidden;
+        }
+
+        .card-header {
+            padding: 1.25rem 1.5rem; border-bottom: 1px solid hsl(var(--border));
+            display: flex; align-items: center; justify-content: space-between;
+        }
+
+        .card-title { font-size: 1.125rem; font-weight: 600; }
+        .card-content { padding: 1.5rem; }
+
+        .setting-item {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 1.25rem 0; border-bottom: 1px solid hsl(var(--border));
+        }
+
+        .setting-item:last-child { border-bottom: none; padding-bottom: 0; }
+        .setting-item:first-child { padding-top: 0; }
+
+        .setting-info h3 { font-size: 0.9375rem; font-weight: 600; margin-bottom: 0.25rem; }
+        .setting-info p { font-size: 0.875rem; color: hsl(var(--muted-foreground)); }
+
+        /* Toggle Switch */
+        .toggle {
+            position: relative; width: 44px; height: 24px;
+            background: hsl(var(--muted)); border-radius: 12px; cursor: pointer;
+            appearance: none; border: none; outline: none; transition: background 0.3s;
+        }
+
+        .toggle:checked { background: hsl(var(--primary)); }
+        .toggle::after {
+            content: ''; position: absolute; top: 2px; left: 2px;
+            width: 20px; height: 20px; background: white; border-radius: 50%;
+            transition: transform 0.3s; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .toggle:checked::after { transform: translateX(20px); }
+
+        .btn {
+            display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+            padding: 0.5rem 1rem; font-size: 0.875rem; font-weight: 500;
+            border-radius: var(--radius); cursor: pointer; transition: all 0.15s;
+            text-decoration: none; border: none;
+        }
+
+        .btn-primary { background-color: hsl(var(--primary)); color: hsl(var(--primary-foreground)); }
+        .btn-primary:hover { opacity: 0.9; }
+        
+        .btn-outline { background-color: transparent; border: 1px solid hsl(var(--input)); color: hsl(var(--foreground)); }
+        .btn-outline:hover { background-color: hsl(var(--accent)); }
+
+        .form-group { margin-bottom: 1.25rem; }
+        .form-group label { display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; }
+        .form-group input[type="password"] {
+            width: 100%; padding: 0.625rem 0.75rem; font-size: 0.875rem;
+            border: 1px solid hsl(var(--input)); border-radius: var(--radius);
+            background: transparent; transition: border-color 0.15s;
+        }
+        .form-group input:focus { outline: none; border-color: hsl(var(--ring)); box-shadow: 0 0 0 2px hsl(var(--ring) / 0.2); }
+
+        .select {
+            width: 100%; padding: 0.625rem 2rem 0.625rem 0.75rem; font-size: 0.875rem;
+            border: 1px solid hsl(var(--input)); border-radius: var(--radius);
+            background-color: hsl(var(--background)); cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat; background-position: right 0.5rem center;
+        }
+
+        .alert {
+            padding: 1rem 1.25rem; border-radius: var(--radius); margin-bottom: 1.5rem;
+            font-size: 0.875rem; display: flex; align-items: center; gap: 0.75rem;
+        }
+
+        .alert-success { background: hsl(142 76% 36% / 0.1); color: hsl(142 76% 36%); border: 1px solid hsl(142 76% 36% / 0.2); }
+        .alert-error { background: hsl(0 84.2% 60.2% / 0.1); color: hsl(0 84.2% 60.2%); border: 1px solid hsl(0 84.2% 60.2% / 0.2); }
+
+        .section-divider { height: 1px; background: hsl(var(--border)); margin: 2rem 0; }
+
+        @media (max-width: 768px) {
+            .main-content { margin-left: 0; }
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.open { transform: translateX(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <a href="/applications/dashboard" class="sidebar-logo">
+                    <div class="sidebar-logo-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+                    </div>
+                    <span class="sidebar-logo-text">Optimus Tracker</span>
+                </a>
+            </div>
+            <nav class="sidebar-content">
+                <ul class="sidebar-menu">
+                    <li>
+                        <a href="/applications/dashboard" class="sidebar-menu-button">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+                            <span>Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/smart-ats" class="sidebar-menu-button">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+                            <span>Smart ATS</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/user/profile" class="sidebar-menu-button">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            <span>Profile</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/user/settings" class="sidebar-menu-button active">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+                            <span>Settings</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="sidebar-user">
+                    <div class="sidebar-user-avatar"><%= user.charAt(0).toUpperCase() %></div>
+                    <div style="display: flex; flex-direction: column;">
+                        <span style="font-size: 0.875rem; font-weight: 600;"><%= user %></span>
+                        <span style="font-size: 0.75rem; color: hsl(var(--muted-foreground));">Job Seeker</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="topbar">
+                <h1 style="font-size: 1.25rem; font-weight: 700;">Settings</h1>
+                <a href="/user/profile" class="btn btn-outline">Back to Profile</a>
+            </header>
+
+            <div class="page-content">
+                <% if (success) { %>
+                    <div class="alert alert-success">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                        <%= success %>
+                    </div>
+                <% } %>
+
+                <% if (error) { %>
+                    <div class="alert alert-error">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" x2="9" y1="9" y2="15"/><line x1="9" x2="15" y1="9" y2="15"/></svg>
+                        <%= error %>
+                    </div>
+                <% } %>
+
+                <!-- Notifications -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Notifications</h2>
+                    </div>
+                    <div class="card-content">
+                        <form action="/user/settings" method="POST">
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <h3>Email Notifications</h3>
+                                    <p>Receive emails about application updates and reminders</p>
+                                </div>
+                                <input type="checkbox" class="toggle" name="email_notifications" <%= settings.email_notifications ? 'checked' : '' %>>
+                            </div>
+                            
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <h3>Weekly Digest</h3>
+                                    <p>Get a weekly summary of your job search activity</p>
+                                </div>
+                                <input type="checkbox" class="toggle" name="weekly_digest" <%= settings.weekly_digest ? 'checked' : '' %>>
+                            </div>
+                            
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <h3>Follow-up Reminders</h3>
+                                    <p>Alert me when it's time to follow up on applications</p>
+                                </div>
+                                
+                            </div>
+
+                            <div style="margin-top: 1.5rem; text-align: right;">
+                                <button type="submit" class="btn btn-primary">Save Changes</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Privacy -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Privacy</h2>
+                    </div>
+                    <div class="card-content">
+                        <form action="/user/settings" method="POST">
+                            <div class="setting-item">
+                                <div class="setting-info">
+                                    <h3>Profile Visibility</h3>
+                                    <p>Control who can see your profile information</p>
+                                </div>
+                                
+                            </div>
+
+                            <div style="margin-top: 1.5rem; text-align: right;">
+                                <button type="submit" class="btn btn-primary">Save Privacy Settings</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Security -->
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">Security</h2>
+                    </div>
+                    <div class="card-content">
+                        <h3 style="font-size: 0.9375rem; font-weight: 600; margin-bottom: 1rem;">Change Password</h3>
+                        <form action="/user/settings/password" method="POST">
+                            <div class="form-group">
+                                <label>Current Password</label>
+                                <input type="password" name="current_password" required>
+                            </div>
+                            <div class="form-group">
+                                <label>New Password</label>
+                                <input type="password" name="new_password" required minlength="8">
+                            </div>
+                            <div class="form-group">
+                                <label>Confirm New Password</label>
+                                <input type="password" name="confirm_password" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Update Password</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</body>
+</html>

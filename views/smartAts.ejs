@@ -783,7 +783,7 @@
                             <span>Dashboard</span>
                         </a>
                     </li>
-                    <li>
+                    <!-- <li>
                         <a href="/applications/analytics" class="sidebar-menu-button">
                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" x2="18" y1="20" y2="10"/><line x1="12" x2="12" y1="20" y2="4"/><line x1="6" x2="6" y1="20" y2="14"/></svg>
                             <span>Analytics</span>
@@ -800,11 +800,23 @@
                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                             <span>ATS Check</span>
                         </a>
-                    </li>
+                    </li> -->
                     <li>
                         <a href="/smart-ats" class="sidebar-menu-button active">
                             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
                             <span>Smart ATS</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/user/profile" class="sidebar-menu-button">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            <span>Profile</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/user/settings" class="sidebar-menu-button">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+                            <span>Settings</span>
                         </a>
                     </li>
                 </ul>
@@ -1305,6 +1317,63 @@
             if (lower.includes('very low')) return 'very-low';
             return 'low';
         }
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Check if there is auto-run data waiting for us
+        const autoRunParam = sessionStorage.getItem('atsAutoRun');
+        
+        if (autoRunParam) {
+            try {
+                const data = JSON.parse(autoRunParam);
+                
+                // 1. Select the Application
+                const appSelect = document.getElementById('applicationId');
+                if (appSelect && data.id) appSelect.value = data.id;
+
+                // 2. Fill the Job Description
+                const descInput = document.getElementById('jobDescription');
+                if (descInput && data.desc) descInput.value = data.desc;
+
+                // 3. Smart-match the Job Level
+                if (data.level) {
+                    const levelSelect = document.getElementById('jobLevel');
+                    const levelText = data.level.toLowerCase();
+                    // Try to find a matching option (e.g. matching "Senior" to "Senior Level")
+                    for (let option of levelSelect.options) {
+                        if (option.text.toLowerCase().includes(levelText) || option.value.toLowerCase().includes(levelText)) {
+                            levelSelect.value = option.value;
+                            break;
+                        }
+                    }
+                }
+
+                // 4. Smart-match the Industry/Job Type
+                if (data.industry) {
+                    const typeSelect = document.getElementById('jobType');
+                    const indText = data.industry.toLowerCase();
+                    for (let option of typeSelect.options) {
+                        if (option.text.toLowerCase().includes(indText) || option.value.toLowerCase().includes(indText)) {
+                            typeSelect.value = option.value;
+                            break;
+                        }
+                    }
+                }
+
+                // Clean up storage so it doesn't loop if the user refreshes the page manually
+                sessionStorage.removeItem('atsAutoRun');
+
+                // Auto-submit the form if we have the minimum required fields
+                if (appSelect.value && descInput.value) {
+                    // Dispatching a submit event triggers your existing fetch logic
+                    document.getElementById('smartAtsForm').dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+                }
+
+            } catch (err) {
+                console.error('Error auto-running ATS:', err);
+            }
+        }
+    });
 </script>
 </body>
 </html>

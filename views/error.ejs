@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error | Optimus Tracker</title>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: #f9fafb;
+        }
+        .error-container {
+            text-align: center;
+            padding: 2rem;
+            background: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            max-width: 500px;
+        }
+        h1 { color: #EF4444; margin-bottom: 1rem; }
+        p { color: #6B7280; margin-bottom: 1.5rem; }
+        a { color: #3F3FF3; text-decoration: none; font-weight: 500; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <h1>⚠️ Error</h1>
+        <p><%= message %></p>
+        <a href="/applications/dashboard">← Back to Dashboard</a>
+    </div>
+</body>
+</html>

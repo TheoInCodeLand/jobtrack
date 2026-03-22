@@ -4,6 +4,7 @@ const fs = require('fs');
 const session = require('express-session');
 require('dotenv').config();
 const { initFollowUpScheduler } = require('./services/scheduler');
+const passport = require('passport');
 
 initFollowUpScheduler();
 
@@ -27,6 +28,9 @@ app.use(session({
     saveUninitialized: false
 }));
 
+app.use(passport.initialize());
+app.use(passport.session());
+
 app.use((req, res, next) => {
     res.locals.user = req.session.userName || null;
     next();
@@ -42,6 +46,7 @@ function checkAuth(req, res, next) {
 app.use('/auth', require('./routes/auth'));
 app.use('/ats', checkAuth, require('./routes/ats'));
 app.use('/applications', checkAuth, require('./routes/applications'));
+app.use('/user', checkAuth, require('./routes/profile'));
 app.use('/smart-ats', checkAuth, require('./routes/smartAts'));
 
 app.get('/', (req, res) => {

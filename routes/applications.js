@@ -289,7 +289,7 @@ router.get('/dashboard', async (req, res) => {
         
         // Get recent activity for sidebar
         const recentActivity = await db.query(`
-            SELECT a.company_name, a.job_title, a.status, a.date_applied,
+            SELECT a.company_name, a.job_title, a.status, a.date_applied, a.job_description, a.industry, a.experience_level,
                    cl.communication_type, cl.created_at as last_activity
             FROM applications a
             LEFT JOIN communication_logs cl ON a.id = cl.application_id

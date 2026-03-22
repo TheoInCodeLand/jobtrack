@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jobtrack - Complete Profile</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #3F3FF3;
+      --foreground: #171717;
+      --muted-foreground: #737373;
+      --border: #e5e5e5;
+      --radius: 8px;
+    }
+    
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f9f9f9;
+      padding: 20px;
+    }
+    
+    .container {
+      background: white;
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      width: 100%;
+      max-width: 480px;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    
+    h1 {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 8px;
+      color: var(--foreground);
+    }
+    
+    p {
+      color: var(--muted-foreground);
+      font-size: 14px;
+    }
+    
+    .form-fields {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    
+    .field-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    
+    .field-label {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--foreground);
+    }
+    
+    .field-input {
+      height: 48px;
+      padding: 0 16px;
+      font-size: 14px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    
+    .field-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(63, 63, 243, 0.1);
+    }
+    
+    .row {
+      display: flex;
+      gap: 16px;
+    }
+    
+    .row .field-group {
+      flex: 1;
+    }
+    
+    .btn-primary {
+      width: 100%;
+      height: 48px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    
+    .btn-primary:hover {
+      opacity: 0.9;
+    }
+    
+    .error {
+      color: #dc2626;
+      font-size: 14px;
+      margin-top: 8px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Complete Your Profile</h1>
+      <p>Please provide a few more details to finish setting up your account.</p>
+      <% if (locals.error) { %>
+        <p class="error"><%= error %></p>
+      <% } %>
+    </div>
+    
+    <form action="/auth/complete-profile" method="POST">
+      <div class="form-fields">
+        <div class="field-group">
+          <label class="field-label">Career Goal (Role)</label>
+          <input type="text" name="career_goal" class="field-input" placeholder="e.g., Full Stack Developer" required>
+        </div>
+        
+        <div class="field-group">
+          <label class="field-label">Institution Name</label>
+          <input type="text" name="institution" class="field-input" placeholder="e.g., University of Mpumalanga" required>
+        </div>
+        
+        <div class="field-group">
+          <label class="field-label">Graduation Year</label>
+          <input type="number" name="graduation_year" class="field-input" placeholder="e.g., 2026" min="1900" max="2030" required>
+        </div>
+      </div>
+      
+      <button type="submit" class="btn-primary">Complete Profile</button>
+    </form>
+  </div>
+</body>
+</html>
