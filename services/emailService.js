@@ -201,8 +201,87 @@ const sendFollowUpReminder = async (userEmail, applicationData) => {
     }
 };
 
+const sendVerificationEmail = async (email, token, fullName) => {
+    const verificationUrl = `${process.env.APP_URL}/auth/verify-email?token=${token}`;
+    
+    const mailOptions = {
+        from: `"Jobtrack" <${process.env.EMAIL_USER}>`,
+        to: email,
+        subject: 'Verify your Jobtrack account',
+        html: `
+            <div style="font-family: 'DM Sans', sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <h2 style="color: #171717; font-weight: 400; margin: 0;">Welcome to Jobtrack</h2>
+                </div>
+                
+                <p style="color: #737373; font-size: 16px; line-height: 1.6;">
+                    Hi ${fullName},
+                </p>
+                
+                <p style="color: #737373; font-size: 16px; line-height: 1.6;">
+                    Thanks for signing up! Please verify your email address to activate your account and start tracking your job applications.
+                </p>
+                
+                <div style="text-align: center; margin: 40px 0;">
+                    <a href="${verificationUrl}" 
+                       style="display: inline-block; padding: 16px 32px; background-color: #171717; color: #ffffff; text-decoration: none; border-radius: 8px; font-size: 14px; font-weight: 500;">
+                        Verify Email Address
+                    </a>
+                </div>
+                
+                <p style="color: #737373; font-size: 14px; line-height: 1.6;">
+                    Or copy and paste this link into your browser:
+                </p>
+                
+                <p style="color: #171717; font-size: 14px; word-break: break-all; background-color: #f5f5f5; padding: 12px; border-radius: 4px;">
+                    ${verificationUrl}
+                </p>
+                
+                <p style="color: #737373; font-size: 14px; line-height: 1.6; margin-top: 30px;">
+                    This link will expire in 24 hours. If you didn't create an account, you can safely ignore this email.
+                </p>
+                
+                <hr style="border: none; border-top: 1px solid #e5e5e5; margin: 30px 0;">
+                
+                <p style="color: #a3a3a3; font-size: 12px; text-align: center;">
+                    © 2026 Jobtrack (pty) ltd. All rights reserved.
+                </p>
+            </div>
+        `
+    };
+
+    await transporter.sendMail(mailOptions);
+};
+
+const sendWelcomeEmail = async (email, fullName) => {
+    const mailOptions = {
+        from: `"Jobtrack" <${process.env.EMAIL_USER}>`,
+        to: email,
+        subject: 'Your account is verified!',
+        html: `
+            <div style="font-family: 'DM Sans', sans-serif; max-width: 600px; margin: 0 auto; padding: 40px 20px;">
+                <h2 style="color: #171717; font-weight: 400; text-align: center;">Account Verified</h2>
+                <p style="color: #737373; font-size: 16px; line-height: 1.6; text-align: center;">
+                    Hi ${fullName},<br><br>
+                    Your email has been verified. You can now log in and start managing your job applications.
+                </p>
+                <div style="text-align: center; margin: 40px 0;">
+                    <a href="${process.env.APP_URL}/auth/login" 
+                       style="display: inline-block; padding: 16px 32px; background-color: #171717; color: #ffffff; text-decoration: none; border-radius: 8px; font-size: 14px; font-weight: 500;">
+                        Go to Login
+                    </a>
+                </div>
+            </div>
+        `
+    };
+
+    await transporter.sendMail(mailOptions);
+};
+
 module.exports = {
     sendApplicationConfirmation,
     sendFollowUpReminder,
+    sendVerificationEmail,
+    sendWelcomeEmail,
     transporter
 };

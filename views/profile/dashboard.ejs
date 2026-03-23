@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Profile | Optimus Tracker</title>
+    <title>My Profile | trackForward</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -14,7 +14,7 @@
             --foreground: 222.2 84% 4.9%;
             --card: 0 0% 100%;
             --card-foreground: 222.2 84% 4.9%;
-            --primary: 221.2 83.2% 53.3%;
+            --primary: 0,0%,13.73%;
             --primary-foreground: 210 40% 98%;
             --secondary: 210 40% 96%;
             --secondary-foreground: 222.2 84% 4.9%;
@@ -22,7 +22,7 @@
             --muted-foreground: 215.4 16.3% 46.9%;
             --border: 214.3 31.8% 91.4%;
             --input: 214.3 31.8% 91.4%;
-            --ring: 221.2 83.2% 53.3%;
+            --ring: 0,0%,13.73%;
             --radius: 0.75rem;
             --sidebar-background: 0 0% 98%;
             --sidebar-foreground: 240 5.3% 26.1%;
@@ -84,7 +84,7 @@
         .sidebar-logo-icon {
             width: 2rem;
             height: 2rem;
-            background: linear-gradient(135deg, hsl(var(--primary)), hsl(221.2 83.2% 46%));
+            background: hsl(var(--primary));
             border-radius: var(--radius);
             display: flex;
             align-items: center;
@@ -160,7 +160,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background: linear-gradient(135deg, hsl(var(--primary)), hsl(221.2 83.2% 46%));
+            background: hsl(var(--primary));
             color: white;
             font-weight: 600;
             font-size: 0.875rem;
@@ -212,7 +212,7 @@
 
         /* Profile Specific Styles */
         .profile-header-card {
-            background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(221.2 83.2% 46%) 100%);
+            background: hsl(var(--primary));
             border-radius: var(--radius);
             padding: 2rem;
             color: white;
@@ -541,7 +541,7 @@
                     <div class="sidebar-logo-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="14" x="2" y="7" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
                     </div>
-                    <span class="sidebar-logo-text">Optimus Tracker</span>
+                    <span class="sidebar-logo-text">trackForward</span>
                 </a>
             </div>
             <nav class="sidebar-content">
