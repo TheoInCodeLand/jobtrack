@@ -3,52 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Analytics · trackForward</title>
+    <title>AI Analytics & Intelligence · trackForward</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        /* ----- BASE & DASHBOARD STYLES (copied from dashboard) ----- */
+        /* ----- DASHBOARD DESIGN SYSTEM ----- */
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         :root {
             --background: 0 0% 100%; --foreground: 222.2 84% 4.9%;
             --card: 0 0% 100%; --card-foreground: 222.2 84% 4.9%;
-            --popover: 0 0% 100%; --popover-foreground: 222.2 84% 4.9%;
             --primary: 221.2 83.2% 53.3%; --primary-foreground: 210 40% 98%;
-            --secondary: 210 40% 96%; --secondary-foreground: 222.2 84% 4.9%;
-            --muted: 210 40% 96%; --muted-foreground: 215.4 16.3% 46.9%;
-            --accent: 210 40% 96%; --accent-foreground: 222.2 84% 4.9%;
-            --destructive: 0 84.2% 60.2%; --destructive-foreground: 210 40% 98%;
+            --secondary: 210 40% 96%; --muted: 210 40% 96%;
+            --muted-foreground: 215.4 16.3% 46.9%;
+            --accent: 210 40% 96%;
+            --destructive: 0 84.2% 60.2%;
             --border: 214.3 31.8% 91.4%; --input: 214.3 31.8% 91.4%;
-            --ring: 221.2 83.2% 53.3%; --radius: 0.75rem;
+            --radius: 0.75rem;
             --sidebar-background: 0 0% 98%; --sidebar-foreground: 240 5.3% 26.1%;
-            --sidebar-primary: 240 5.9% 10%; --sidebar-primary-foreground: 0 0% 98%;
-            --sidebar-accent: 240 4.8% 95.9%; --sidebar-accent-foreground: 240 5.9% 10%;
-            --sidebar-border: 220 13% 91%; --sidebar-ring: 217.2 91.2% 59.8%;
-
-            /* Status Colors (from dashboard) */
-            --status-applied-bg: 210 40% 96%;
-            --status-applied-text: 215.4 16.3% 46.9%;
-            --status-shortlisted-bg: 199 89% 48%;
-            --status-shortlisted-text: 0 0% 100%;
-            --status-interview-bg: 45 93% 47%;
-            --status-interview-text: 0 0% 100%;
-            --status-offer-bg: 142 76% 36%;
-            --status-offer-text: 0 0% 100%;
-            --status-rejected-bg: 0 84.2% 60.2%;
-            --status-rejected-text: 0 0% 100%;
-            --status-ghosted-bg: 220 13% 91%;
-            --status-ghosted-text: 220 9% 46%;
-            --status-withdrawn-bg: 0 0% 100%;
-            --status-withdrawn-text: 215.4 16.3% 46.9%;
+            --sidebar-border: 220 13% 91%; --sidebar-accent: 240 4.8% 95.9%;
         }
         body {
             font-family: 'Inter', -apple-system, sans-serif;
             background-color: hsl(var(--background));
             color: hsl(var(--foreground));
-            line-height: 1.5;
-            -webkit-font-smoothing: antialiased;
+            line-height: 1.5; -webkit-font-smoothing: antialiased;
         }
         .app-wrapper { display: flex; min-height: 100vh; width: 100%; }
 
@@ -60,331 +41,69 @@
             display: flex; flex-direction: column; z-index: 40;
         }
         .sidebar-header { padding: 1.5rem; border-bottom: 1px solid hsl(var(--sidebar-border)); }
-        .sidebar-logo {
-            display: flex; align-items: center; gap: 0.75rem; text-decoration: none;
-            color: hsl(var(--sidebar-foreground));
-        }
+        .sidebar-logo { display: flex; align-items: center; gap: 0.75rem; text-decoration: none; color: hsl(var(--sidebar-foreground)); }
         .sidebar-logo-icon {
-            width: 2rem; height: 2rem;
-            background: linear-gradient(135deg, hsl(var(--primary)), hsl(221.2 83.2% 46%));
-            border-radius: var(--radius); display: flex; align-items: center; justify-content: center;
-            color: white;
+            width: 2rem; height: 2rem; background: hsl(var(0,0%,13.73%));
+            border-radius: var(--radius); display: flex; align-items: center; justify-content: center; color: white;
         }
-        .sidebar-logo-icon svg { width: 1.25rem; height: 1.25rem; }
         .sidebar-logo-text { font-weight: 700; font-size: 1.125rem; letter-spacing: -0.025em; }
         .sidebar-content { flex: 1; padding: 1rem; overflow-y: auto; }
         .sidebar-menu { list-style: none; display: flex; flex-direction: column; gap: 0.25rem; }
-        .sidebar-menu-item { position: relative; }
         .sidebar-menu-button {
             display: flex; align-items: center; gap: 0.75rem; width: 100%;
             padding: 0.625rem 0.75rem; font-size: 0.875rem; font-weight: 500;
             color: hsl(var(--sidebar-foreground)); text-decoration: none;
-            border-radius: calc(var(--radius) - 2px); border: none; background: transparent;
-            cursor: pointer; transition: background-color 0.15s;
+            border-radius: calc(var(--radius) - 2px); transition: background-color 0.15s;
         }
-        .sidebar-menu-button:hover { background-color: hsl(var(--sidebar-accent)); color: hsl(var(--sidebar-accent-foreground)); }
-        .sidebar-menu-button.active { background-color: hsl(var(--sidebar-accent)); color: hsl(var(--sidebar-accent-foreground)); font-weight: 600; }
-        .sidebar-menu-button svg { width: 1rem; height: 1rem; flex-shrink: 0; }
-        .sidebar-footer { padding: 1rem; border-top: 1px solid hsl(var(--sidebar-border)); }
-        .sidebar-user {
-            display: flex; align-items: center; gap: 0.75rem;
-            padding: 0.75rem; border-radius: calc(var(--radius) - 2px);
-            background-color: hsl(var(--sidebar-accent) / 0.5);
+        .sidebar-menu-button:hover, .sidebar-menu-button.active {
+            background-color: hsl(var(--sidebar-accent)); color: hsl(221.2 83.2% 53.3%); font-weight: 600;
         }
-        .sidebar-user-avatar {
-            width: 2rem; height: 2rem; border-radius: 50%; object-fit: cover;
-            background-color: hsl(var(--muted));
-        }
-        .sidebar-user-info { display: flex; flex-direction: column; min-width: 0; }
-        .sidebar-user-name { font-size: 0.875rem; font-weight: 600; color: hsl(var(--sidebar-foreground)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .sidebar-user-role { font-size: 0.75rem; color: hsl(var(--muted-foreground)); }
-
+        
         /* Main content */
         .main-content { flex: 1; margin-left: 16rem; display: flex; flex-direction: column; min-height: 100vh; }
-
-        /* Topbar */
         .topbar {
             display: flex; align-items: center; justify-content: space-between;
             padding: 1rem 1.5rem; border-bottom: 1px solid hsl(var(--border));
             background-color: hsl(var(--background)); position: sticky; top: 0; z-index: 30;
         }
-        .topbar-search { display: flex; align-items: center; gap: 1rem; flex: 1; max-width: 28rem; }
-        .search-input-wrapper { position: relative; flex: 1; }
-        .search-icon {
-            position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%);
-            color: hsl(var(--muted-foreground)); width: 1rem; height: 1rem;
-        }
-        .search-input {
-            width: 100%; height: 2.5rem; padding: 0.5rem 0.75rem 0.5rem 2.5rem;
-            font-size: 0.875rem; border: 1px solid hsl(var(--input));
-            border-radius: var(--radius); background-color: transparent; outline: none;
-            transition: border-color 0.15s, box-shadow 0.15s; font-family: inherit;
-        }
-        .search-input:focus { border-color: hsl(var(--ring)); box-shadow: 0 0 0 2px hsl(var(--ring) / 0.2); }
-        .search-input::placeholder { color: hsl(var(--muted-foreground)); }
-
-        .topbar-actions { display: flex; align-items: center; gap: 0.75rem; }
-        .icon-button {
-            display: flex; align-items: center; justify-content: center;
-            width: 2.5rem; height: 2.5rem; border-radius: 0.375rem; background: transparent;
-            border: none; cursor: pointer; color: hsl(var(--foreground));
-            transition: background-color 0.15s;
-        }
-        .icon-button:hover { background-color: hsl(var(--accent)); }
-        .icon-button svg { width: 1.25rem; height: 1.25rem; }
-        .notification-badge {
-            position: absolute; top: -0.25rem; right: -0.25rem; width: 1.25rem; height: 1.25rem;
-            display: flex; align-items: center; justify-content: center; font-size: 0.75rem;
-            font-weight: 600; background-color: hsl(var(--primary)); color: hsl(var(--primary-foreground));
-            border-radius: 50%;
-        }
-        .avatar-button {
-            width: 2.25rem; height: 2.25rem; border-radius: 50%; overflow: hidden; cursor: pointer;
-            border: 2px solid hsl(var(--border)); padding: 0; background: transparent;
-            transition: border-color 0.15s;
-        }
-        .avatar-button:hover { border-color: hsl(var(--ring)); }
-        .avatar-button img { width: 100%; height: 100%; object-fit: cover; }
-
-        /* Page content */
         .page-content { flex: 1; padding: 1.5rem 2rem 2rem; display: flex; flex-direction: column; gap: 1.5rem; }
-        .page-header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
-        .page-title { font-size: 1.875rem; font-weight: 700; letter-spacing: -0.025em; color: hsl(var(--foreground)); }
+        .page-title { font-size: 1.875rem; font-weight: 700; letter-spacing: -0.025em; }
 
-        /* Buttons */
-        .btn {
-            display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
-            padding: 0.5rem 1rem; font-size: 0.875rem; font-weight: 500;
-            border-radius: var(--radius); cursor: pointer; transition: all 0.15s;
-            white-space: nowrap; text-decoration: none; border: none; font-family: inherit;
-        }
-        .btn:active { transform: scale(0.98); }
-        .btn-primary { background-color: hsl(var(--primary)); color: hsl(var(--primary-foreground)); }
-        .btn-primary:hover { background-color: hsl(221.2 83.2% 46%); }
-        .btn-outline { background-color: transparent; border: 1px solid hsl(var(--input)); color: hsl(var(--foreground)); }
-        .btn-outline:hover { background-color: hsl(var(--accent)); border-color: hsl(var(--ring)); }
-        .btn-sm { height: 2.25rem; padding: 0.25rem 0.75rem; font-size: 0.875rem; }
-
-        /* Alerts (from dashboard) */
-        .alert {
-            display: flex; align-items: center; gap: 0.75rem;
-            padding: 1rem 1.25rem; border-radius: var(--radius);
-            border: 1px solid hsl(var(--border));
-            background-color: hsl(var(--background));
-            font-size: 0.875rem;
-        }
-        .alert-warning {
-            background-color: hsl(45 93% 95%);
-            border-color: hsl(45 93% 80%);
-            color: hsl(28 73% 25%);
-        }
-        .alert-success {
-            background-color: hsl(142 76% 95%);
-            border-color: hsl(142 76% 80%);
-            color: hsl(142 76% 25%);
-        }
-        .alert-icon { width: 1.25rem; height: 1.25rem; flex-shrink: 0; }
-
-        /* Cards */
+        /* Cards & Utilities */
         .card {
             border-radius: var(--radius); border: 1px solid hsl(var(--border));
-            background-color: hsl(var(--card)); overflow: hidden;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            background-color: hsl(var(--card)); box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            display: flex; flex-direction: column; height: 100%;
         }
-        .card-header {
-            padding: 1.25rem 1.5rem; border-bottom: 1px solid hsl(var(--border));
-            background-color: hsl(var(--muted) / 0.3);
-            font-weight: 600; display: flex; align-items: center; gap: 0.5rem;
-        }
-        .card-title { font-size: 1.125rem; font-weight: 600; }
-        .card-content { padding: 1.5rem; }
-
-        /* Badges (from dashboard) */
-        .badge {
-            display: inline-flex; align-items: center; padding: 0.375rem 0.875rem;
-            border-radius: 9999px; font-size: 0.75rem; font-weight: 600;
-            text-transform: uppercase; letter-spacing: 0.025em; white-space: nowrap;
-        }
-        .badge-applied { background-color: hsl(var(--status-applied-bg)); color: hsl(var(--status-applied-text)); }
-        .badge-shortlisted { background-color: hsl(var(--status-shortlisted-bg)); color: hsl(var(--status-shortlisted-text)); }
-        .badge-interview { background-color: hsl(var(--status-interview-bg)); color: hsl(var(--status-interview-text)); }
-        .badge-offer { background-color: hsl(var(--status-offer-bg)); color: hsl(var(--status-offer-text)); }
-        .badge-rejected { background-color: hsl(var(--status-rejected-bg)); color: hsl(var(--status-rejected-text)); }
-        .badge-ghosted { background-color: hsl(var(--status-ghosted-bg)); color: hsl(var(--status-ghosted-text)); border: 1px solid hsl(var(--border)); }
-        .badge-withdrawn { background-color: hsl(var(--status-withdrawn-bg)); color: hsl(var(--status-withdrawn-text)); border: 1px solid hsl(var(--border)); }
-        .badge-primary { background-color: hsl(var(--primary) / 0.1); color: hsl(var(--primary)); }
-        .badge-warning { background-color: hsl(45 93% 95%); color: hsl(28 73% 25%); }
-        .badge-success { background-color: hsl(142 76% 95%); color: hsl(142 76% 25%); }
-        .badge-danger { background-color: hsl(0 84.2% 95%); color: hsl(0 84.2% 40%); }
-
-        /* Table (from dashboard) */
-        .table-container { overflow-x: auto; }
-        .data-table {
-            width: 100%; border-collapse: collapse; font-size: 0.875rem;
-        }
-        .data-table thead {
-            background-color: hsl(var(--muted));
-        }
-        .data-table th {
-            padding: 0.875rem 1rem; text-align: left; font-weight: 600;
-            font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;
-            color: hsl(var(--muted-foreground)); white-space: nowrap;
-        }
-        .data-table td {
-            padding: 1rem; border-bottom: 1px solid hsl(var(--border));
-            vertical-align: middle;
-        }
-        .data-table tbody tr:hover { background-color: hsl(var(--muted) / 0.5); }
-
-        /* Progress bars (new, matching design) */
-        .progress {
-            height: 0.5rem; background-color: hsl(var(--muted));
-            border-radius: 9999px; overflow: hidden;
-        }
-        .progress-bar {
-            height: 100%; background-color: hsl(var(--primary));
-            border-radius: 9999px; transition: width 0.2s;
-        }
-        .progress-bar.bg-success { background-color: hsl(var(--status-offer-bg)); }
-        .progress-bar.bg-info { background-color: hsl(var(--status-shortlisted-bg)); }
-        .progress-bar.bg-warning { background-color: hsl(var(--status-interview-bg)); }
-        .progress-bar.bg-danger { background-color: hsl(var(--status-rejected-bg)); }
-
-        /* Priority cards */
-        .priority-critical { border-left: 4px solid hsl(var(--destructive)); }
-        .priority-high { border-left: 4px solid #fd7e14; }
-        .priority-medium { border-left: 4px solid hsl(var(--status-interview-bg)); }
-        .priority-low { border-left: 4px solid hsl(var(--primary)); }
-
-        /* Utilities */
-        .text-success { color: hsl(var(--status-offer-bg)); }
-        .text-warning { color: hsl(var(--status-interview-bg)); }
-        .text-danger { color: hsl(var(--destructive)); }
-        .text-muted { color: hsl(var(--muted-foreground)); }
-        .bg-white { background-color: white; }
-        .bg-light { background-color: hsl(var(--muted)); }
-        .border-start { border-left: 1px solid hsl(var(--border)); }
-        .border-end { border-right: 1px solid hsl(var(--border)); }
-        .border-white { border-color: white; }
-        .border-opacity-25 { opacity: 0.25; }
-        .shadow { box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-        .shadow-sm { box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
-        .fw-bold { font-weight: 600; }
-        .small { font-size: 0.875rem; }
-        .display-1 { font-size: 4rem; font-weight: 700; }
-        .h3 { font-size: 1.5rem; font-weight: 600; }
-        .h4 { font-size: 1.25rem; font-weight: 600; }
-        .h5 { font-size: 1.125rem; font-weight: 600; }
-        .h6 { font-size: 1rem; font-weight: 600; }
-        .lead { font-size: 1.1rem; }
-        .d-flex { display: flex; }
-        .align-items-center { align-items: center; }
-        .justify-content-between { justify-content: space-between; }
-        .justify-content-end { justify-content: flex-end; }
-        .gap-2 { gap: 0.5rem; }
-        .gap-3 { gap: 0.75rem; }
-        .gap-4 { gap: 1rem; }
-        .mt-2 { margin-top: 0.5rem; }
-        .mt-3 { margin-top: 0.75rem; }
-        .mt-4 { margin-top: 1rem; }
-        .mb-0 { margin-bottom: 0; }
-        .mb-2 { margin-bottom: 0.5rem; }
-        .mb-3 { margin-bottom: 0.75rem; }
-        .mb-4 { margin-bottom: 1rem; }
-        .p-2 { padding: 0.5rem; }
-        .p-3 { padding: 0.75rem; }
-        .p-4 { padding: 1rem; }
-        .p-5 { padding: 2rem; }
-        .py-4 { padding-top: 1rem; padding-bottom: 1rem; }
-        .py-5 { padding-top: 2rem; padding-bottom: 2rem; }
-        .px-3 { padding-left: 0.75rem; padding-right: 0.75rem; }
-        .rounded { border-radius: var(--radius); }
-        .border-0 { border: none; }
-        .border-top { border-top: 1px solid hsl(var(--border)); }
-        .border-bottom { border-bottom: 1px solid hsl(var(--border)); }
-        .text-center { text-align: center; }
-        .text-capitalize { text-transform: capitalize; }
-        .w-100 { width: 100%; }
-        .h-100 { height: 100%; }
-        .position-relative { position: relative; }
-        .position-absolute { position: absolute; }
-        .top-0 { top: 0; }
-        .end-0 { right: 0; }
-        .m-0 { margin: 0; }
-        .bg-gradient { background: linear-gradient(135deg, hsl(var(--primary)), #764ba2); }
-        .text-white { color: white; }
-        .text-white-50 { color: rgba(255,255,255,0.5); }
-        .opacity-25 { opacity: 0.25; }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .sidebar { transform: translateX(-100%); }
-            .sidebar.open { transform: translateX(0); }
-            .main-content { margin-left: 0; }
-            .mobile-toggle { display: flex; }
-            .page-content { padding: 1rem; }
-            .card-content { padding: 1.25rem; }
-        }
-        .mobile-toggle {
-            display: none; align-items: center; justify-content: center; width: 2.5rem; height: 2.5rem;
-            background: transparent; border: none; cursor: pointer; color: hsl(var(--foreground));
-            border-radius: 0.375rem;
-        }
-        .mobile-toggle:hover { background-color: hsl(var(--accent)); }
-        .sidebar-overlay { display: none; position: fixed; inset: 0; background-color: rgba(0,0,0,0.5); z-index: 35; }
-        .sidebar-overlay.show { display: block; }
-
-        /* Dropdown */
-        .dropdown { position: relative; display: inline-block; }
-        .dropdown-content {
-            display: none; position: absolute; right: 0; top: calc(100% + 0.5rem);
-            min-width: 12rem; background-color: hsl(var(--popover));
-            border: 1px solid hsl(var(--border)); border-radius: var(--radius);
-            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); z-index: 50;
-            padding: 0.25rem; animation: slideIn 0.15s ease-out;
-        }
-        .dropdown-content.show { display: block; }
-        @keyframes slideIn { from { opacity: 0; transform: translateY(-0.5rem); } to { opacity: 1; transform: translateY(0); } }
-        .dropdown-label { padding: 0.5rem; font-size: 0.875rem; font-weight: 600; }
-        .dropdown-separator { height: 1px; background-color: hsl(var(--border)); margin: 0.25rem 0; }
-        .dropdown-item {
-            display: block; width: 100%; padding: 0.5rem; font-size: 0.875rem; text-align: left;
-            background: none; border: none; cursor: pointer; border-radius: calc(var(--radius) - 4px);
-            color: hsl(var(--foreground)); text-decoration: none;
-        }
-        .dropdown-item:hover { background-color: hsl(var(--accent)); }
-
-        /* Health score */
-        .health-score { font-size: 4rem; font-weight: 700; line-height: 1; }
-        .health-excellent { color: hsl(var(--status-offer-bg)); }
-        .health-good { color: hsl(var(--primary)); }
-        .health-warning { color: hsl(var(--status-interview-bg)); }
-        .health-critical { color: hsl(var(--destructive)); }
+        .card-header { padding: 1.25rem 1.5rem; border-bottom: 1px solid hsl(var(--border)); background-color: hsl(var(--muted) / 0.3); font-weight: 600; display: flex; align-items: center; gap: 0.5rem; }
+        .card-header h6 { font-size: 1rem; margin: 0; }
+        .card-content { padding: 1.5rem; flex: 1; }
         
-        .nav-tabs .btn {
-            border-bottom-left-radius: 0;
-            border-bottom-right-radius: 0;
-            border-color: hsl(var(--border));
-        }
-        .nav-tabs .btn.active {
-            background-color: hsl(var(--background));
-            border-bottom-color: transparent;
-            font-weight: 600;
-        }
-        .tab-pane {
-            display: none;
-        }
-        .tab-pane.active {
-            display: block;
-        }
+        .row { display: flex; flex-wrap: wrap; gap: 1.5rem; }
+        .col-lg-6 { flex: 1 1 calc(50% - 0.75rem); min-width: 300px; }
+        .col-12 { flex: 1 1 100%; }
+
+        .badge { display: inline-flex; align-items: center; padding: 0.375rem 0.875rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.025em; white-space: nowrap; }
+        .badge-critical { background-color: hsl(0 84.2% 95%); color: hsl(0 84.2% 40%); border: 1px solid hsl(0 84.2% 85%); }
+        .badge-high { background-color: hsl(45 93% 95%); color: hsl(28 73% 25%); border: 1px solid hsl(45 93% 85%); }
+        .badge-medium { background-color: hsl(221.2 83.2% 95%); color: hsl(221.2 83.2% 53.3%); border: 1px solid hsl(221.2 83.2% 85%); }
+
+        .chart-container { position: relative; height: 300px; width: 100%; }
         
+        /* Health Score Gauge */
+        .health-score-display { text-align: center; padding: 1rem; }
+        .score-value { font-size: 4rem; font-weight: 800; line-height: 1; margin-bottom: 0.5rem; letter-spacing: -0.05em; }
+        .score-good { color: hsl(142 76% 36%); }
+        .score-warn { color: hsl(45 93% 47%); }
+        .score-poor { color: hsl(0 84.2% 60.2%); }
+
+        .recommendation-item { padding: 1.25rem; border: 1px solid hsl(var(--border)); border-radius: var(--radius); margin-bottom: 1rem; background: hsl(var(--background)); }
+        .recommendation-item:last-child { margin-bottom: 0; }
     </style>
 </head>
 <body>
-    <div class="sidebar-overlay" id="sidebarOverlay"></div>
     <div class="app-wrapper">
-        <!-- SIDEBAR (identical to dashboard) -->
-        <aside class="sidebar" id="sidebar">
+        <aside class="sidebar">
             <div class="sidebar-header">
                 <a href="/applications/dashboard" class="sidebar-logo">
                     <div class="sidebar-logo-icon">
@@ -395,659 +114,211 @@
             </div>
             <nav class="sidebar-content">
                 <ul class="sidebar-menu">
-                    <li class="sidebar-menu-item">
+                    <li>
                         <a href="/applications/dashboard" class="sidebar-menu-button">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
-                            <span>Dashboard</span>
+                            <i class="bi bi-grid-1x2"></i> <span>Dashboard</span>
                         </a>
                     </li>
-                    <li class="sidebar-menu-item">
-                        <a href="/applications/analytics" class="sidebar-menu-button">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" x2="18" y1="20" y2="10"></line><line x1="12" x2="12" y1="20" y2="4"></line><line x1="6" x2="6" y1="20" y2="14"></line></svg>
-                            <span>Analytics</span>
-                        </a>
-                    </li>
-                    <li class="sidebar-menu-item">
+                    <li>
                         <a href="/applications/ai-analytics" class="sidebar-menu-button active">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 1 0 10 10 4 4 0 0 1-5-5 4 4 0 0 1-5-5"/><path d="M8.5 8.5v.01"/><path d="M16 15.5v.01"/><path d="M12 12v.01"/><path d="M11 17v.01"/><path d="M7 14v.01"/></svg>
-                            <span>AI Analytics</span>
+                            <i class="bi bi-magic"></i> <span>AI Analytics</span>
                         </a>
                     </li>
-                    <li class="sidebar-menu-item">
-                        <a href="/ats" class="sidebar-menu-button">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
-                            <span>ATS Check</span>
+                    <li>
+                        <a href="/smart-ats" class="sidebar-menu-button">
+                            <i class="bi bi-file-earmark-check"></i> <span>Smart ATS</span>
                         </a>
                     </li>
                 </ul>
             </nav>
-            <div class="sidebar-footer">
-                <div class="sidebar-user">
-                    <div class="sidebar-user-avatar" style="display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, hsl(var(--primary)), hsl(221.2 83.2% 46%)); color: white; font-weight: 600; font-size: 0.875rem;">
-                        <%= user ? user.charAt(0).toUpperCase() : 'U' %>
-                    </div>
-                    <div class="sidebar-user-info">
-                        <span class="sidebar-user-name"><%= user || 'User' %></span>
-                        <span class="sidebar-user-role">Job Seeker</span>
-                    </div>
-                </div>
-            </div>
         </aside>
 
-        <!-- MAIN CONTENT -->
         <main class="main-content">
-            <!-- Topbar (with notification & user dropdowns) -->
             <header class="topbar">
-                <div class="topbar-search">
-                    <button class="mobile-toggle" id="mobileToggle">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2"></rect><path d="M9 3v18"></path></svg>
-                    </button>
-                    <div class="search-input-wrapper">
-                        <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
-                        <input type="text" class="search-input" placeholder="Search applications...">
-                    </div>
-                </div>
-                <div class="topbar-actions">
-                    <!-- Notification dropdown -->
-                    <div class="dropdown">
-                        <button class="icon-button" id="notificationBtn">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path></svg>
-                        </button>
-                        <div class="dropdown-content" id="notificationDropdown">
-                            <div class="dropdown-label">Notifications</div>
-                            <div class="dropdown-separator"></div>
-                            <div class="dropdown-item">No new notifications</div>
-                        </div>
-                    </div>
-                    <!-- User dropdown -->
-                    <div class="dropdown">
-                        <button class="avatar-button" id="userBtn">
-                            <div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background: linear-gradient(135deg, hsl(var(--primary)), hsl(221.2 83.2% 46%)); color: white; font-weight:600; font-size:0.875rem;">
-                                <%= user ? user.charAt(0).toUpperCase() : 'U' %>
-                            </div>
-                        </button>
-                        <div class="dropdown-content" id="userDropdown">
-                            <div class="dropdown-label">My Account</div>
-                            <div class="dropdown-separator"></div>
-                            <a href="/user/profile" class="dropdown-item">Profile</a>
-                            <a href="/user/settings" class="dropdown-item">Settings</a>
-                            <div class="dropdown-separator"></div>
-                            <a href="/auth/logout" class="dropdown-item" style="color: hsl(var(--destructive));">Log out</a>
-                        </div>
-                    </div>
-                </div>
+                <div style="font-weight: 600; color: hsl(var(--muted-foreground));">Intelligence Dashboard</div>
             </header>
 
-            <!-- PAGE CONTENT -->
             <div class="page-content">
                 <div class="page-header">
-                    <h1 class="page-title">AI Analytics</h1>
-                    <a href="/applications/dashboard" class="btn btn-outline">
-                        <i class="bi bi-arrow-left"></i> Back to Dashboard
-                    </a>
+                    <h1 class="page-title">Career Strategy Insights</h1>
+                    <p style="color: hsl(var(--muted-foreground));">Data-driven recommendations based on your application history.</p>
                 </div>
-
-                <!-- Connection Status Alerts -->
-                <% if (!aiConnected) { %>
-                <div class="alert alert-warning d-flex align-items-center">
-                    <i class="bi bi-wifi-off me-2 fs-5"></i>
-                    <div>
-                        <strong>AI Engine Offline</strong> – Showing real-time analytics from your <%= applications.length %> applications.
-                        <a href="#" onclick="location.reload()" class="text-decoration-underline fw-bold">Retry connection</a> or
-                        <a href="http://localhost:8000" target="_blank" class="text-decoration-underline fw-bold">start Python service</a>.
-                    </div>
-                </div>
-                <% } else { %>
-                <div class="alert alert-success d-flex align-items-center">
-                    <i class="bi bi-cpu me-2 fs-5"></i>
-                    <div><strong>AI Engine Active</strong> – Machine learning models analyzing your data</div>
-                </div>
-                <% } %>
 
                 <% if (!hasData) { %>
-                <!-- No Data State -->
-                <div class="card text-center py-5">
-                    <div class="card-content">
-                        <i class="bi bi-inbox display-1 text-muted"></i>
-                        <h3 class="mt-3">No Applications Yet</h3>
-                        <p class="text-muted">Track your first application to see AI-powered analytics</p>
-                        <a href="/applications/add" class="btn btn-primary btn-lg mt-3">+ Track First Application</a>
+                    <div class="card" style="text-align: center; padding: 4rem 2rem;">
+                        <i class="bi bi-inbox" style="font-size: 3rem; color: hsl(var(--muted-foreground));"></i>
+                        <h3 style="margin-top: 1rem;">Not Enough Data</h3>
+                        <p style="color: hsl(var(--muted-foreground));">Add a few applications with your CV to generate smart insights.</p>
                     </div>
-                </div>
                 <% } else { %>
+                    
+                    <% 
+                        // Added optional chaining (?.) to prevent crashes if executive_summary is missing
+                        const healthScore = analysis?.executive_summary?.pipeline_health_score || 0;
+                        const scoreClass = healthScore > 75 ? 'score-good' : healthScore > 50 ? 'score-warn' : 'score-poor';
+                    %>
 
-                <!-- Metric Cards Row -->
-                <div class="row g-4 mb-4">
-                    <div class="col-md-3 col-sm-6">
-                        <div class="card border-0 shadow-sm h-100">
-                            <div class="card-content p-3 d-flex align-items-center">
-                                <div class="bg-primary bg-opacity-10 p-3 rounded-circle me-3">
-                                    <i class="bi bi-briefcase fs-4 text-primary"></i>
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6><i class="bi bi-heart-pulse me-2"></i> Pipeline Health Score</h6>
                                 </div>
-                                <div>
-                                    <div class="small text-muted text-uppercase">Total Applications</div>
-                                    <div class="h3 mb-0 fw-bold"><%= analysis.executive_summary?.total_applications || basicStats.total %></div>
-                                    <span class="small text-success"><i class="bi bi-arrow-up"></i> 12.5%</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3 col-sm-6">
-                        <div class="card border-0 shadow-sm h-100">
-                            <div class="card-content p-3 d-flex align-items-center">
-                                <div class="bg-info bg-opacity-10 p-3 rounded-circle me-3">
-                                    <i class="bi bi-bar-chart-line fs-4 text-info"></i>
-                                </div>
-                                <div>
-                                    <div class="small text-muted text-uppercase">Interview Rate</div>
-                                    <div class="h3 mb-0 fw-bold"><%= analysis.executive_summary?.interview_rate || basicStats.interviewRate %>%</div>
-                                    <span class="small text-success"><i class="bi bi-arrow-up"></i> 5.2%</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3 col-sm-6">
-                        <div class="card border-0 shadow-sm h-100">
-                            <div class="card-content p-3 d-flex align-items-center">
-                                <div class="bg-warning bg-opacity-10 p-3 rounded-circle me-3">
-                                    <i class="bi bi-people fs-4 text-warning"></i>
-                                </div>
-                                <div>
-                                    <div class="small text-muted text-uppercase">Active Pipeline</div>
-                                    <div class="h3 mb-0 fw-bold"><%= analysis.executive_summary?.active_applications || basicStats.active %></div>
-                                    <span class="small text-danger"><i class="bi bi-arrow-down"></i> 2.1%</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3 col-sm-6">
-                        <div class="card border-0 shadow-sm h-100">
-                            <div class="card-content p-3 d-flex align-items-center">
-                                <div class="bg-success bg-opacity-10 p-3 rounded-circle me-3">
-                                    <i class="bi bi-trophy fs-4 text-success"></i>
-                                </div>
-                                <div>
-                                    <div class="small text-muted text-uppercase">Offers</div>
-                                    <div class="h3 mb-0 fw-bold"><%= analysis.executive_summary?.offers_received || basicStats.offers %></div>
-                                    <span class="small text-success"><i class="bi bi-arrow-up"></i> 10%</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Tabs Navigation -->
-                <div class="mb-4 border-bottom">
-                    <ul class="nav nav-tabs" id="analyticsTab" role="tablist" style="border-bottom: none; gap: 0.5rem;">
-                        <li class="nav-item" role="presentation">
-                            <button class="btn btn-outline active" id="performance-tab" data-tab="performance" type="button" role="tab">Performance</button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="btn btn-outline" id="workflows-tab" data-tab="workflows" type="button" role="tab">Workflows</button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="btn btn-outline" id="error-tab" data-tab="error" type="button" role="tab">Error Analysis</button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="btn btn-outline" id="patterns-tab" data-tab="patterns" type="button" role="tab">Usage Patterns</button>
-                        </li>
-                    </ul>
-                </div>
-
-                <!-- Tab Content -->
-                <div class="tab-content">
-                    <!-- Performance Tab -->
-                    <div class="tab-pane active" id="performance" role="tabpanel">
-                        <!-- Pipeline Health & Key Insights Card (condensed) -->
-                        <div class="card mb-4 border-0 shadow-sm">
-                            <div class="card-content p-4">
-                                <div class="row align-items-center">
-                                    <div class="col-md-8">
-                                        <h5 class="fw-bold mb-2"><%= aiConnected ? 'AI Diagnosis' : 'Summary' %></h5>
-                                        <p class="mb-0"><%= analysis.executive_summary?.ai_diagnosis || "Analysis based on your application data" %></p>
-                                    </div>
-                                    <div class="col-md-4 text-md-end mt-3 mt-md-0">
-                                        <div class="d-flex align-items-center justify-content-md-end gap-3">
-                                            <div>
-                                                <div class="small text-muted">Pipeline Health</div>
-                                                <% const score = analysis.executive_summary?.pipeline_health_score || 0; %>
-                                                <% const healthClass = score >= 75 ? 'text-success' : score >= 50 ? 'text-primary' : score >= 30 ? 'text-warning' : 'text-danger'; %>
-                                                <span class="h2 fw-bold <%= healthClass %>"><%= Math.round(score) %></span><span class="text-muted">/100</span>
-                                            </div>
-                                            <div class="border-start ps-3">
-                                                <div class="small text-muted">Weakest Stage</div>
-                                                <span class="fw-bold"><%= analysis.executive_summary?.weakest_stage || basicStats.weakestStage || '—' %></span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Conversion Funnel & Channel Performance (two columns) -->
-                        <div class="row g-4">
-                            <div class="col-md-6">
-                                <div class="card h-100">
-                                    <div class="card-header">
-                                        <i class="bi bi-funnel me-2"></i> Conversion Funnel
-                                    </div>
-                                    <div class="card-content">
-                                        <% const funnel = analysis.executive_summary?.conversion_funnel || {
-                                            applied_to_screen: Math.round((basicStats.interviews + basicStats.offers) / basicStats.total * 100),
-                                            screen_to_interview: 100,
-                                            interview_to_offer: Math.round(basicStats.offers / Math.max(basicStats.interviews, 1) * 100)
-                                        }; %>
-                                        <div class="mb-3">
-                                            <div class="d-flex justify-content-between small mb-1">
-                                                <span>Applied → Response</span>
-                                                <span class="fw-bold"><%= funnel.applied_to_screen %>%</span>
-                                            </div>
-                                            <div class="progress">
-                                                <div class="progress-bar bg-primary" style="width: <%= funnel.applied_to_screen %>%"></div>
-                                            </div>
-                                        </div>
-                                        <div class="mb-3">
-                                            <div class="d-flex justify-content-between small mb-1">
-                                                <span>Response → Interview</span>
-                                                <span class="fw-bold"><%= funnel.screen_to_interview %>%</span>
-                                            </div>
-                                            <div class="progress">
-                                                <div class="progress-bar bg-info" style="width: <%= funnel.screen_to_interview %>%"></div>
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <div class="d-flex justify-content-between small mb-1">
-                                                <span>Interview → Offer</span>
-                                                <span class="fw-bold"><%= funnel.interview_to_offer %>%</span>
-                                            </div>
-                                            <div class="progress">
-                                                <div class="progress-bar bg-success" style="width: <%= funnel.interview_to_offer %>%"></div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="col-md-6">
-                                <div class="card h-100">
-                                    <div class="card-header">
-                                        <i class="bi bi-graph-up me-2"></i> Channel Performance
-                                        <% if (!aiConnected) { %><span class="badge badge-primary ms-2">Statistical</span><% } %>
-                                    </div>
-                                    <div class="card-content">
-                                        <% const channels = analysis.channel_performance || basicStats.byMethod; %>
-                                        <% if (channels && channels.length > 0) { %>
-                                            <% channels.slice(0,3).forEach(channel => { %>
-                                            <div class="mb-3 p-3 bg-light rounded border-start border-4 <%= channel.success_rate > 30 ? 'border-success' : channel.success_rate > 10 ? 'border-warning' : 'border-secondary' %>">
-                                                <div class="d-flex justify-content-between align-items-center mb-1">
-                                                    <strong><%= channel.channel %></strong>
-                                                    <span class="badge <%= channel.success_rate > 30 ? 'badge-offer' : channel.success_rate > 10 ? 'badge-warning' : 'badge-secondary' %>">
-                                                        <%= channel.success_rate %>% success
-                                                    </span>
-                                                </div>
-                                                <div class="small text-muted">
-                                                    <%= channel.applications || channel.total %> apps • <%= channel.positive_outcomes || channel.positive %> positive
-                                                    <% if (channel.avg_time_to_response) { %> • <%= channel.avg_time_to_response %>d response<% } %>
-                                                </div>
-                                            </div>
-                                            <% }) %>
-                                            <% if (channels.length > 3) { %>
-                                            <div class="text-center mt-2">
-                                                <a href="#" class="small text-decoration-none">View all <%= channels.length %> channels →</a>
-                                            </div>
-                                            <% } %>
-                                        <% } else { %>
-                                            <p class="text-muted">No channel data available</p>
-                                        <% } %>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Workflows Tab (Recent Applications & Status Distribution) -->
-                    <div class="tab-pane" id="workflows" role="tabpanel" style="display: none;">
-                        <div class="row g-4">
-                            <div class="col-md-6">
-                                <div class="card h-100">
-                                    <div class="card-header">
-                                        <i class="bi bi-pie-chart me-2"></i> Status Distribution
-                                    </div>
-                                    <div class="card-content">
-                                        <% const statuses = basicStats.byStatus; %>
-                                        <% Object.entries(statuses).forEach(([status, count]) => { %>
-                                        <div class="d-flex justify-content-between align-items-center mb-2 p-2 bg-light rounded">
-                                            <span class="text-capitalize"><%= status.replace(/-/g, ' ') %></span>
-                                            <div class="d-flex align-items-center gap-2">
-                                                <div class="progress" style="width: 100px;">
-                                                    <div class="progress-bar <%= 
-                                                        status === 'offer received' ? 'bg-success' : 
-                                                        status === 'rejected' ? 'bg-danger' : 
-                                                        status === 'ghosted' ? 'bg-secondary' : 
-                                                        status === 'interview' ? 'bg-info' : 'bg-primary' 
-                                                    %>" style="width: <%= (count / basicStats.total * 100) %>%"></div>
-                                                </div>
-                                                <span class="badge badge-secondary"><%= count %></span>
-                                            </div>
-                                        </div>
-                                        <% }) %>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="card h-100">
-                                    <div class="card-header">
-                                        <i class="bi bi-clock-history me-2"></i> Recent Applications
-                                    </div>
-                                    <div class="card-content p-0">
-                                        <div class="table-container">
-                                            <table class="data-table">
-                                                <thead>
-                                                    <tr>
-                                                        <th>Company</th>
-                                                        <th>Role</th>
-                                                        <th>Status</th>
-                                                        <th>Applied</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody>
-                                                    <% applications.slice(0, 5).forEach(app => { %>
-                                                    <tr>
-                                                        <td><strong><%= app.company_name %></strong></td>
-                                                        <td><%= app.job_title %></td>
-                                                        <td>
-                                                            <span class="badge <%= 
-                                                                app.status === 'offer received' ? 'badge-offer' : 
-                                                                app.status === 'rejected' ? 'badge-rejected' : 
-                                                                app.status === 'ghosted' ? 'badge-ghosted' : 
-                                                                app.status === 'interview' ? 'badge-interview' : 
-                                                                app.status === 'shortlisted' ? 'badge-shortlisted' : 
-                                                                'badge-applied' 
-                                                            %>"><%= app.status %></span>
-                                                        </td>
-                                                        <td><%= new Date(app.date_applied).toLocaleDateString() %></td>
-                                                    </tr>
-                                                    <% }) %>
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                        <% if (applications.length > 5) { %>
-                                        <div class="card-footer text-center border-top bg-light py-3">
-                                            <a href="/applications/dashboard" class="text-decoration-none">View all <%= applications.length %> →</a>
-                                        </div>
-                                        <% } %>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Error Analysis Tab (Ghosting, Rejections, Skill Gaps) -->
-                    <div class="tab-pane" id="error" role="tabpanel" style="display: none;">
-                        <div class="row g-4">
-                            <div class="col-md-6">
-                                <div class="card h-100">
-                                    <div class="card-header">
-                                        <i class="bi bi-exclamation-triangle me-2"></i> Ghosting & Rejection
-                                    </div>
-                                    <div class="card-content">
-                                        <% 
-                                        const ghostedCount = applications.filter(a => a.status === 'ghosted').length;
-                                        const rejectedCount = applications.filter(a => a.status === 'rejected').length;
-                                        const totalClosed = ghostedCount + rejectedCount + (applications.filter(a => a.status === 'offer received').length || 0);
-                                        const ghostRate = totalClosed > 0 ? Math.round(ghostedCount / totalClosed * 100) : 0;
-                                        const rejectRate = totalClosed > 0 ? Math.round(rejectedCount / totalClosed * 100) : 0;
-                                        %>
-                                        <div class="mb-4">
-                                            <h6 class="fw-bold">Outcome Breakdown</h6>
-                                            <div class="d-flex justify-content-between mb-1">
-                                                <span>Ghosted</span>
-                                                <span class="fw-bold"><%= ghostedCount %> (<%= ghostRate %>%)</span>
-                                            </div>
-                                            <div class="progress mb-2">
-                                                <div class="progress-bar bg-secondary" style="width: <%= ghostRate %>%"></div>
-                                            </div>
-                                            <div class="d-flex justify-content-between mb-1">
-                                                <span>Rejected</span>
-                                                <span class="fw-bold"><%= rejectedCount %> (<%= rejectRate %>%)</span>
-                                            </div>
-                                            <div class="progress">
-                                                <div class="progress-bar bg-danger" style="width: <%= rejectRate %>%"></div>
-                                            </div>
-                                        </div>
-                                        <% if (analysis.actionable_recommendations) { %>
-                                            <% const ghostRec = analysis.actionable_recommendations.find(r => r.issue && r.issue.includes('ghost')); %>
-                                            <% if (ghostRec) { %>
-                                            <div class="alert alert-warning py-2">
-                                                <i class="bi bi-lightbulb me-2"></i> <%= ghostRec.action %>
-                                            </div>
-                                            <% } %>
-                                        <% } %>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="card h-100">
-                                    <div class="card-header">
-                                        <i class="bi bi-stars me-2"></i> Skill Gap Analysis
-                                    </div>
-                                    <div class="card-content">
-                                        <% if (analysis.skill_gap_analysis) { %>
-                                            <h6 class="fw-bold">Top Demanded Skills</h6>
-                                            <% analysis.skill_gap_analysis.top_demanded_skills?.forEach(skill => { %>
-                                            <div class="d-flex justify-content-between align-items-center mb-2">
-                                                <span><%= skill.skill %></span>
-                                                <span class="badge <%= skill.strategic_value === 'HIGH' ? 'badge-success' : 'badge-warning' %>">
-                                                    <%= skill.market_demand %> jobs
-                                                </span>
-                                            </div>
-                                            <% }) %>
-                                            <hr>
-                                            <h6 class="fw-bold">Your Strengths</h6>
-                                            <% analysis.skill_gap_analysis.your_strengths?.forEach(s => { %>
-                                            <span class="badge badge-success me-1 mb-1"><%= s.skill %></span>
-                                            <% }) %>
-                                            <h6 class="fw-bold mt-3">Development Areas</h6>
-                                            <% analysis.skill_gap_analysis.development_areas?.forEach(d => { %>
-                                            <span class="badge badge-danger me-1 mb-1"><%= d.skill %></span>
-                                            <% }) %>
-                                        <% } else { %>
-                                            <p class="text-muted">Upload CV with skills to see gap analysis</p>
-                                        <% } %>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Usage Patterns Tab (Time Investment, Velocity) -->
-                    <div class="tab-pane" id="patterns" role="tabpanel" style="display: none;">
-                        <div class="row g-4">
-                            <div class="col-md-6">
-                                <div class="card h-100">
-                                    <div class="card-header">
-                                        <i class="bi bi-hourglass-split me-2"></i> Time Investment
-                                    </div>
-                                    <div class="card-content">
-                                        <% 
-                                        const totalMinutes = applications.reduce((sum, a) => sum + (a.time_spent_minutes || 0), 0);
-                                        const totalHours = (totalMinutes / 60).toFixed(1);
-                                        const avgMinutes = applications.length ? (totalMinutes / applications.length).toFixed(0) : 0;
-                                        %>
-                                        <div class="d-flex justify-content-between mb-3">
-                                            <span>Total hours spent</span>
-                                            <span class="fw-bold"><%= totalHours %> hrs</span>
-                                        </div>
-                                        <div class="d-flex justify-content-between mb-3">
-                                            <span>Avg time per app</span>
-                                            <span class="fw-bold"><%= avgMinutes %> min</span>
-                                        </div>
-                                        <div class="progress mb-3" style="height: 0.8rem;">
-                                            <% 
-                                            const quick = applications.filter(a => a.time_spent_minutes < 15).length;
-                                            const std = applications.filter(a => a.time_spent_minutes >= 15 && a.time_spent_minutes <= 30).length;
-                                            const detailed = applications.filter(a => a.time_spent_minutes > 30).length;
-                                            %>
-                                            <div class="progress-bar bg-success" style="width: <%= (quick/applications.length*100) %>%" title="Quick (<15 min)"></div>
-                                            <div class="progress-bar bg-info" style="width: <%= (std/applications.length*100) %>%" title="Standard (15-30 min)"></div>
-                                            <div class="progress-bar bg-warning" style="width: <%= (detailed/applications.length*100) %>%" title="Detailed (>30 min)"></div>
-                                        </div>
-                                        <div class="small text-muted d-flex justify-content-between">
-                                            <span><i class="bi bi-circle-fill text-success"></i> Quick</span>
-                                            <span><i class="bi bi-circle-fill text-info"></i> Standard</span>
-                                            <span><i class="bi bi-circle-fill text-warning"></i> Detailed</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="card h-100">
-                                    <div class="card-header">
-                                        <i class="bi bi-speedometer2 me-2"></i> Application Velocity
-                                    </div>
-                                    <div class="card-content">
-                                        <% 
-                                        // Compute average days between applications (simplified)
-                                        const dates = applications.map(a => new Date(a.date_applied)).sort((a,b) => a-b);
-                                        let gaps = [];
-                                        for (let i=1; i<dates.length; i++) {
-                                            gaps.push((dates[i] - dates[i-1]) / (1000*60*60*24));
-                                        }
-                                        const avgGap = gaps.length ? (gaps.reduce((a,b)=>a+b,0)/gaps.length).toFixed(1) : '—';
-                                        %>
-                                        <div class="d-flex justify-content-between mb-3">
-                                            <span>Avg days between apps</span>
-                                            <span class="fw-bold"><%= avgGap %></span>
-                                        </div>
-                                        <div class="d-flex justify-content-between mb-3">
-                                            <span>Applications last 30 days</span>
-                                            <span class="fw-bold">
-                                                <% const last30 = applications.filter(a => new Date(a.date_applied) > new Date(Date.now() - 30*24*60*60*1000)).length; %>
-                                                <%= last30 %>
-                                            </span>
-                                        </div>
-                                        <p class="small text-muted mt-3">
-                                            <i class="bi bi-info-circle"></i> 
-                                            <%= avgGap > 7 ? 'Try to increase application frequency to 3-5 per week.' : 'Good application rhythm.' %>
+                                <div class="card-content d-flex" style="flex-direction: column; justify-content: center; align-items: center;">
+                                    <div class="health-score-display">
+                                        <div class="score-value <%= scoreClass %>"><%= healthScore %>%</div>
+                                        <p style="color: hsl(var(--muted-foreground)); font-weight: 500;">
+                                            Resume Match Accuracy: <%= analysis?.skill_analysis?.resume_match_accuracy || 0 %>%
                                         </p>
                                     </div>
+                                    <div style="background-color: hsl(var(--muted)); padding: 1rem; border-radius: var(--radius); width: 100%; text-align: center;">
+                                        <strong>AI Diagnosis:</strong> <%= analysis?.executive_summary?.ai_diagnosis || 'Analyzing pipeline...' %>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6><i class="bi bi-bar-chart-line me-2"></i> Market Skill Gaps (What you lack)</h6>
+                                </div>
+                                <div class="card-content">
+                                    <p style="font-size: 0.875rem; color: hsl(var(--muted-foreground)); margin-bottom: 1rem;">
+                                        These are the skills most frequently requested by jobs you applied for, but are missing from your profile.
+                                    </p>
+                                    <div class="chart-container">
+                                        <canvas id="skillsChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-lg-6">
+                            <div class="card" style="background-color: hsl(var(--sidebar-background));">
+                                <div class="card-header">
+                                    <h6><i class="bi bi-lightning-charge me-2"></i> Actionable Recommendations</h6>
+                                </div>
+                                <div class="card-content" style="overflow-y: auto; max-height: 400px;">
+                                    <% if (analysis.actionable_recommendations && analysis.actionable_recommendations.length > 0) { %>
+                                        <% analysis.actionable_recommendations.forEach(rec => { 
+                                            let badgeClass = 'badge-medium';
+                                            if (rec.priority === 'CRITICAL') badgeClass = 'badge-critical';
+                                            if (rec.priority === 'HIGH') badgeClass = 'badge-high';
+                                        %>
+                                            <div class="recommendation-item">
+                                                <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                                                    <span class="badge <%= badgeClass %>"><%= rec.priority %></span>
+                                                    <span style="font-size: 0.75rem; color: hsl(var(--muted-foreground)); font-weight: 600; text-transform: uppercase;"><%= rec.category %></span>
+                                                </div>
+                                                <h4 style="font-size: 1rem; margin-bottom: 0.5rem; color: hsl(var(--foreground));"><%= rec.issue %></h4>
+                                                <p style="font-size: 0.875rem; color: hsl(var(--muted-foreground)); margin-bottom: 0.5rem;"><strong>Action:</strong> <%= rec.action %></p>
+                                                <p style="font-size: 0.75rem; color: hsl(142 76% 36%); font-weight: 600;"><i class="bi bi-graph-up-arrow"></i> Expected Impact: <%= rec.expected_impact %></p>
+                                            </div>
+                                        <% }) %>
+                                    <% } else { %>
+                                        <div style="text-align: center; padding: 2rem;">
+                                            <i class="bi bi-check-circle text-success" style="font-size: 2rem;"></i>
+                                            <p class="mt-2">Looking good! No critical actions needed right now.</p>
+                                        </div>
+                                    <% } %>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- AI Recommendations (still visible below tabs) -->
-                <div class="mt-4">
-                    <div class="card">
-                        <div class="card-header">
-                            <i class="bi bi-stars me-2"></i>
-                            <%= aiConnected ? 'AI-Generated Action Plan' : 'Recommended Actions' %>
-                        </div>
-                        <div class="card-content">
-                            <% const recs = analysis.actionable_recommendations || []; %>
-                            <% if (recs.length > 0) { %>
-                                <div class="row g-3">
-                                    <% recs.forEach(rec => { %>
-                                    <div class="col-md-6">
-                                        <div class="card h-100 priority-<%= rec.priority.toLowerCase() %>">
-                                            <div class="card-content">
-                                                <div class="d-flex justify-content-between align-items-start mb-2">
-                                                    <span class="badge <%= 
-                                                        rec.priority === 'CRITICAL' ? 'badge-danger' : 
-                                                        rec.priority === 'HIGH' ? 'badge-warning' : 
-                                                        rec.priority === 'MEDIUM' ? 'badge-primary' : 'badge-secondary' 
-                                                    %>"><%= rec.priority %></span>
-                                                    <small class="text-muted"><%= rec.category %></small>
-                                                </div>
-                                                <h6 class="fw-bold"><%= rec.issue %></h6>
-                                                <p class="small text-muted"><%= rec.action %></p>
-                                                <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
-                                                    <small class="text-success"><i class="bi bi-graph-up"></i> <%= rec.expected_impact %></small>
-                                                    <small class="text-muted"><%= rec.timeframe %></small>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <% }) %>
-                                </div>
-                            <% } else { %>
-                                <div class="text-center py-4 text-muted">
-                                    <i class="bi bi-check-circle display-4 text-success"></i>
-                                    <p class="mt-2">No critical issues detected. Your strategy is solid!</p>
-                                </div>
-                            <% } %>
-                        </div>
-                    </div>
-                </div>
                 <% } %>
             </div>
         </main>
     </div>
 
+    <% if (hasData) { %>
     <script>
-        // Mobile sidebar toggle
-        const mobileToggle = document.getElementById('mobileToggle');
-        const sidebar = document.getElementById('sidebar');
-        const overlay = document.getElementById('sidebarOverlay');
-        if (mobileToggle) {
-            mobileToggle.addEventListener('click', () => {
-                sidebar.classList.toggle('open');
-                overlay.classList.toggle('show');
-            });
-        }
-        if (overlay) {
-            overlay.addEventListener('click', () => {
-                sidebar.classList.remove('open');
-                overlay.classList.remove('show');
-            });
-        }
+        // Inject Data from Backend
+        const funnelData = <%- JSON.stringify(funnelData || {}) %>;
+        const marketDemandData = <%- JSON.stringify(marketDemandData || []) %>;
 
-        // Dropdown toggles
-        function setupDropdown(btnId, dropdownId) {
-            const btn = document.getElementById(btnId);
-            const dd = document.getElementById(dropdownId);
-            if (btn && dd) {
-                btn.addEventListener('click', (e) => {
-                    e.stopPropagation();
-                    document.querySelectorAll('.dropdown-content.show').forEach(el => el.classList.remove('show'));
-                    dd.classList.toggle('show');
-                });
-            }
-        }
-        setupDropdown('notificationBtn', 'notificationDropdown');
-        setupDropdown('userBtn', 'userDropdown');
+        // 1. Funnel Chart
+        const funnelCtx = document.getElementById('funnelChart').getContext('2d');
+        
+        // Ensure values are integers
+        const apps = parseInt(funnelData.total_applied || 0);
+        const screens = parseInt(funnelData.total_screened || 0);
+        const interviews = parseInt(funnelData.total_interviews || 0);
+        const offers = parseInt(funnelData.total_offers || 0);
 
-        document.addEventListener('click', () => {
-            document.querySelectorAll('.dropdown-content.show').forEach(el => el.classList.remove('show'));
-        });
-        document.querySelectorAll('.dropdown-content').forEach(el => {
-            el.addEventListener('click', (e) => e.stopPropagation());
-        });
-
-        // Tab switching
-        const tabButtons = document.querySelectorAll('[data-tab]');
-        const tabPanes = document.querySelectorAll('.tab-pane');
-
-        tabButtons.forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                e.preventDefault();
-                const targetTab = btn.getAttribute('data-tab');
-
-                // Update button active states
-                tabButtons.forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-
-                // Show corresponding pane, hide others
-                tabPanes.forEach(pane => {
-                    if (pane.id === targetTab) {
-                        pane.style.display = 'block';
-                    } else {
-                        pane.style.display = 'none';
+        new Chart(funnelCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Applied', 'Screened', 'Interviewed', 'Offers'],
+                datasets: [{
+                    label: 'Pipeline Progression',
+                    data: [apps, screens, interviews, offers],
+                    backgroundColor: [
+                        'rgba(203, 213, 225, 0.8)', // slate-300
+                        'rgba(147, 197, 253, 0.8)', // blue-300
+                        'rgba(59, 130, 246, 0.8)',  // blue-500
+                        'rgba(34, 197, 94, 0.8)'    // green-500
+                    ],
+                    borderRadius: 6,
+                    borderSkipped: false,
+                }]
+            },
+            options: {
+                indexAxis: 'y', // Makes it horizontal like a funnel
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.raw || 0;
+                                let percentage = apps > 0 ? Math.round((context.raw / apps) * 100) : 0;
+                                return `${label} Applications (${percentage}% of Total)`;
+                            }
+                        }
                     }
-                });
-            });
+                },
+                scales: {
+                    x: { beginAtZero: true, grid: { display: false } },
+                    y: { grid: { display: false } }
+                }
+            }
+        });
+
+        // 2. Market Demand Chart (Skills Gap)
+        const skillsCtx = document.getElementById('skillsChart').getContext('2d');
+        
+        // Extract labels and data points
+        const skillLabels = marketDemandData.map(d => d.skill);
+        const skillFrequencies = marketDemandData.map(d => parseInt(d.frequency));
+
+        new Chart(skillsCtx, {
+            type: 'bar',
+            data: {
+                labels: skillLabels,
+                datasets: [{
+                    label: '# of Applications Requiring this Skill',
+                    data: skillFrequencies,
+                    backgroundColor: 'rgba(239, 68, 68, 0.7)', // red-500 (since it's a gap)
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }
+                },
+                scales: {
+                    y: { beginAtZero: true, ticks: { precision: 0 } }, // Force whole numbers
+                    x: { grid: { display: false } }
+                }
+            }
         });
     </script>
+    <% } %>
 </body>
 </html>

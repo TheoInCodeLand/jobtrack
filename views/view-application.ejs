@@ -635,6 +635,26 @@
 
                     <!-- Right column: Skills, Timeline, Job Description -->
                     <div class="col-lg-8">
+                        <% if (app.ghost_skills && app.ghost_skills.length > 0) { %>
+                        <div class="card mb-4" style="border-left: 4px solid hsl(45 93% 47%); background-color: hsl(45 93% 95%);">
+                            <div class="card-content">
+                                <h6 class="d-flex align-items-center gap-2 mb-2" style="color: hsl(28 73% 25%); margin-top: 0; font-weight: 600;">
+                                    <i class="bi bi-lightbulb-fill" style="color: hsl(45 93% 47%);"></i> Smart Insight: Ghost Skills Detected
+                                </h6>
+                                <p class="small mb-3" style="color: hsl(28 73% 25%);">
+                                    You have the following skills in your master profile, but our scanner didn't find them on the resume you uploaded for this specific job:
+                                </p>
+                                <div class="d-flex flex-wrap gap-2 mb-3">
+                                    <% app.ghost_skills.forEach(skill => { %>
+                                        <span class="badge badge-warning"><%= skill %></span>
+                                    <% }) %>
+                                </div>
+                                <p class="small mb-0" style="color: hsl(28 73% 25%); border-top: 1px solid hsl(45 93% 85%); padding-top: 0.75rem;">
+                                    <strong>Action Item:</strong> If you get an interview, make sure to verbally highlight your experience with these. Consider adding them to your master CV template.
+                                </p>
+                            </div>
+                        </div>
+                        <% } %>
                         <!-- Skills Analysis Card -->
                         <div class="card mb-4">
                             <div class="card-header d-flex justify-content-between align-items-center">

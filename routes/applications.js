@@ -41,9 +41,10 @@ router.get('/add', (req, res) => {
     res.render('add-application', { error: null });
 });
 
-// POST: Save application with enhanced data capture + CV skills extraction
+// POST: Save application with enhanced "Discovery" data capture + CV skills extraction
 router.post('/add', upload.single('resume'), async (req, res) => {
     try {
+        const userId = req.session.userId;
         const {
             company_name, job_title, experience_level, job_domain,
             job_level, app_method, app_method_other, date_applied, closing_date,
@@ -65,7 +66,7 @@ router.post('/add', upload.single('resume'), async (req, res) => {
         const finalMethod = app_method === 'Other' ? app_method_other : app_method;
         const resume_path = req.file ? `/uploads/${req.file.filename}` : null;
         
-        // Parse arrays
+        // Parse arrays safely
         const domainArray = job_domain ? job_domain.split(',').map(item => item.trim()).filter(Boolean) : [];
         const skillsArray = required_skills ? required_skills.split(',').map(item => item.trim()).filter(Boolean) : [];
         
@@ -85,38 +86,50 @@ router.post('/add', upload.single('resume'), async (req, res) => {
             responseTimeDays = Math.floor((contacted - applied) / (1000 * 60 * 60 * 24));
         }
 
-        // ========== AUTOMATIC CV SKILLS EXTRACTION ==========
+        // ========== AUTOMATIC CV SKILLS EXTRACTION (DISCOVERY MODE) ==========
+        let allSkillsOnCv = [];
         let skillsYouHave = [];
         let skillsYouLack = [];
-        let cvExtractedSkills = [];
         let skillsMatchPercentage = 0;
         
-        if (req.file && skillsArray.length > 0) {
+        if (req.file) {
             try {
                 const cvFullPath = path.join(__dirname, '..', 'public', resume_path);
-                console.log('Extracting skills from CV:', cvFullPath);
+                console.log('Running Deep Skill Discovery on CV:', cvFullPath);
                 
+                // 1. Extract ALL skills (Discovery) & Cross-Reference with Job
                 const analysis = await analyzeCvSkills(cvFullPath, skillsArray);
                 
-                skillsYouHave = analysis.skillsYouHave;
-                skillsYouLack = analysis.skillsYouLack;
-                cvExtractedSkills = analysis.cvSkills;
+                allSkillsOnCv = analysis.cvSkills; // Every tech keyword found on the PDF
+                skillsYouHave = analysis.skillsYouHave; // Matched against required_skills
+                skillsYouLack = analysis.skillsYouLack; // Missing from required_skills
                 skillsMatchPercentage = analysis.matchPercentage;
                 
-                console.log('CV Analysis Results:', {
-                    totalRequired: skillsArray.length,
-                    matched: skillsYouHave.length,
-                    missing: skillsYouLack.length,
-                    matchPercentage: analysis.matchPercentage,
-                    extracted: cvExtractedSkills.length
-                });
+                console.log(`Discovery Results: Found ${allSkillsOnCv.length} total skills. Match: ${skillsMatchPercentage}%`);
+
+                // 2. UPDATE USER PROFILE KNOWLEDGE BASE
+                if (allSkillsOnCv.length > 0) {
+                    await db.query(`
+                        UPDATE users 
+                        SET skills = (
+                            SELECT jsonb_agg(DISTINCT elem)
+                            FROM (
+                                SELECT jsonb_array_elements_text(COALESCE(skills, '[]'::jsonb)) AS elem
+                                UNION
+                                SELECT unnest($1::text[]) AS elem
+                            ) sub
+                        )
+                        WHERE id = $2
+                    `, [allSkillsOnCv, userId]);
+                    console.log('✅ User master skill profile updated.');
+                }
                 
             } catch (cvError) {
-                console.error('CV skills extraction failed:', cvError.message);
+                console.error('CV skills extraction/discovery failed:', cvError.message);
                 // Continue without CV analysis - don't block application creation
             }
         }
-        // =====================================================
+        // =====================================================================
 
         const queryText = `
             INSERT INTO applications (
@@ -148,7 +161,7 @@ router.post('/add', upload.single('resume'), async (req, res) => {
             company_name, job_title, experience_level || 0, job_level, 
             finalMethod, date_applied || new Date(), closing_date || null, company_size, 
             education_required, location, salary, isReferral, 
-            notes, resume_path, job_description, req.session.userId,
+            notes, resume_path, job_description, userId,
             domainArray, skillsArray, work_arrangement, industry, 
             time_spent_minutes || 0, isTailored, isAssessment,
             company_website || null, job_posting_url || null, hiring_manager_name || null,
@@ -158,12 +171,12 @@ router.post('/add', upload.single('resume'), async (req, res) => {
             referrer_name || null, referrer_relationship || null, company_rating || null,
             resume_version_used || 'standard', hasCoverLetter, isSalaryTransparent,
             networking_effort || null, responseTimeDays,
-            skillsYouHave,      // $42 - skills found in CV that match requirements
-            skillsYouLack,      // $43 - skills required but not found in CV
-            cvExtractedSkills,  // $44 - all skills extracted from CV
-            skillsMatchPercentage, // $45 - calculated match percentage
-            autoFollowUp,       // $46 - auto follow-up enabled
-            null                // $47 - last_reminder_sent (null initially)
+            skillsYouHave,      // $43 - skills found in CV that match requirements
+            skillsYouLack,      // $44 - skills required but not found in CV
+            allSkillsOnCv,      // $45 - all skills extracted from CV (Discovery array)
+            skillsMatchPercentage, // $46 - calculated match percentage
+            autoFollowUp,       // $47 - auto follow-up enabled
+            null                // $48 - last_reminder_sent (null initially)
         ];
 
         const result = await db.query(queryText, values);
@@ -171,17 +184,14 @@ router.post('/add', upload.single('resume'), async (req, res) => {
 
         // ========== SEND CONFIRMATION EMAIL ==========
         try {
-            // Get user email
             const userResult = await db.query(
                 'SELECT email, full_name FROM users WHERE id = $1',
-                [req.session.userId]
+                [userId]
             );
             
             const userEmail = userResult.rows[0]?.email;
             
             if (userEmail) {
-                const { sendApplicationConfirmation } = require('../services/emailService');
-                
                 const appDataForEmail = {
                     id: newApplicationId,
                     company_name,
@@ -199,11 +209,11 @@ router.post('/add', upload.single('resume'), async (req, res) => {
                     auto_follow_up_enabled: autoFollowUp
                 };
 
-                // Send email asynchronously (don't block response)
+                // Send email asynchronously
                 sendApplicationConfirmation(userEmail, appDataForEmail)
                     .then(emailResult => {
                         if (emailResult.success) {
-                            console.log(`✅ Confirmation email sent to ${userEmail} for application ${newApplicationId}`);
+                            console.log(`✅ Confirmation email sent to ${userEmail} for app ${newApplicationId}`);
                         } else {
                             console.error('❌ Failed to send confirmation email:', emailResult.error);
                         }
@@ -215,7 +225,6 @@ router.post('/add', upload.single('resume'), async (req, res) => {
                 console.log('⚠️ No email found for user, skipping confirmation email');
             }
         } catch (emailErr) {
-            // Log error but don't block the application creation
             console.error('❌ Error preparing confirmation email:', emailErr.message);
         }
         // ==============================================
@@ -230,7 +239,6 @@ router.post('/add', upload.single('resume'), async (req, res) => {
         });
     }
 });
-
 
 // GET: Dashboard with enhanced filtering and stats
 router.get('/dashboard', async (req, res) => {
@@ -401,12 +409,17 @@ router.post('/update-status/:id', async (req, res) => {
     }
 });
 
-// GET: View single application with enhanced data
+// GET: View single application with SMART Ghost Skill Alert
 router.get('/view/:id', async (req, res) => {
     try {
         const { id } = req.params;
+        const userId = req.session.userId;
         
-        // Get application with interview rounds
+        // 1. Get User's Master Skills
+        const userResult = await db.query('SELECT skills FROM users WHERE id = $1', [userId]);
+        const userProfileSkills = userResult.rows[0]?.skills || [];
+
+        // 2. Get application with interview rounds
         const appResult = await db.query(`
             SELECT a.*, 
                    COALESCE(
@@ -417,7 +430,7 @@ router.get('/view/:id', async (req, res) => {
             LEFT JOIN interview_rounds ir ON a.id = ir.application_id
             WHERE a.id = $1 AND a.user_id = $2
             GROUP BY a.id
-        `, [id, req.session.userId]);
+        `, [id, userId]);
 
         if (appResult.rows.length === 0) {
             return res.status(404).render('error', { message: "Application not found or unauthorized." });
@@ -429,8 +442,18 @@ router.get('/view/:id', async (req, res) => {
         if (app.interview_rounds && typeof app.interview_rounds === 'string') {
             app.interview_rounds = JSON.parse(app.interview_rounds);
         }
+
+        // --- SMART LOGIC: Calculate Ghost Skills ---
+        // Skills required by job AND in your master profile AND NOT found on this specific CV
+        const safeRequiredSkills = app.required_skills || [];
+        const safeCvSkills = app.cv_extracted_skills || [];
         
-        // Get communication history - map to 'logs' property for template compatibility
+        app.ghost_skills = safeRequiredSkills.filter(reqSkill => 
+            userProfileSkills.includes(reqSkill) && !safeCvSkills.includes(reqSkill)
+        );
+        // -------------------------------------------
+        
+        // Get communication history
         const commsResult = await db.query(`
             SELECT 
                 communication_type as action,
@@ -444,7 +467,6 @@ router.get('/view/:id', async (req, res) => {
             ORDER BY created_at DESC
         `, [id]);
         
-        // Attach logs to app object for template compatibility
         app.logs = commsResult.rows;
         
         // Calculate metrics
@@ -454,10 +476,8 @@ router.get('/view/:id', async (req, res) => {
         const experienceFit = app.your_experience_years >= app.experience_level ? 'good' : 
                              app.your_experience_years >= app.experience_level * 0.7 ? 'partial' : 'low';
         
-        // Calculate expected salary vs offered (if available)
         let salaryComparison = null;
         if (app.salary && app.offer_amount) {
-            // Simple comparison - could be enhanced with parsing
             salaryComparison = {
                 expected: app.salary,
                 offered: app.offer_amount,
@@ -630,68 +650,59 @@ router.get('/analytics', async (req, res) => {
     }
 });
 
-// GET: AI Analytics (enhanced with more data points)
+// GET: AI Analytics (Smart Intelligence Version)
 router.get('/ai-analytics', async (req, res) => {
     try {
+        const userId = req.session.userId;
+
+        // 1. Fetch User Profile (to get master skill list)
+        const userResult = await db.query(
+            'SELECT skills, career_goal, years_of_experience FROM users WHERE id = $1',
+            [userId]
+        );
+        const userProfile = userResult.rows[0] || { skills: [] };
+
+        // 2. Fetch all applications
         const appsResult = await db.query(
             `SELECT * FROM applications 
              WHERE user_id = $1 
              ORDER BY date_applied DESC`,
-            [req.session.userId]
+            [userId]
         );
         
         const applications = appsResult.rows.map(app => ({
-            id: app.id,
-            company_name: app.company_name,
-            job_title: app.job_title,
-            status: app.status || 'applied',
-            date_applied: app.date_applied ? app.date_applied.toISOString() : new Date().toISOString(),
-            last_contact_date: app.last_contact_date ? app.last_contact_date.toISOString() : null,
-            app_method: app.app_method || 'Unknown',
-            job_level: app.job_level || 'Unknown',
-            experience_level: parseInt(app.experience_level) || 0,
-            your_experience_years: parseInt(app.your_experience_years) || 0,
-            job_domain: Array.isArray(app.job_domain) ? app.job_domain : [],
+            ...app,
             required_skills: Array.isArray(app.required_skills) ? app.required_skills : [],
             skills_you_have: Array.isArray(app.skills_you_have) ? app.skills_you_have : [],
             skills_you_lack: Array.isArray(app.skills_you_lack) ? app.skills_you_lack : [],
-            tailored_resume: app.tailored_resume === true,
-            referral: app.referral === true,
-            assessment_upfront: app.assessment_upfront === true,
-            assessment_type: app.assessment_type,
-            time_spent_minutes: parseInt(app.time_spent_minutes) || 0,
-            industry: app.industry,
-            work_arrangement: app.work_arrangement || 'Unknown',
-            salary: app.salary,
-            company_size: app.company_size,
-            company_rating: app.company_rating,
-            response_time_days: app.response_time_days,
-            interviews_count: app.interviews_count || 0,
-            follow_up_count: app.follow_up_count || 0
+            cv_extracted_skills: Array.isArray(app.cv_extracted_skills) ? app.cv_extracted_skills : []
         }));
 
-        const basicAnalytics = calculateBasicAnalytics(applications);
+        // 3. Perform Deep Data Analysis
+        const basicStats = calculateBasicAnalytics(applications);
+        const smartInsights = generateSmartInsights(applications, userProfile);
         
+        // 4. Check for Python AI Service (Optional Fallback)
         let aiAnalysis = null;
         let aiConnected = false;
         
         try {
             const response = await axios.post('http://127.0.0.1:8000/api/analyze', {
-                user_id: req.session.userId,
+                user_id: userId,
+                user_profile: userProfile,
                 applications: applications
-            }, { timeout: 5000 });
+            }, { timeout: 3000 });
             
             aiAnalysis = response.data;
             aiConnected = true;
-            
         } catch (aiError) {
-            console.log('Python AI service unavailable, using basic analytics:', aiError.message);
-            aiAnalysis = generateFallbackAnalysis(applications, basicAnalytics);
+            console.log('AI Service offline, using local smart logic');
+            aiAnalysis = smartInsights; 
         }
 
         res.render('ai-analytics', {
             analysis: aiAnalysis,
-            basicStats: basicAnalytics,
+            basicStats: basicStats,
             applications: applications,
             user: req.session.userName,
             aiConnected: aiConnected,
@@ -703,6 +714,123 @@ router.get('/ai-analytics', async (req, res) => {
         res.status(500).render('error', { message: `Error: ${err.message}` });
     }
 });
+
+/**
+ * Logic to generate "Informed Changes" suggestions
+ */
+/**
+ * Logic to generate "Informed Changes" suggestions
+ */
+function generateSmartInsights(apps, userProfile) {
+    const userSkills = Array.isArray(userProfile.skills) ? userProfile.skills : [];
+    const recommendations = [];
+
+    // --- 1. RESUME GAP ANALYSIS (The "Missed Opportunity" Logic) ---
+    let missedSkillCount = 0;
+    const commonMissedSkills = {};
+
+    apps.forEach(app => {
+        const missedInThisApp = app.required_skills.filter(reqSkill => 
+            userSkills.includes(reqSkill) && !app.cv_extracted_skills.includes(reqSkill)
+        );
+
+        if (missedInThisApp.length > 0) {
+            missedSkillCount++;
+            missedInThisApp.forEach(s => commonMissedSkills[s] = (commonMissedSkills[s] || 0) + 1);
+        }
+    });
+
+    if (missedSkillCount > 0) {
+        const topMissed = Object.entries(commonMissedSkills).sort((a,b) => b[1] - a[1])[0];
+        recommendations.push({
+            priority: "HIGH",
+            category: "Resume Optimization",
+            issue: `You have skills like "${topMissed[0]}" in your profile, but they were missing from ${topMissed[1]} resumes where they were required.`,
+            action: "Update your master resume template to prominently feature these 'Ghost Skills' you already possess.",
+            expected_impact: "Significant Match Score increase"
+        });
+    }
+
+    // --- 2. MARKET DEMAND ANALYSIS (The "Up-skilling" Logic) ---
+    const marketGaps = {};
+    apps.forEach(app => {
+        if (app.skills_you_lack) {
+            app.skills_you_lack.forEach(skill => {
+                marketGaps[skill] = (marketGaps[skill] || 0) + 1;
+            });
+        }
+    });
+
+    const topGaps = Object.entries(marketGaps)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 3);
+
+    if (topGaps.length > 0) {
+        const percentage = Math.round((topGaps[0][1] / Math.max(apps.length, 1)) * 100);
+        recommendations.push({
+            priority: "MEDIUM",
+            category: "Skill Acquisition",
+            issue: `Market Demand detected: ${topGaps[0][0]} is required in ${percentage}% of the roles you target, but you don't have it.`,
+            action: `Consider building a small project using ${topGaps[0][0]} to close this persistent gap.`,
+            expected_impact: "Access to a wider pool of high-matching roles"
+        });
+    }
+
+    // --- 3. EFFORT VS OUTCOME (The "Efficiency" Logic) ---
+    const tailored = apps.filter(a => a.tailored_resume);
+    const untailored = apps.filter(a => !a.tailored_resume);
+    
+    const tailoredSuccess = tailored.length > 0 
+        ? (tailored.filter(a => ['interview', 'final interview', 'offer received'].includes(a.status)).length / tailored.length) 
+        : 0;
+    const untailoredSuccess = untailored.length > 0 
+        ? (untailored.filter(a => ['interview', 'final interview', 'offer received'].includes(a.status)).length / untailored.length) 
+        : 0;
+
+    if (tailoredSuccess > (untailoredSuccess * 1.5) && tailored.length > 2) {
+        recommendations.push({
+            priority: "CRITICAL",
+            category: "Strategy",
+            issue: "Data proves your tailored resumes are significantly more effective than generic ones.",
+            action: "Stop 'Easy Applying'. Spend more time on fewer, high-quality tailored applications.",
+            expected_impact: "Higher interview yield with less total time spent"
+        });
+    } else if (untailored.length > 10 && tailored.length < 3) {
+        recommendations.push({
+            priority: "HIGH",
+            category: "Strategy",
+            issue: "You are relying too heavily on generic resumes.",
+            action: "Try tailoring your next 5 applications to compare the response rates.",
+            expected_impact: "Potential breakthrough in screening stages."
+        });
+    }
+
+    // --- 4. INLINE HEALTH SCORE & DIAGNOSIS (Fixes the ReferenceError) ---
+    let healthScore = 50;
+    if (apps.filter(a => a.status === 'offer received').length > 0) healthScore += 20;
+    if (apps.filter(a => a.status.includes('interview')).length > 0) healthScore += 15;
+    if (missedSkillCount === 0 && apps.length > 0) healthScore += 10;
+    if (tailored.length > untailored.length) healthScore += 5;
+    
+    // Ensure score stays between 0 and 100
+    healthScore = Math.min(100, Math.max(0, healthScore));
+
+    let diagnosis = "Your pipeline is functional but has room for efficiency improvements.";
+    if (healthScore > 75) diagnosis = "Your pipeline is healthy and optimized.";
+    if (healthScore < 50) diagnosis = "Critical optimization required. Review your 'Ghost Skills' and tailoring strategy.";
+
+    return {
+        executive_summary: {
+            pipeline_health_score: healthScore,
+            ai_diagnosis: diagnosis,
+        },
+        actionable_recommendations: recommendations,
+        skill_analysis: {
+            top_market_demands: topGaps,
+            resume_match_accuracy: Math.round(((apps.length - missedSkillCount) / Math.max(apps.length, 1)) * 100) || 0
+        }
+    };
+}
 
 // Helper functions (same as before, enhanced)
 function calculateBasicAnalytics(apps) {
